@@ -13,6 +13,9 @@ model WorkRequest {
   citizenId String
   citizen   User   @relation(fields: [citizenId], references: [id], onDelete: Cascade)
 
+  selectedQuotationId String?    @unique
+  selectedQuotation   Quotation? @relation("SelectedQuotation", fields: [selectedQuotationId], references: [id], onDelete: SetNull)
+
   quotations       Quotation[]
   staffInvitations StaffInvitation[]
   payments         Payment[]

@@ -13,7 +13,9 @@ enum StaffApplicationStatus {
 
 enum WorkStatus {
   PENDING
-  APPROVED
+  REQUESTED
+  ACCEPTED
+  CITIZEN_DECLINED
   ADVANCE_PAID
   ASSIGNED
   COMPLETED
@@ -22,11 +24,14 @@ enum WorkStatus {
 enum QuotationStatus {
   PENDING
   APPROVED
+  REJECTED
 }
 
 enum AssignmentStatus {
   ONGOING
+  COMPLETION_SUBMITTED
   COMPLETED
+  CANCELLED
 }
 
 enum InvitationStatus {

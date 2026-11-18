@@ -1,4 +1,4 @@
-model Attachment {
+model WorkAttachment {
   id           String  @id @default(uuid())
   assignmentId String
   fileUrl      String
@@ -10,5 +10,5 @@ model Attachment {
   createdAt DateTime @default(now())
 
   @@index([assignmentId])
-  @@map("assignment_attachments")
+  @@map("attachments")
 }

@@ -6,4 +6,6 @@ model Category {
   department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
 
   staffCategories StaffCategory[]
+
+  @@map("categories")
 }

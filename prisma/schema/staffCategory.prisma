@@ -6,4 +6,6 @@ model StaffCategory {
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("staff_category")
 }

@@ -3,4 +3,6 @@ model Department {
   name String
 
   categories Category[]
+
+  @@map("departments")
 }

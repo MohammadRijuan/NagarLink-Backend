@@ -9,7 +9,7 @@ model Assignment {
   citizenId String
   citizen   User   @relation("CitizenAssignments", fields: [citizenId], references: [id], onDelete: Cascade)
 
-  attachments Attachment[]
+  attachments WorkAttachment[]
   feedbacks   Feedback[]
 
   createdAt DateTime @default(now())
