@@ -1,0 +1,26 @@
+model WorkRequest {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  city        String
+  postalCode  String
+  phone       String
+  approvedFee Decimal?   @db.Decimal(10, 2)
+  status      WorkStatus @default(PENDING)
+
+  rejectionReason String?
+
+  citizenId String
+  citizen   User   @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+
+  quotations       Quotation[]
+  staffInvitations StaffInvitation[]
+  payments         Payment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([citizenId])
+  @@index([status])
+  @@map("work_requests")
+}

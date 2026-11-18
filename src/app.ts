@@ -1,0 +1,38 @@
+import express, {
+  Request,
+  Response,
+  urlencoded,
+  type Application,
+} from "express";
+import config from "./config";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import { NotFound } from "./middlewares/notFound";
+
+const app: Application = express();
+
+app.use(
+  cors({
+    origin: config.app_url,
+    credentials: true,
+  }),
+);
+
+// middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// all api
+
+app.use("/", (req: Request, res: Response) => {
+  // res.send("NagarLink Server working perfectly")
+  res.json({
+    success: true,
+    message: "NagarLink Server is now live",
+  });
+});
+
+app.use(NotFound)
+
+export default app;

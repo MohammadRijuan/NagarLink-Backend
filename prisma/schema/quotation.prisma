@@ -1,0 +1,14 @@
+model Quotation {
+  id          String          @id @default(uuid())
+  proposedFee Decimal         @db.Decimal(10, 2)
+  status      QuotationStatus @default(PENDING)
+
+  requestId String
+  Request   WorkRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  staffId String
+  staff   User   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

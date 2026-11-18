@@ -1,0 +1,11 @@
+model StaffLocation {
+  id String @id @default(uuid())
+
+  address String
+
+  staffId String
+  Staff   User   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

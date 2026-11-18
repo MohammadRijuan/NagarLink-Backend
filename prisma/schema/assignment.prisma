@@ -1,0 +1,21 @@
+model Assignment {
+  id String @id @default(uuid())
+
+  status AssignmentStatus @default(ONGOING)
+
+  staffId String
+  staff   User   @relation("StaffAssignments", fields: [staffId], references: [id], onDelete: Cascade)
+
+  citizenId String
+  citizen   User   @relation("CitizenAssignments", fields: [citizenId], references: [id], onDelete: Cascade)
+
+  attachments Attachment[]
+  feedbacks   Feedback[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([staffId])
+  @@index([citizenId])
+  @@map("assignments")
+}

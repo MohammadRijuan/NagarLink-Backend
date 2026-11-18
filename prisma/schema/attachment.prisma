@@ -1,0 +1,14 @@
+model Attachment {
+  id           String  @id @default(uuid())
+  assignmentId String
+  fileUrl      String
+  fileType     String?
+  fileName     String?
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([assignmentId])
+  @@map("assignment_attachments")
+}

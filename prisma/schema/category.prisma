@@ -1,0 +1,9 @@
+model Category {
+  id   String @id @default(uuid())
+  name String
+
+  departmentId String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  staffCategories StaffCategory[]
+}

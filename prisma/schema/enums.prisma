@@ -1,0 +1,46 @@
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+  CITIZEN
+}
+
+enum StaffApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WorkStatus {
+  PENDING
+  APPROVED
+  ADVANCE_PAID
+  ASSIGNED
+  COMPLETED
+}
+
+enum QuotationStatus {
+  PENDING
+  APPROVED
+}
+
+enum AssignmentStatus {
+  ONGOING
+  COMPLETED
+}
+
+enum InvitationStatus {
+  REQUESTED
+  ACCEPTED
+  REJECTED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}

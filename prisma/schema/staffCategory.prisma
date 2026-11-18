@@ -1,0 +1,9 @@
+model StaffCategory {
+  id String @id @default(uuid())
+
+  staffId String
+  staff   User   @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+}
