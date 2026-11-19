@@ -41,11 +41,8 @@ enum InvitationStatus {
 }
 
 enum PaymentStatus {
-  UNPAID
   PENDING
   PAID
   FAILED
-  CANCELLED
   REFUNDED
-  PARTIALLY_REFUNDED
 }

@@ -2,6 +2,7 @@ model WorkRequest {
   id          String     @id @default(uuid())
   title       String
   description String
+  division    String
   city        String
   postalCode  String
   phone       String

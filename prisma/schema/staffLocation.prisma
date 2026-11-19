@@ -1,6 +1,7 @@
 model StaffLocation {
   id String @id @default(uuid())
 
+  division String
   address String
 
   staffId String
