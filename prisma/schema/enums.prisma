@@ -5,6 +5,11 @@ enum Role {
   CITIZEN
 }
 
+enum AuthProvider {
+  GOOGLE
+  CREDENTIAL
+}
+
 enum StaffApplicationStatus {
   PENDING
   APPROVED

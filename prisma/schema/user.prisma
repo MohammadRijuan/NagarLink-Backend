@@ -2,10 +2,19 @@ model User {
   id       String  @id @default(uuid())
   name     String
   email    String  @unique
-  password String
-  phone    String
-  role     Role    @default(CITIZEN)
-  isActive Boolean @default(true)
+  password String?
+
+  needPasswordChange Boolean @default(false)
+  emailVerified      Boolean @default(false)
+
+  googleId     String?      @unique
+  authProvider AuthProvider @default(CREDENTIAL)
+
+  phone     String?
+  role      Role      @default(CITIZEN)
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   staffApplications  StaffApplication[]
   staffCategories    StaffCategory[]

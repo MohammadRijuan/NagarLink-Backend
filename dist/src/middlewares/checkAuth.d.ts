@@ -1,0 +1,16 @@
+import { NextFunction, Request, Response } from "express";
+export interface RequestUser {
+    email: string;
+    name: string;
+    userId: string;
+    role: "";
+}
+declare global {
+    namespace Express {
+        interface Request {
+            user?: RequestUser;
+        }
+    }
+}
+export declare const auth: (...requiredRoles: any) => (req: Request, res: Response, next: NextFunction) => Promise<void>;
+//# sourceMappingURL=checkAuth.d.ts.map

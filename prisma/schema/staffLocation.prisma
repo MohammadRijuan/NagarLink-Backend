@@ -2,7 +2,7 @@ model StaffLocation {
   id String @id @default(uuid())
 
   division String
-  address String
+  address  String
 
   staffId String
   Staff   User   @relation(fields: [staffId], references: [id], onDelete: Cascade)

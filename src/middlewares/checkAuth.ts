@@ -6,6 +6,7 @@ import { jwtUtils } from "../utils/jwt";
 import config from "../config";
 import { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../lib/prisma";
+import { Role } from "../../generated/prisma/enums";
 
 export interface RequestUser {
   email: string;
@@ -22,7 +23,7 @@ declare global {
   }
 }
 
-export const auth = (...requiredRoles: any) => {
+export const auth = (...requiredRoles: Role[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.accessToken
       ? req.cookies.accessToken
