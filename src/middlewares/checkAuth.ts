@@ -12,7 +12,7 @@ export interface RequestUser {
   email: string;
   name: string;
   userId: string;
-  role: "";
+  role: Role;
 }
 
 declare global {

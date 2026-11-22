@@ -121,6 +121,25 @@ const deleteQuotation = catchAsync(
   },
 );
 
+const selectQuotation = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const user = req.user!;
+
+    const result = await quotationServices.selectQuotationService(
+      id,
+      user,
+    );
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Quotation selected successfully",
+      data: result,
+    });
+  },
+);
+
 export const quotationControllers = {
   createQuotation,
   getAllQuotations,
@@ -128,4 +147,5 @@ export const quotationControllers = {
   updateQuotation,
   updateQuotationStatus,
   deleteQuotation,
+  selectQuotation
 };

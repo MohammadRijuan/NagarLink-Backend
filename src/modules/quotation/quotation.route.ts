@@ -2,6 +2,7 @@ import express from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { quotationControllers } from "./quotation.controller";
+import { workRequestControllers } from "../request/workRequest.controller";
 
 const router = express.Router();
 
@@ -46,6 +47,13 @@ router.delete(
   auth(Role.ADMIN),
   quotationControllers
   .deleteQuotation,
+);
+
+// citizen will select the quotation
+router.patch(
+  "/:id/select-quotation",
+  auth(Role.CITIZEN),
+  quotationControllers.selectQuotation,
 );
 
 export const quotationRoutes = router;

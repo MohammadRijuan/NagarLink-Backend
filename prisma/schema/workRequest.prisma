@@ -4,6 +4,7 @@ model WorkRequest {
   description String
   division    String
   city        String
+  address     String
   postalCode  String
   phone       String
   approvedFee Decimal?   @db.Decimal(10, 2)
@@ -12,7 +13,7 @@ model WorkRequest {
   rejectionReason String?
 
   citizenId String
-  citizen   User   @relation(fields: [citizenId], references: [id], onDelete: Cascade)
+  citizen   User   @relation(fields: [citizenId], references: [id])
 
   departmentId String
   department   Department @relation(fields: [departmentId], references: [id])

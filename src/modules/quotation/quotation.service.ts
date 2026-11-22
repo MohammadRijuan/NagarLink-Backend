@@ -1,4 +1,4 @@
-import { QuotationStatus } from "../../../generated/prisma/enums";
+import { QuotationStatus, WorkStatus } from "../../../generated/prisma/enums";
 import { QuotationWhereInput } from "../../../generated/prisma/models";
 import { IQuery } from "../../interfaces";
 import { prisma } from "../../lib/prisma";
@@ -250,6 +250,107 @@ const deleteQuotationService = async (
   return result;
 };
 
+const selectQuotationService = async (
+  id: string,
+  user: RequestUser,
+) => {
+  // 1. Find quotation
+  const quotation = await prisma.quotation.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      request: true,
+    },
+  });
+
+  if (!quotation) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      "Quotation not found",
+    );
+  }
+
+  // 2. Check WorkRequest ownership
+  if (quotation.request.citizenId !== user.userId) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "You are not allowed to select this quotation",
+    );
+  }
+
+  // 3. Check quotation status
+  if (quotation.status !== QuotationStatus.PENDING) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "This quotation cannot be selected",
+    );
+  }
+
+  // 4. Check WorkRequest status
+  if (quotation.request.status !== WorkStatus.REQUESTED) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "This work request cannot accept a quotation",
+    );
+  }
+
+  // 5. Select quotation using transaction
+  const result = await prisma.$transaction(async (tx) => {
+    // Approve selected quotation
+    await tx.quotation.update({
+      where: {
+        id,
+      },
+      data: {
+        status: QuotationStatus.APPROVED,
+      },
+    });
+
+    // Reject other quotations
+    await tx.quotation.updateMany({
+      where: {
+        requestId: quotation.requestId,
+        id: {
+          not: id,
+        },
+      },
+      data: {
+        status: QuotationStatus.REJECTED,
+      },
+    });
+
+    // Update WorkRequest
+    const updatedRequest = await tx.workRequest.update({
+      where: {
+        id: quotation.requestId,
+      },
+      data: {
+        selectedQuotationId: id,
+        approvedFee: quotation.proposedFee,
+        status: WorkStatus.CITIZEN_ACCEPTED,
+      },
+      include: {
+        selectedQuotation: {
+          include: {
+            staff: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return updatedRequest;
+  });
+
+  return result;
+};
+
 export const quotationServices = {
   createQuotationService,
   getAllQuotationsService,
@@ -257,4 +358,5 @@ export const quotationServices = {
   updateQuotationService,
   updateQuotationStatusService,
   deleteQuotationService,
+  selectQuotationService 
 };

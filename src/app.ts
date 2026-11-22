@@ -17,6 +17,8 @@ import { staffApplicationRoutes } from "./modules/staffApplication/staffApplicat
 import { staffRoutes } from "./modules/staffManagement/staffManagement.route";
 import { staffCategoryRoutes } from "./modules/staffCategory/staffCategory.route";
 import { quotationRoutes } from "./modules/quotation/quotation.route";
+import { workRequestRoutes } from "./modules/request/workRequest.route";
+import { staffInvitationRoutes } from "./modules/staffInvitation/staffInvitation.route";
 
 const app: Application = express();
 
@@ -48,6 +50,10 @@ app.use("/api/v1/staff",staffRoutes)
 app.use("/api/v1/staff-category",staffCategoryRoutes)
 
 app.use("/api/v1/quotation",quotationRoutes)
+
+app.use("/api/v1/work-request",workRequestRoutes)
+
+app.use("/api/v1/staff-invitation",staffInvitationRoutes)
 
 app.use("/", (req: Request, res: Response) => {
   // res.send("NagarLink Server working perfectly")
