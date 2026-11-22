@@ -11,6 +11,12 @@ import { NotFound } from "./middlewares/notFound";
 import { authRoutes } from "./modules/auth/auth.route";
 import { globalHandleError } from "./middlewares/globalErrorHandler";
 import { userRoutes } from "./modules/user/user.route";
+import { departmentRoutes } from "./modules/department/department.route";
+import { categoryRoutes } from "./modules/category/category.route";
+import { staffApplicationRoutes } from "./modules/staffApplication/staffApplication.route";
+import { staffRoutes } from "./modules/staffManagement/staffManagement.route";
+import { staffCategoryRoutes } from "./modules/staffCategory/staffCategory.route";
+import { quotationRoutes } from "./modules/quotation/quotation.route";
 
 const app: Application = express();
 
@@ -30,6 +36,18 @@ app.use(cookieParser());
 app.use("/api/v1/auth",authRoutes)
 
 app.use("/api/v1/users",userRoutes)
+
+app.use("/api/v1/departments",departmentRoutes)
+
+app.use("/api/v1/categories",categoryRoutes)
+
+app.use("/api/v1/staff-application",staffApplicationRoutes)
+
+app.use("/api/v1/staff",staffRoutes)
+
+app.use("/api/v1/staff-category",staffCategoryRoutes)
+
+app.use("/api/v1/quotation",quotationRoutes)
 
 app.use("/", (req: Request, res: Response) => {
   // res.send("NagarLink Server working perfectly")

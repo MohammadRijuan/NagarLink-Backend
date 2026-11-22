@@ -123,12 +123,12 @@ export type DepartmentOrderByWithRelationInput = {
 };
 export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
+    name?: string;
     AND?: Prisma.DepartmentWhereInput | Prisma.DepartmentWhereInput[];
     OR?: Prisma.DepartmentWhereInput[];
     NOT?: Prisma.DepartmentWhereInput | Prisma.DepartmentWhereInput[];
-    name?: Prisma.StringFilter<"Department"> | string;
     categories?: Prisma.CategoryListRelationFilter;
-}, "id">;
+}, "id" | "name">;
 export type DepartmentOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     name?: Prisma.SortOrder;

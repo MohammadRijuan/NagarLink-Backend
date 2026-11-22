@@ -120,27 +120,8 @@ const updateUserByIdService = async (userId: string, payload: IUpdateUser) => {
   }
 
   // Check deleted or inactive user
-  if (User.isDeleted || !User.isActive) {
-    throw new AppError(httpStatus.FORBIDDEN, "User is inactive or deleted");
-  }
-
-  if (User.role === "CITIZEN") {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      "You are not allowed to access this information",
-    );
-  }
-  if (User.role === "MANAGER") {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      "You are not allowed to access this information",
-    );
-  }
-  if (User.role === "STAFF") {
-    throw new AppError(
-      httpStatus.FORBIDDEN,
-      "You are not allowed to access this information",
-    );
+  if (User.isDeleted) {
+    throw new AppError(httpStatus.FORBIDDEN, "User is deleted");
   }
 
   const updatedUser = await prisma.user.update({
@@ -148,17 +129,103 @@ const updateUserByIdService = async (userId: string, payload: IUpdateUser) => {
       id: userId,
     },
     data: payload,
-    omit:{
-        password:true
-    }
+    omit: {
+      password: true,
+    },
   });
 
   return updatedUser;
 };
 
-const deleteUserByIdService = async () => {};
+const deleteUserByIdService = async (userId: string) => {
+  const User = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
 
-const getAllStaffsService = async () => {};
+  if (!User) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // Check deleted or inactive user
+  if (User.isDeleted) {
+    throw new AppError(httpStatus.FORBIDDEN, "User is deleted");
+  }
+
+  const deleteUser = await prisma.user.delete({
+    where: {
+      id: userId,
+    },
+  });
+
+  return deleteUser;
+};
+
+const getAllStaffsService = async (query: IQuery) => {
+  const limit = query.limit ? Number(query.limit) : 10;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+  const sortBy = query.sortBy ? query.sortBy : "createdAt";
+  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
+
+  const andConditions: UserWhereInput[] = [];
+
+  if (query.role) {
+    andConditions.push({
+      role: query.role as Role,
+    });
+  }
+
+  if (query.searchTerm) {
+    andConditions.push({
+      OR: [
+        {
+          name: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+        {
+          email: {
+            contains: query.searchTerm,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+  const users = await prisma.user.findMany({
+    where: {
+      AND: andConditions,
+      role: Role.STAFF,
+    },
+    take: limit,
+    skip,
+    orderBy: { [sortBy]: sortOrder },
+    omit: {
+      password: true,
+    },
+  });
+
+  const total = await prisma.user.count({
+    where: {
+      AND: andConditions,
+      role: Role.STAFF,
+    },
+  });
+
+  return {
+    data: users,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
 
 export const userServices = {
   getAllUserService,

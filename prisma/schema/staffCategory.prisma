@@ -5,7 +5,8 @@ model StaffCategory {
   staff   User   @relation(fields: [staffId], references: [id], onDelete: Cascade)
 
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id])
 
+  @@unique([staffId, categoryId])
   @@map("staff_category")
 }

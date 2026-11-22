@@ -3,9 +3,10 @@ import { catchAsync } from "../../utils/catchAsync";
 import { userServices } from "./user.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
+import { IRequestUser } from "../auth/auth.interface";
 
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
+  // const payload = req.body;
 
   const { data, meta } = await userServices.getAllUserService(req.query);
 
@@ -44,8 +45,32 @@ const updateUserById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const deleteUserById = catchAsync(async (req: Request, res: Response) => {});
-const getAllStaffs = catchAsync(async (req: Request, res: Response) => {});
+const deleteUserById = catchAsync(async (req: Request, res: Response) => {
+  const id = req?.params.id
+
+  await userServices.deleteUserByIdService(id as string)
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User deleted successfully",
+    data: null,
+  });
+});
+
+const getAllStaffs = catchAsync(async (req: Request, res: Response) => {
+  // const payload = req.body;
+
+  const { data, meta } = await userServices.getAllStaffsService(req.query);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "All staff retrieved successfully",
+    data,
+    meta,
+  });
+});
 
 export const userControllers = {
   getAllUsers,

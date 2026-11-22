@@ -131,7 +131,7 @@ const verifyUserEmailService = async (payload) => {
             email: userPayload.email,
             password: userPayload.password,
             role: enums_1.Role.CITIZEN,
-            // emailVerified: true,
+            emailVerified: true,
             phone: userPayload.phone || "",
         },
         omit: { password: true },
@@ -167,11 +167,188 @@ const verifyUserEmailService = async (payload) => {
         refreshToken,
     };
 };
-const loginUserService = async () => { };
-const getMyProfileService = async () => { };
-const refreshTokenService = async () => { };
-const forgotPasswordService = async () => { };
-const resetPasswordService = async () => { };
+const loginUserService = async (payload) => {
+    const { password } = payload;
+    const email = payload.email.trim().toLowerCase();
+    const user = await prisma_1.prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+    if (!user) {
+        throw new AppError_1.AppError(http_status_1.default.UNAUTHORIZED, "User not found");
+    }
+    // user account delete or not
+    if (user?.isDeleted) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User is Deleted");
+    }
+    // user active or not
+    if (user && !user.isActive) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User is Blocked");
+    }
+    if (user.password === null && user.googleId !== null) {
+        throw new AppError_1.AppError(http_status_1.default.CONFLICT, "User already has account with google... try to login with google");
+    }
+    const isPasswordMatched = await bcryptjs_1.default.compare(password, user.password);
+    const jwtPayload = {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+    };
+    const accessToken = jwt_1.jwtUtils.createToken(jwtPayload, config_1.default.jwt_access_token, config_1.default.jwt_access_expires_in);
+    const refreshToken = jwt_1.jwtUtils.createToken(jwtPayload, config_1.default.jwt_refresh_token, config_1.default.jwt_refresh_expires_in);
+    return {
+        accessToken,
+        refreshToken,
+    };
+};
+const getMyProfileService = async (user) => {
+    const isUserExist = await prisma_1.prisma.user.findUnique({
+        where: {
+            email: user.email,
+        },
+        omit: {
+            password: true,
+        },
+    });
+    if (!isUserExist) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "User does not exist");
+    }
+    return isUserExist;
+};
+const refreshTokenService = async (token) => {
+    const verifiedRefreshToken = jwt_1.jwtUtils.verifyToken(token, config_1.default.jwt_refresh_token);
+    if (!verifiedRefreshToken.success || !verifiedRefreshToken.data) {
+        throw new AppError_1.AppError(http_status_1.default.UNAUTHORIZED, config_1.default.node_env === "development"
+            ? verifiedRefreshToken.error
+            : "Invalid Refresh token");
+    }
+    const data = verifiedRefreshToken.data;
+    const user = await prisma_1.prisma.user.findUnique({
+        where: {
+            id: data?.userId,
+        },
+    });
+    // Check whether user exists, is deleted, or inactive
+    if (!user || user.isDeleted || !user.isActive) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User is inactive, deleted, or not found");
+    }
+    const jwtPayload = {
+        userId: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+    };
+    const accessToken = jwt_1.jwtUtils.createToken(jwtPayload, config_1.default.jwt_access_token, config_1.default.jwt_access_expires_in);
+    const refreshToken = jwt_1.jwtUtils.createToken(jwtPayload, config_1.default.jwt_refresh_token, config_1.default.jwt_refresh_expires_in);
+    return {
+        accessToken,
+        refreshToken,
+    };
+};
+const forgotPasswordService = async (payload) => {
+    const { email } = payload;
+    const isUserExist = await prisma_1.prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+    if (!isUserExist) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "User Does not exist");
+    }
+    if (isUserExist.emailVerified === false) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User email is not verified");
+    }
+    if (!isUserExist.isActive) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User is blocked");
+    }
+    if (isUserExist.isDeleted) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User is deleted");
+    }
+    if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
+        throw new AppError_1.AppError(http_status_1.default.CONFLICT, "user has account with google id");
+    }
+    const key = `forgot-password-otp : ${isUserExist.email}`;
+    const otp = crypto_1.default.randomInt(100000, 1000000);
+    const expirationSeconds = 5 * 60;
+    await redis_1.redisClient.set(key, otp, {
+        expiration: {
+            type: "EX",
+            value: 5 * 60,
+        },
+    });
+    // set a template structure for getting otp message
+    // starting
+    const tempatePath = path_1.default.join(process.cwd(), "src/templates/forgot-password.ejs");
+    const templateData = {
+        name: isUserExist.name,
+        otp,
+        expirationMinutes: expirationSeconds / 60,
+    };
+    const html = await ejs_1.default.renderFile(tempatePath, templateData);
+    // end
+    await nodemailer_1.transporter.sendMail({
+        from: config_1.default.email_sender,
+        to: isUserExist.email,
+        subject: "Forgot password",
+        html,
+    });
+};
+const resetPasswordService = async (payload) => {
+    const { email, otp, newPassword } = payload;
+    const isUserExist = await prisma_1.prisma.user.findUnique({
+        where: {
+            email,
+        },
+    });
+    if (!isUserExist) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "User Does not exist");
+    }
+    if (isUserExist.emailVerified === false) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User email is not verified");
+    }
+    if (!isUserExist.isActive) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User is blocked");
+    }
+    if (isUserExist.isDeleted) {
+        throw new AppError_1.AppError(http_status_1.default.FORBIDDEN, "User is deleted");
+    }
+    if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
+        throw new AppError_1.AppError(http_status_1.default.CONFLICT, "user has account with google id");
+    }
+    const key = `forgot-password-otp : ${isUserExist.email}`;
+    const redisOtp = await redis_1.redisClient.get(key);
+    if (!redisOtp) {
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Invalid otp");
+    }
+    if (redisOtp !== otp) {
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Otp does not match");
+    }
+    const hashedNewPassword = await bcryptjs_1.default.hash(newPassword, Number(config_1.default.bcrypt_salt_rounds));
+    await prisma_1.prisma.user.update({
+        where: {
+            email: isUserExist.email,
+        },
+        data: {
+            password: hashedNewPassword,
+        },
+    });
+    await redis_1.redisClient.del([key]);
+    // set a template structure for getting otp message
+    // starting
+    const tempatePath = path_1.default.join(process.cwd(), "src/templates/reset-password-success.ejs");
+    const templateData = {
+        name: isUserExist.name,
+    };
+    const html = await ejs_1.default.renderFile(tempatePath, templateData);
+    await nodemailer_1.transporter.sendMail({
+        from: config_1.default.email_sender,
+        to: isUserExist.email,
+        subject: "Password Changed",
+        html,
+    });
+};
 const googleLoginService = async () => { };
 exports.authServices = {
     registerUserService,

@@ -134,6 +134,7 @@ export type StaffCategoryOrderByWithRelationInput = {
 };
 export type StaffCategoryWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
+    staffId_categoryId?: Prisma.StaffCategoryStaffIdCategoryIdCompoundUniqueInput;
     AND?: Prisma.StaffCategoryWhereInput | Prisma.StaffCategoryWhereInput[];
     OR?: Prisma.StaffCategoryWhereInput[];
     NOT?: Prisma.StaffCategoryWhereInput | Prisma.StaffCategoryWhereInput[];
@@ -141,7 +142,7 @@ export type StaffCategoryWhereUniqueInput = Prisma.AtLeast<{
     categoryId?: Prisma.StringFilter<"StaffCategory"> | string;
     staff?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>;
-}, "id">;
+}, "id" | "staffId_categoryId">;
 export type StaffCategoryOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     staffId?: Prisma.SortOrder;
@@ -198,6 +199,10 @@ export type StaffCategoryListRelationFilter = {
 };
 export type StaffCategoryOrderByRelationAggregateInput = {
     _count?: Prisma.SortOrder;
+};
+export type StaffCategoryStaffIdCategoryIdCompoundUniqueInput = {
+    staffId: string;
+    categoryId: string;
 };
 export type StaffCategoryCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;

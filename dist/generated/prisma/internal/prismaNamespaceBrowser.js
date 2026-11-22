@@ -164,6 +164,7 @@ exports.QuotationScalarFieldEnum = {
 exports.StaffApplicationScalarFieldEnum = {
     id: 'id',
     experience: 'experience',
+    experienceDetails: 'experienceDetails',
     status: 'status',
     applicantId: 'applicantId',
     createdAt: 'createdAt',
@@ -202,6 +203,10 @@ exports.UserScalarFieldEnum = {
     authProvider: 'authProvider',
     phone: 'phone',
     role: 'role',
+    division: 'division',
+    district: 'district',
+    address: 'address',
+    postalCode: 'postalCode',
     isActive: 'isActive',
     isDeleted: 'isDeleted',
     deletedAt: 'deletedAt',

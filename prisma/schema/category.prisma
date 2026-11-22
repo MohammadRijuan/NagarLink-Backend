@@ -3,7 +3,7 @@ model Category {
   name String
 
   departmentId String
-  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  department   Department @relation(fields: [departmentId], references: [id])
 
   staffCategories StaffCategory[]
 

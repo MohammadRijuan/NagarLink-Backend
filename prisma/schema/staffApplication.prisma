@@ -1,9 +1,10 @@
 model StaffApplication {
-  id         String                 @id @default(uuid())
-  experience Int
-  status     StaffApplicationStatus @default(PENDING)
+  id                String                 @id @default(uuid())
+  experience        Int
+  experienceDetails String
+  status            StaffApplicationStatus @default(PENDING)
 
-  applicantId String
+  applicantId String @unique
   applicant   User   @relation(fields: [applicantId], references: [id])
 
   createdAt DateTime @default(now())

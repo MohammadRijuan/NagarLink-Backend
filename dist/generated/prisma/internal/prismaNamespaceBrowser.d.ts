@@ -121,6 +121,7 @@ export type QuotationScalarFieldEnum = (typeof QuotationScalarFieldEnum)[keyof t
 export declare const StaffApplicationScalarFieldEnum: {
     readonly id: 'id';
     readonly experience: 'experience';
+    readonly experienceDetails: 'experienceDetails';
     readonly status: 'status';
     readonly applicantId: 'applicantId';
     readonly createdAt: 'createdAt';
@@ -163,6 +164,10 @@ export declare const UserScalarFieldEnum: {
     readonly authProvider: 'authProvider';
     readonly phone: 'phone';
     readonly role: 'role';
+    readonly division: 'division';
+    readonly district: 'district';
+    readonly address: 'address';
+    readonly postalCode: 'postalCode';
     readonly isActive: 'isActive';
     readonly isDeleted: 'isDeleted';
     readonly deletedAt: 'deletedAt';

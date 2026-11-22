@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { Role } from "../../generated/prisma/enums";
 export interface RequestUser {
     email: string;
     name: string;
@@ -12,5 +13,5 @@ declare global {
         }
     }
 }
-export declare const auth: (...requiredRoles: any) => (req: Request, res: Response, next: NextFunction) => Promise<void>;
+export declare const auth: (...requiredRoles: Role[]) => (req: Request, res: Response, next: NextFunction) => Promise<void>;
 //# sourceMappingURL=checkAuth.d.ts.map

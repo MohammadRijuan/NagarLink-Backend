@@ -10,6 +10,10 @@ export interface IRegisterUserPayload {
   email: string;
   password: string;
   phone?: string;
+  division?: String;
+  district?: String;
+  address?: String;
+  postalCode?: String;
 }
 
 export interface IVerifyEmailPayload {

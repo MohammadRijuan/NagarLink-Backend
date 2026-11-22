@@ -8,3 +8,12 @@ export type IUpdateUser = {
   isActive?: boolean;
   needPasswordChange?: boolean;
 };
+
+// export type IDeleteUser = {
+//   name?: string;
+//   phone?: string;
+//   profilePhoto?: string;
+//   role?: Role;
+//   isActive?: boolean;
+//   needPasswordChange?: boolean;
+// };

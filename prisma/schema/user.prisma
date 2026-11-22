@@ -10,11 +10,15 @@ model User {
   googleId     String?      @unique
   authProvider AuthProvider @default(CREDENTIAL)
 
-  phone     String?
-  role      Role      @default(CITIZEN)
-  isActive  Boolean   @default(true)
-  isDeleted Boolean   @default(false)
-  deletedAt DateTime?
+  phone      String?
+  role       Role      @default(CITIZEN)
+  division   String?
+  district   String?
+  address    String?
+  postalCode String?
+  isActive   Boolean   @default(true)
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
 
   staffApplications  StaffApplication[]
   staffCategories    StaffCategory[]

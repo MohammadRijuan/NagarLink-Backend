@@ -4,7 +4,7 @@ model Quotation {
   status      QuotationStatus @default(PENDING)
 
   requestId String
-  Request   WorkRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  request   WorkRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   staffId String
   staff   User   @relation(fields: [staffId], references: [id], onDelete: Cascade)
@@ -14,7 +14,7 @@ model Quotation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([requestId])
+  @@unique([requestId, staffId])
   @@index([staffId])
   @@map("quotations")
 }

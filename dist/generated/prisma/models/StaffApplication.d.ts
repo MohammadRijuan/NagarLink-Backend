@@ -22,6 +22,7 @@ export type StaffApplicationSumAggregateOutputType = {
 export type StaffApplicationMinAggregateOutputType = {
     id: string | null;
     experience: number | null;
+    experienceDetails: string | null;
     status: $Enums.StaffApplicationStatus | null;
     applicantId: string | null;
     createdAt: Date | null;
@@ -30,6 +31,7 @@ export type StaffApplicationMinAggregateOutputType = {
 export type StaffApplicationMaxAggregateOutputType = {
     id: string | null;
     experience: number | null;
+    experienceDetails: string | null;
     status: $Enums.StaffApplicationStatus | null;
     applicantId: string | null;
     createdAt: Date | null;
@@ -38,6 +40,7 @@ export type StaffApplicationMaxAggregateOutputType = {
 export type StaffApplicationCountAggregateOutputType = {
     id: number;
     experience: number;
+    experienceDetails: number;
     status: number;
     applicantId: number;
     createdAt: number;
@@ -53,6 +56,7 @@ export type StaffApplicationSumAggregateInputType = {
 export type StaffApplicationMinAggregateInputType = {
     id?: true;
     experience?: true;
+    experienceDetails?: true;
     status?: true;
     applicantId?: true;
     createdAt?: true;
@@ -61,6 +65,7 @@ export type StaffApplicationMinAggregateInputType = {
 export type StaffApplicationMaxAggregateInputType = {
     id?: true;
     experience?: true;
+    experienceDetails?: true;
     status?: true;
     applicantId?: true;
     createdAt?: true;
@@ -69,6 +74,7 @@ export type StaffApplicationMaxAggregateInputType = {
 export type StaffApplicationCountAggregateInputType = {
     id?: true;
     experience?: true;
+    experienceDetails?: true;
     status?: true;
     applicantId?: true;
     createdAt?: true;
@@ -154,6 +160,7 @@ export type StaffApplicationGroupByArgs<ExtArgs extends runtime.Types.Extensions
 export type StaffApplicationGroupByOutputType = {
     id: string;
     experience: number;
+    experienceDetails: string;
     status: $Enums.StaffApplicationStatus;
     applicantId: string;
     createdAt: Date;
@@ -173,6 +180,7 @@ export type StaffApplicationWhereInput = {
     NOT?: Prisma.StaffApplicationWhereInput | Prisma.StaffApplicationWhereInput[];
     id?: Prisma.StringFilter<"StaffApplication"> | string;
     experience?: Prisma.IntFilter<"StaffApplication"> | number;
+    experienceDetails?: Prisma.StringFilter<"StaffApplication"> | string;
     status?: Prisma.EnumStaffApplicationStatusFilter<"StaffApplication"> | $Enums.StaffApplicationStatus;
     applicantId?: Prisma.StringFilter<"StaffApplication"> | string;
     createdAt?: Prisma.DateTimeFilter<"StaffApplication"> | Date | string;
@@ -182,6 +190,7 @@ export type StaffApplicationWhereInput = {
 export type StaffApplicationOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
     experience?: Prisma.SortOrder;
+    experienceDetails?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     applicantId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -190,19 +199,21 @@ export type StaffApplicationOrderByWithRelationInput = {
 };
 export type StaffApplicationWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
+    applicantId?: string;
     AND?: Prisma.StaffApplicationWhereInput | Prisma.StaffApplicationWhereInput[];
     OR?: Prisma.StaffApplicationWhereInput[];
     NOT?: Prisma.StaffApplicationWhereInput | Prisma.StaffApplicationWhereInput[];
     experience?: Prisma.IntFilter<"StaffApplication"> | number;
+    experienceDetails?: Prisma.StringFilter<"StaffApplication"> | string;
     status?: Prisma.EnumStaffApplicationStatusFilter<"StaffApplication"> | $Enums.StaffApplicationStatus;
-    applicantId?: Prisma.StringFilter<"StaffApplication"> | string;
     createdAt?: Prisma.DateTimeFilter<"StaffApplication"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"StaffApplication"> | Date | string;
     applicant?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
-}, "id">;
+}, "id" | "applicantId">;
 export type StaffApplicationOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     experience?: Prisma.SortOrder;
+    experienceDetails?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     applicantId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -219,6 +230,7 @@ export type StaffApplicationScalarWhereWithAggregatesInput = {
     NOT?: Prisma.StaffApplicationScalarWhereWithAggregatesInput | Prisma.StaffApplicationScalarWhereWithAggregatesInput[];
     id?: Prisma.StringWithAggregatesFilter<"StaffApplication"> | string;
     experience?: Prisma.IntWithAggregatesFilter<"StaffApplication"> | number;
+    experienceDetails?: Prisma.StringWithAggregatesFilter<"StaffApplication"> | string;
     status?: Prisma.EnumStaffApplicationStatusWithAggregatesFilter<"StaffApplication"> | $Enums.StaffApplicationStatus;
     applicantId?: Prisma.StringWithAggregatesFilter<"StaffApplication"> | string;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"StaffApplication"> | Date | string;
@@ -227,6 +239,7 @@ export type StaffApplicationScalarWhereWithAggregatesInput = {
 export type StaffApplicationCreateInput = {
     id?: string;
     experience: number;
+    experienceDetails: string;
     status?: $Enums.StaffApplicationStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -235,6 +248,7 @@ export type StaffApplicationCreateInput = {
 export type StaffApplicationUncheckedCreateInput = {
     id?: string;
     experience: number;
+    experienceDetails: string;
     status?: $Enums.StaffApplicationStatus;
     applicantId: string;
     createdAt?: Date | string;
@@ -243,6 +257,7 @@ export type StaffApplicationUncheckedCreateInput = {
 export type StaffApplicationUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     experience?: Prisma.IntFieldUpdateOperationsInput | number;
+    experienceDetails?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumStaffApplicationStatusFieldUpdateOperationsInput | $Enums.StaffApplicationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -251,6 +266,7 @@ export type StaffApplicationUpdateInput = {
 export type StaffApplicationUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     experience?: Prisma.IntFieldUpdateOperationsInput | number;
+    experienceDetails?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumStaffApplicationStatusFieldUpdateOperationsInput | $Enums.StaffApplicationStatus;
     applicantId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -259,6 +275,7 @@ export type StaffApplicationUncheckedUpdateInput = {
 export type StaffApplicationCreateManyInput = {
     id?: string;
     experience: number;
+    experienceDetails: string;
     status?: $Enums.StaffApplicationStatus;
     applicantId: string;
     createdAt?: Date | string;
@@ -267,6 +284,7 @@ export type StaffApplicationCreateManyInput = {
 export type StaffApplicationUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     experience?: Prisma.IntFieldUpdateOperationsInput | number;
+    experienceDetails?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumStaffApplicationStatusFieldUpdateOperationsInput | $Enums.StaffApplicationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -274,6 +292,7 @@ export type StaffApplicationUpdateManyMutationInput = {
 export type StaffApplicationUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     experience?: Prisma.IntFieldUpdateOperationsInput | number;
+    experienceDetails?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumStaffApplicationStatusFieldUpdateOperationsInput | $Enums.StaffApplicationStatus;
     applicantId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -282,6 +301,7 @@ export type StaffApplicationUncheckedUpdateManyInput = {
 export type StaffApplicationCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     experience?: Prisma.SortOrder;
+    experienceDetails?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     applicantId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -293,6 +313,7 @@ export type StaffApplicationAvgOrderByAggregateInput = {
 export type StaffApplicationMaxOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     experience?: Prisma.SortOrder;
+    experienceDetails?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     applicantId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -301,6 +322,7 @@ export type StaffApplicationMaxOrderByAggregateInput = {
 export type StaffApplicationMinOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     experience?: Prisma.SortOrder;
+    experienceDetails?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     applicantId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -361,6 +383,7 @@ export type StaffApplicationUncheckedUpdateManyWithoutApplicantNestedInput = {
 export type StaffApplicationCreateWithoutApplicantInput = {
     id?: string;
     experience: number;
+    experienceDetails: string;
     status?: $Enums.StaffApplicationStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -368,6 +391,7 @@ export type StaffApplicationCreateWithoutApplicantInput = {
 export type StaffApplicationUncheckedCreateWithoutApplicantInput = {
     id?: string;
     experience: number;
+    experienceDetails: string;
     status?: $Enums.StaffApplicationStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -399,6 +423,7 @@ export type StaffApplicationScalarWhereInput = {
     NOT?: Prisma.StaffApplicationScalarWhereInput | Prisma.StaffApplicationScalarWhereInput[];
     id?: Prisma.StringFilter<"StaffApplication"> | string;
     experience?: Prisma.IntFilter<"StaffApplication"> | number;
+    experienceDetails?: Prisma.StringFilter<"StaffApplication"> | string;
     status?: Prisma.EnumStaffApplicationStatusFilter<"StaffApplication"> | $Enums.StaffApplicationStatus;
     applicantId?: Prisma.StringFilter<"StaffApplication"> | string;
     createdAt?: Prisma.DateTimeFilter<"StaffApplication"> | Date | string;
@@ -407,6 +432,7 @@ export type StaffApplicationScalarWhereInput = {
 export type StaffApplicationCreateManyApplicantInput = {
     id?: string;
     experience: number;
+    experienceDetails: string;
     status?: $Enums.StaffApplicationStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -414,6 +440,7 @@ export type StaffApplicationCreateManyApplicantInput = {
 export type StaffApplicationUpdateWithoutApplicantInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     experience?: Prisma.IntFieldUpdateOperationsInput | number;
+    experienceDetails?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumStaffApplicationStatusFieldUpdateOperationsInput | $Enums.StaffApplicationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -421,6 +448,7 @@ export type StaffApplicationUpdateWithoutApplicantInput = {
 export type StaffApplicationUncheckedUpdateWithoutApplicantInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     experience?: Prisma.IntFieldUpdateOperationsInput | number;
+    experienceDetails?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumStaffApplicationStatusFieldUpdateOperationsInput | $Enums.StaffApplicationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -428,6 +456,7 @@ export type StaffApplicationUncheckedUpdateWithoutApplicantInput = {
 export type StaffApplicationUncheckedUpdateManyWithoutApplicantInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     experience?: Prisma.IntFieldUpdateOperationsInput | number;
+    experienceDetails?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumStaffApplicationStatusFieldUpdateOperationsInput | $Enums.StaffApplicationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -435,6 +464,7 @@ export type StaffApplicationUncheckedUpdateManyWithoutApplicantInput = {
 export type StaffApplicationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     experience?: boolean;
+    experienceDetails?: boolean;
     status?: boolean;
     applicantId?: boolean;
     createdAt?: boolean;
@@ -444,6 +474,7 @@ export type StaffApplicationSelect<ExtArgs extends runtime.Types.Extensions.Inte
 export type StaffApplicationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     experience?: boolean;
+    experienceDetails?: boolean;
     status?: boolean;
     applicantId?: boolean;
     createdAt?: boolean;
@@ -453,6 +484,7 @@ export type StaffApplicationSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
 export type StaffApplicationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     experience?: boolean;
+    experienceDetails?: boolean;
     status?: boolean;
     applicantId?: boolean;
     createdAt?: boolean;
@@ -462,12 +494,13 @@ export type StaffApplicationSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
 export type StaffApplicationSelectScalar = {
     id?: boolean;
     experience?: boolean;
+    experienceDetails?: boolean;
     status?: boolean;
     applicantId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type StaffApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "experience" | "status" | "applicantId" | "createdAt" | "updatedAt", ExtArgs["result"]["staffApplication"]>;
+export type StaffApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "experience" | "experienceDetails" | "status" | "applicantId" | "createdAt" | "updatedAt", ExtArgs["result"]["staffApplication"]>;
 export type StaffApplicationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     applicant?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 };
@@ -485,6 +518,7 @@ export type $StaffApplicationPayload<ExtArgs extends runtime.Types.Extensions.In
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
         experience: number;
+        experienceDetails: string;
         status: $Enums.StaffApplicationStatus;
         applicantId: string;
         createdAt: Date;
@@ -846,6 +880,7 @@ export interface Prisma__StaffApplicationClient<T, Null = never, ExtArgs extends
 export interface StaffApplicationFieldRefs {
     readonly id: Prisma.FieldRef<"StaffApplication", 'String'>;
     readonly experience: Prisma.FieldRef<"StaffApplication", 'Int'>;
+    readonly experienceDetails: Prisma.FieldRef<"StaffApplication", 'String'>;
     readonly status: Prisma.FieldRef<"StaffApplication", 'StaffApplicationStatus'>;
     readonly applicantId: Prisma.FieldRef<"StaffApplication", 'String'>;
     readonly createdAt: Prisma.FieldRef<"StaffApplication", 'DateTime'>;
