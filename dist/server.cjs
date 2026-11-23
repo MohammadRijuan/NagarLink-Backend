@@ -1,3 +1,7 @@
+
+      import { createRequire } from 'module';
+      const require = createRequire(import.meta.url);
+    
 "use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -832,13 +836,7 @@ var googleLoginService = async (payload) => {
           role: Role.CITIZEN,
           googleId: googleIdTokenPayload.sub,
           authProvider: AuthProvider.GOOGLE,
-          emailVerified: true,
-          patient: {
-            create: {
-              name: googleIdTokenPayload.name,
-              email: googleIdTokenPayload.email
-            }
-          }
+          emailVerified: true
         }
       });
       const tempatePath = import_path2.default.join(
@@ -852,7 +850,7 @@ var googleLoginService = async (payload) => {
       await transporter.sendMail({
         from: config_default.email_sender,
         to: user.email,
-        subject: "Welcome To PH Healthcare System",
+        subject: "Welcome To NagarLink",
         html
       });
     }
