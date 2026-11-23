@@ -21,6 +21,7 @@ import { workRequestRoutes } from "./modules/request/workRequest.route";
 import { staffInvitationRoutes } from "./modules/staffInvitation/staffInvitation.route";
 import { paymentRoutes } from "./modules/payment/payment.route";
 import { assignmentRoutes } from "./modules/assignment/assignment.route";
+import { workAttachmentRoutes } from "./modules/workAttachment/workAttachment.route";
 
 const app: Application = express();
 
@@ -61,7 +62,7 @@ app.use("/api/v1/payments", paymentRoutes);
 
 app.use("/api/v1/assignments", assignmentRoutes);
 
-app.use("/api/v1/work-attachments", assignmentRoutes);
+app.use("/api/v1/work-attachments", workAttachmentRoutes);
 
 app.use("/", (req: Request, res: Response) => {
   // res.send("NagarLink Server working perfectly")

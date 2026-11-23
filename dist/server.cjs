@@ -76,7 +76,7 @@ var config_default = {
 };
 
 // src/app.ts
-var import_express13 = __toESM(require("express"), 1);
+var import_express14 = __toESM(require("express"), 1);
 var import_cors = __toESM(require("cors"), 1);
 var import_cookie_parser = __toESM(require("cookie-parser"), 1);
 
@@ -5421,16 +5421,296 @@ router12.patch(
 );
 var assignmentRoutes = router12;
 
+// src/modules/workAttachment/workAttachment.route.ts
+var import_express13 = require("express");
+
+// src/modules/workAttachment/workAttachment.controller.ts
+var import_http_status30 = __toESM(require("http-status"), 1);
+
+// src/modules/workAttachment/workAttachment.service.ts
+var import_http_status29 = __toESM(require("http-status"), 1);
+
+// src/lib/cloudinary.ts
+var import_cloudinary = require("cloudinary");
+import_cloudinary.v2.config({
+  cloud_name: config_default.cloudinary_cloud_name,
+  api_key: config_default.cloudinary_api_key,
+  api_secret: config_default.cloudinary_api_secret
+});
+var cloudinary = import_cloudinary.v2;
+
+// src/modules/workAttachment/workAttachment.service.ts
+var uploadToCloudinary = async (file) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "nagarlink/work-attachments",
+        resource_type: "auto"
+      },
+      (error, result) => {
+        if (error || !result) {
+          return reject(error || new Error("Cloudinary upload failed"));
+        }
+        resolve({
+          secure_url: result.secure_url,
+          public_id: result.public_id,
+          resource_type: result.resource_type
+        });
+      }
+    );
+    stream.end(file.buffer);
+  });
+};
+var checkAssignmentAccess = (assignment, user) => {
+  const isParticipant = assignment.staffId === user.userId || assignment.citizenId === user.userId;
+  const isManagerOrAdmin = user.role === Role.MANAGER || user.role === Role.ADMIN;
+  if (!isParticipant && !isManagerOrAdmin) {
+    throw new AppError(
+      import_http_status29.default.FORBIDDEN,
+      "You are not allowed to access this attachment"
+    );
+  }
+};
+var createWorkAttachmentService = async (payload) => {
+  const { assignmentId, file, user } = payload;
+  if (!file) {
+    throw new AppError(import_http_status29.default.BAD_REQUEST, "Please upload a file");
+  }
+  const assignment = await prisma.assignment.findUnique({
+    where: {
+      id: assignmentId
+    }
+  });
+  if (!assignment) {
+    throw new AppError(import_http_status29.default.NOT_FOUND, "Assignment not found");
+  }
+  if (assignment.staffId !== user.userId) {
+    throw new AppError(
+      import_http_status29.default.FORBIDDEN,
+      "Only the assigned staff can upload attachments"
+    );
+  }
+  if (assignment.status !== AssignmentStatus.ONGOING) {
+    throw new AppError(
+      import_http_status29.default.BAD_REQUEST,
+      "Attachments can only be uploaded while the assignment is ongoing"
+    );
+  }
+  const uploadedFile = await uploadToCloudinary(file);
+  try {
+    const result = await prisma.workAttachment.create({
+      data: {
+        assignmentId,
+        fileUrl: uploadedFile.secure_url,
+        fileName: file.originalname,
+        fileType: file.mimetype,
+        publicId: uploadedFile.public_id,
+        resourceType: uploadedFile.resource_type
+      }
+    });
+    return result;
+  } catch (error) {
+    await cloudinary.uploader.destroy(uploadedFile.public_id, {
+      resource_type: uploadedFile.resource_type
+    });
+    throw error;
+  }
+};
+var getAllWorkAttachmentsService = async (payload) => {
+  const { assignmentId, user } = payload;
+  const assignment = await prisma.assignment.findUnique({
+    where: {
+      id: assignmentId
+    }
+  });
+  if (!assignment) {
+    throw new AppError(import_http_status29.default.NOT_FOUND, "Assignment not found");
+  }
+  checkAssignmentAccess(assignment, user);
+  const result = await prisma.workAttachment.findMany({
+    where: {
+      assignmentId
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return result;
+};
+var getWorkAttachmentByIdService = async (payload) => {
+  const { attachmentId, user } = payload;
+  const attachment = await prisma.workAttachment.findUnique({
+    where: {
+      id: attachmentId
+    },
+    include: {
+      assignment: true
+    }
+  });
+  if (!attachment) {
+    throw new AppError(import_http_status29.default.NOT_FOUND, "Attachment not found");
+  }
+  checkAssignmentAccess(attachment.assignment, user);
+  return attachment;
+};
+var deleteWorkAttachmentService = async (payload) => {
+  const { attachmentId, user } = payload;
+  const attachment = await prisma.workAttachment.findUnique({
+    where: {
+      id: attachmentId
+    },
+    include: {
+      assignment: true
+    }
+  });
+  if (!attachment) {
+    throw new AppError(import_http_status29.default.NOT_FOUND, "Attachment not found");
+  }
+  const isStaffOwner = attachment.assignment.staffId === user.userId;
+  const isManagerOrAdmin = user.role === Role.MANAGER || user.role === Role.ADMIN;
+  if (!isStaffOwner && !isManagerOrAdmin) {
+    throw new AppError(
+      import_http_status29.default.FORBIDDEN,
+      "You are not allowed to delete this attachment"
+    );
+  }
+  if (isStaffOwner && attachment.assignment.status !== AssignmentStatus.ONGOING) {
+    throw new AppError(
+      import_http_status29.default.BAD_REQUEST,
+      "You cannot delete attachments after submitting completion"
+    );
+  }
+  await cloudinary.uploader.destroy(attachment.publicId, {
+    resource_type: attachment.resourceType
+  });
+  const result = await prisma.workAttachment.delete({
+    where: {
+      id: attachmentId
+    }
+  });
+  return result;
+};
+var workAttachmentServices = {
+  createWorkAttachmentService,
+  getAllWorkAttachmentsService,
+  getWorkAttachmentByIdService,
+  deleteWorkAttachmentService
+};
+
+// src/modules/workAttachment/workAttachment.controller.ts
+var createWorkAttachment = catchAsync(
+  async (req, res) => {
+    const result = await workAttachmentServices.createWorkAttachmentService({
+      assignmentId: req.params.assignmentId,
+      file: req.file,
+      user: req.user
+    });
+    sendResponse(res, {
+      statusCode: import_http_status30.default.CREATED,
+      success: true,
+      message: "Attachment uploaded successfully",
+      data: result
+    });
+  }
+);
+var getAllWorkAttachments = catchAsync(
+  async (req, res) => {
+    const result = await workAttachmentServices.getAllWorkAttachmentsService({
+      assignmentId: req.params.assignmentId,
+      user: req.user
+    });
+    sendResponse(res, {
+      statusCode: import_http_status30.default.OK,
+      success: true,
+      message: "Attachments retrieved successfully",
+      data: result
+    });
+  }
+);
+var getWorkAttachmentById = catchAsync(
+  async (req, res) => {
+    const result = await workAttachmentServices.getWorkAttachmentByIdService({
+      attachmentId: req.params.id,
+      user: req.user
+    });
+    sendResponse(res, {
+      statusCode: import_http_status30.default.OK,
+      success: true,
+      message: "Attachment retrieved successfully",
+      data: result
+    });
+  }
+);
+var deleteWorkAttachment = catchAsync(
+  async (req, res) => {
+    const result = await workAttachmentServices.deleteWorkAttachmentService({
+      attachmentId: req.params.id,
+      user: req.user
+    });
+    sendResponse(res, {
+      statusCode: import_http_status30.default.OK,
+      success: true,
+      message: "Attachment deleted successfully",
+      data: result
+    });
+  }
+);
+var workAttachmentControllers = {
+  createWorkAttachment,
+  getAllWorkAttachments,
+  getWorkAttachmentById,
+  deleteWorkAttachment
+};
+
+// src/lib/multer.ts
+var import_multer = __toESM(require("multer"), 1);
+var storage = import_multer.default.memoryStorage();
+var upload = (0, import_multer.default)({ storage });
+
+// src/modules/workAttachment/workAttachment.validation.ts
+var import_zod13 = require("zod");
+var assignmentIdParamsSchema2 = import_zod13.z.object({ assignmentId: import_zod13.z.string().uuid() }).strict();
+var attachmentIdParamsSchema = import_zod13.z.object({ id: import_zod13.z.string().uuid() }).strict();
+
+// src/modules/workAttachment/workAttachment.route.ts
+var router13 = (0, import_express13.Router)();
+router13.post(
+  "/assignments/:assignmentId",
+  auth(Role.STAFF),
+  validateRequest({ params: assignmentIdParamsSchema2 }),
+  upload.single("file"),
+  workAttachmentControllers.createWorkAttachment
+);
+router13.get(
+  "/assignments/:assignmentId",
+  auth(Role.CITIZEN, Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: assignmentIdParamsSchema2 }),
+  workAttachmentControllers.getAllWorkAttachments
+);
+router13.get(
+  "/:id",
+  auth(Role.CITIZEN, Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: attachmentIdParamsSchema }),
+  workAttachmentControllers.getWorkAttachmentById
+);
+router13.delete(
+  "/:id",
+  auth(Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: attachmentIdParamsSchema }),
+  workAttachmentControllers.deleteWorkAttachment
+);
+var workAttachmentRoutes = router13;
+
 // src/app.ts
-var app = (0, import_express13.default)();
+var app = (0, import_express14.default)();
 app.use(
   (0, import_cors.default)({
     origin: config_default.app_url,
     credentials: true
   })
 );
-app.use(import_express13.default.json());
-app.use(import_express13.default.urlencoded({ extended: true }));
+app.use(import_express14.default.json());
+app.use(import_express14.default.urlencoded({ extended: true }));
 app.use((0, import_cookie_parser.default)());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
@@ -5444,7 +5724,7 @@ app.use("/api/v1/work-request", workRequestRoutes);
 app.use("/api/v1/staff-invitation", staffInvitationRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/assignments", assignmentRoutes);
-app.use("/api/v1/work-attachments", assignmentRoutes);
+app.use("/api/v1/work-attachments", workAttachmentRoutes);
 app.use("/", (req, res) => {
   res.json({
     success: true,
@@ -5457,7 +5737,7 @@ var app_default = app;
 
 // src/utils/seed.ts
 var import_bcryptjs2 = __toESM(require("bcryptjs"), 1);
-var import_http_status29 = __toESM(require("http-status"), 1);
+var import_http_status31 = __toESM(require("http-status"), 1);
 var seedAdmin = async () => {
   try {
     const isAdmin = await prisma.user.findFirst({
@@ -5474,7 +5754,7 @@ var seedAdmin = async () => {
     const password = config_default.tester_admin_password;
     if (!name || !email || !password) {
       throw new AppError(
-        import_http_status29.default.INTERNAL_SERVER_ERROR,
+        import_http_status31.default.INTERNAL_SERVER_ERROR,
         " Admin name,email,password missing in env file"
       );
     }
@@ -5518,7 +5798,7 @@ var seedManager = async () => {
     const password = config_default.tester_manager_password;
     if (!name || !email || !password) {
       throw new AppError(
-        import_http_status29.default.INTERNAL_SERVER_ERROR,
+        import_http_status31.default.INTERNAL_SERVER_ERROR,
         "tester Manager name,email,password missing in env file"
       );
     }
@@ -5562,7 +5842,7 @@ var seedStaff = async () => {
     const password = config_default.tester_staff_password;
     if (!name || !email || !password) {
       throw new AppError(
-        import_http_status29.default.INTERNAL_SERVER_ERROR,
+        import_http_status31.default.INTERNAL_SERVER_ERROR,
         "tester staff name,email,password missing in env file"
       );
     }
@@ -5612,4 +5892,3 @@ var main = async () => {
   }
 };
 main();
-//# sourceMappingURL=server.cjs.map
