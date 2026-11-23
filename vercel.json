@@ -1,18 +1,18 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "dist/src/server.js",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": ["src/app/templates/**"]
-            }
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "dist/src/server.js"
-        }
-    ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "dist/server.cjs",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "src/app/templates/**"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/server.cjs"
+    }
+  ]
 }
