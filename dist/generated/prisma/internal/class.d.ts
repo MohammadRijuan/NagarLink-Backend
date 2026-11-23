@@ -184,6 +184,17 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
         omit: OmitOpts;
     }>;
     /**
+     * `prisma.sslCommerzPayment`: Exposes CRUD operations for the **SslCommerzPayment** model.
+      * Example usage:
+      * ```ts
+      * // Fetch zero or more SslCommerzPayments
+      * const sslCommerzPayments = await prisma.sslCommerzPayment.findMany()
+      * ```
+      */
+    get sslCommerzPayment(): Prisma.SslCommerzPaymentDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    /**
      * `prisma.quotation`: Exposes CRUD operations for the **Quotation** model.
       * Example usage:
       * ```ts

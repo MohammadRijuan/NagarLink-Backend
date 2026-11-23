@@ -4,6 +4,7 @@ export type * from './models/Category';
 export type * from './models/Department';
 export type * from './models/Feedback';
 export type * from './models/Payment';
+export type * from './models/SslCommerzPayment';
 export type * from './models/Quotation';
 export type * from './models/StaffApplication';
 export type * from './models/StaffCategory';

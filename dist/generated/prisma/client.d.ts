@@ -52,6 +52,11 @@ export type Feedback = Prisma.FeedbackModel;
  */
 export type Payment = Prisma.PaymentModel;
 /**
+ * Model SslCommerzPayment
+ *
+ */
+export type SslCommerzPayment = Prisma.SslCommerzPaymentModel;
+/**
  * Model Quotation
  *
  */

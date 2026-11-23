@@ -13,6 +13,7 @@ exports.default = {
     database_url: process.env.DATABASE_URL,
     node_env: process.env.NODE_ENV,
     app_url: process.env.APP_URL,
+    frontend_url: process.env.FRONTEND_URL,
     jwt_access_token: process.env.JWT_ACCESS_SECRET,
     jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN,
     jwt_refresh_token: process.env.JWT_REFRESH_SECRET,
@@ -43,5 +44,8 @@ exports.default = {
     bkash_app_key: process.env.BKASH_APP_KEY,
     bkash_app_secret: process.env.BKASH_APP_SECRET,
     bkash_callback_url: process.env.BKASH_CALLBACK_URL,
+    ssl_store_id: process.env.SSLCOMMERZ_STORE_ID,
+    ssl_store_password: process.env.SSLCOMMERZ_STORE_PASSWORD,
+    ssl_base_url: process.env.SSLCOMMERZ_BASE_URL,
 };
 //# sourceMappingURL=index.js.map

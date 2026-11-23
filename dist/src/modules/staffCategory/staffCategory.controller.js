@@ -39,7 +39,7 @@ const removeStaffCategory = (0, catchAsync_1.catchAsync)(async (req, res) => {
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
-        message: "Staff category removed successfully",
+        message: "Staff's category removed successfully",
         data: result,
     });
 });

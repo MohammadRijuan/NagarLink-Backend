@@ -25,12 +25,14 @@ export type WorkRequestMinAggregateOutputType = {
     description: string | null;
     division: string | null;
     city: string | null;
+    address: string | null;
     postalCode: string | null;
     phone: string | null;
     approvedFee: runtime.Decimal | null;
     status: $Enums.WorkStatus | null;
     rejectionReason: string | null;
     citizenId: string | null;
+    departmentId: string | null;
     selectedQuotationId: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
@@ -41,12 +43,14 @@ export type WorkRequestMaxAggregateOutputType = {
     description: string | null;
     division: string | null;
     city: string | null;
+    address: string | null;
     postalCode: string | null;
     phone: string | null;
     approvedFee: runtime.Decimal | null;
     status: $Enums.WorkStatus | null;
     rejectionReason: string | null;
     citizenId: string | null;
+    departmentId: string | null;
     selectedQuotationId: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
@@ -57,12 +61,14 @@ export type WorkRequestCountAggregateOutputType = {
     description: number;
     division: number;
     city: number;
+    address: number;
     postalCode: number;
     phone: number;
     approvedFee: number;
     status: number;
     rejectionReason: number;
     citizenId: number;
+    departmentId: number;
     selectedQuotationId: number;
     createdAt: number;
     updatedAt: number;
@@ -80,12 +86,14 @@ export type WorkRequestMinAggregateInputType = {
     description?: true;
     division?: true;
     city?: true;
+    address?: true;
     postalCode?: true;
     phone?: true;
     approvedFee?: true;
     status?: true;
     rejectionReason?: true;
     citizenId?: true;
+    departmentId?: true;
     selectedQuotationId?: true;
     createdAt?: true;
     updatedAt?: true;
@@ -96,12 +104,14 @@ export type WorkRequestMaxAggregateInputType = {
     description?: true;
     division?: true;
     city?: true;
+    address?: true;
     postalCode?: true;
     phone?: true;
     approvedFee?: true;
     status?: true;
     rejectionReason?: true;
     citizenId?: true;
+    departmentId?: true;
     selectedQuotationId?: true;
     createdAt?: true;
     updatedAt?: true;
@@ -112,12 +122,14 @@ export type WorkRequestCountAggregateInputType = {
     description?: true;
     division?: true;
     city?: true;
+    address?: true;
     postalCode?: true;
     phone?: true;
     approvedFee?: true;
     status?: true;
     rejectionReason?: true;
     citizenId?: true;
+    departmentId?: true;
     selectedQuotationId?: true;
     createdAt?: true;
     updatedAt?: true;
@@ -205,12 +217,14 @@ export type WorkRequestGroupByOutputType = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee: runtime.Decimal | null;
     status: $Enums.WorkStatus;
     rejectionReason: string | null;
     citizenId: string;
+    departmentId: string;
     selectedQuotationId: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -232,20 +246,24 @@ export type WorkRequestWhereInput = {
     description?: Prisma.StringFilter<"WorkRequest"> | string;
     division?: Prisma.StringFilter<"WorkRequest"> | string;
     city?: Prisma.StringFilter<"WorkRequest"> | string;
+    address?: Prisma.StringFilter<"WorkRequest"> | string;
     postalCode?: Prisma.StringFilter<"WorkRequest"> | string;
     phone?: Prisma.StringFilter<"WorkRequest"> | string;
     approvedFee?: Prisma.DecimalNullableFilter<"WorkRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFilter<"WorkRequest"> | $Enums.WorkStatus;
     rejectionReason?: Prisma.StringNullableFilter<"WorkRequest"> | string | null;
     citizenId?: Prisma.StringFilter<"WorkRequest"> | string;
+    departmentId?: Prisma.StringFilter<"WorkRequest"> | string;
     selectedQuotationId?: Prisma.StringNullableFilter<"WorkRequest"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
     citizen?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
+    department?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>;
     selectedQuotation?: Prisma.XOR<Prisma.QuotationNullableScalarRelationFilter, Prisma.QuotationWhereInput> | null;
     quotations?: Prisma.QuotationListRelationFilter;
     staffInvitations?: Prisma.StaffInvitationListRelationFilter;
     payments?: Prisma.PaymentListRelationFilter;
+    assignment?: Prisma.XOR<Prisma.AssignmentNullableScalarRelationFilter, Prisma.AssignmentWhereInput> | null;
 };
 export type WorkRequestOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -253,20 +271,24 @@ export type WorkRequestOrderByWithRelationInput = {
     description?: Prisma.SortOrder;
     division?: Prisma.SortOrder;
     city?: Prisma.SortOrder;
+    address?: Prisma.SortOrder;
     postalCode?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     approvedFee?: Prisma.SortOrderInput | Prisma.SortOrder;
     status?: Prisma.SortOrder;
     rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
+    departmentId?: Prisma.SortOrder;
     selectedQuotationId?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     citizen?: Prisma.UserOrderByWithRelationInput;
+    department?: Prisma.DepartmentOrderByWithRelationInput;
     selectedQuotation?: Prisma.QuotationOrderByWithRelationInput;
     quotations?: Prisma.QuotationOrderByRelationAggregateInput;
     staffInvitations?: Prisma.StaffInvitationOrderByRelationAggregateInput;
     payments?: Prisma.PaymentOrderByRelationAggregateInput;
+    assignment?: Prisma.AssignmentOrderByWithRelationInput;
 };
 export type WorkRequestWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -278,19 +300,23 @@ export type WorkRequestWhereUniqueInput = Prisma.AtLeast<{
     description?: Prisma.StringFilter<"WorkRequest"> | string;
     division?: Prisma.StringFilter<"WorkRequest"> | string;
     city?: Prisma.StringFilter<"WorkRequest"> | string;
+    address?: Prisma.StringFilter<"WorkRequest"> | string;
     postalCode?: Prisma.StringFilter<"WorkRequest"> | string;
     phone?: Prisma.StringFilter<"WorkRequest"> | string;
     approvedFee?: Prisma.DecimalNullableFilter<"WorkRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFilter<"WorkRequest"> | $Enums.WorkStatus;
     rejectionReason?: Prisma.StringNullableFilter<"WorkRequest"> | string | null;
     citizenId?: Prisma.StringFilter<"WorkRequest"> | string;
+    departmentId?: Prisma.StringFilter<"WorkRequest"> | string;
     createdAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
     citizen?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
+    department?: Prisma.XOR<Prisma.DepartmentScalarRelationFilter, Prisma.DepartmentWhereInput>;
     selectedQuotation?: Prisma.XOR<Prisma.QuotationNullableScalarRelationFilter, Prisma.QuotationWhereInput> | null;
     quotations?: Prisma.QuotationListRelationFilter;
     staffInvitations?: Prisma.StaffInvitationListRelationFilter;
     payments?: Prisma.PaymentListRelationFilter;
+    assignment?: Prisma.XOR<Prisma.AssignmentNullableScalarRelationFilter, Prisma.AssignmentWhereInput> | null;
 }, "id" | "selectedQuotationId">;
 export type WorkRequestOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -298,12 +324,14 @@ export type WorkRequestOrderByWithAggregationInput = {
     description?: Prisma.SortOrder;
     division?: Prisma.SortOrder;
     city?: Prisma.SortOrder;
+    address?: Prisma.SortOrder;
     postalCode?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     approvedFee?: Prisma.SortOrderInput | Prisma.SortOrder;
     status?: Prisma.SortOrder;
     rejectionReason?: Prisma.SortOrderInput | Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
+    departmentId?: Prisma.SortOrder;
     selectedQuotationId?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
@@ -322,12 +350,14 @@ export type WorkRequestScalarWhereWithAggregatesInput = {
     description?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
     division?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
     city?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
+    address?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
     postalCode?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
     phone?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
     approvedFee?: Prisma.DecimalNullableWithAggregatesFilter<"WorkRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusWithAggregatesFilter<"WorkRequest"> | $Enums.WorkStatus;
     rejectionReason?: Prisma.StringNullableWithAggregatesFilter<"WorkRequest"> | string | null;
     citizenId?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
+    departmentId?: Prisma.StringWithAggregatesFilter<"WorkRequest"> | string;
     selectedQuotationId?: Prisma.StringNullableWithAggregatesFilter<"WorkRequest"> | string | null;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkRequest"> | Date | string;
     updatedAt?: Prisma.DateTimeWithAggregatesFilter<"WorkRequest"> | Date | string;
@@ -338,6 +368,7 @@ export type WorkRequestCreateInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -346,10 +377,12 @@ export type WorkRequestCreateInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     citizen: Prisma.UserCreateNestedOneWithoutWorkRequestInput;
+    department: Prisma.DepartmentCreateNestedOneWithoutWorkRequestsInput;
     selectedQuotation?: Prisma.QuotationCreateNestedOneWithoutSelectedForInput;
     quotations?: Prisma.QuotationCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestUncheckedCreateInput = {
     id?: string;
@@ -357,18 +390,21 @@ export type WorkRequestUncheckedCreateInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: $Enums.WorkStatus;
     rejectionReason?: string | null;
     citizenId: string;
+    departmentId: string;
     selectedQuotationId?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentUncheckedCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -376,6 +412,7 @@ export type WorkRequestUpdateInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -384,10 +421,12 @@ export type WorkRequestUpdateInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     citizen?: Prisma.UserUpdateOneRequiredWithoutWorkRequestNestedInput;
+    department?: Prisma.DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput;
     selectedQuotation?: Prisma.QuotationUpdateOneWithoutSelectedForNestedInput;
     quotations?: Prisma.QuotationUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -395,18 +434,21 @@ export type WorkRequestUncheckedUpdateInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     quotations?: Prisma.QuotationUncheckedUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUncheckedUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUncheckedUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestCreateManyInput = {
     id?: string;
@@ -414,12 +456,14 @@ export type WorkRequestCreateManyInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: $Enums.WorkStatus;
     rejectionReason?: string | null;
     citizenId: string;
+    departmentId: string;
     selectedQuotationId?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -430,6 +474,7 @@ export type WorkRequestUpdateManyMutationInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -444,12 +489,14 @@ export type WorkRequestUncheckedUpdateManyInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -457,10 +504,6 @@ export type WorkRequestUncheckedUpdateManyInput = {
 export type WorkRequestScalarRelationFilter = {
     is?: Prisma.WorkRequestWhereInput;
     isNot?: Prisma.WorkRequestWhereInput;
-};
-export type WorkRequestNullableScalarRelationFilter = {
-    is?: Prisma.WorkRequestWhereInput | null;
-    isNot?: Prisma.WorkRequestWhereInput | null;
 };
 export type WorkRequestListRelationFilter = {
     every?: Prisma.WorkRequestWhereInput;
@@ -470,18 +513,24 @@ export type WorkRequestListRelationFilter = {
 export type WorkRequestOrderByRelationAggregateInput = {
     _count?: Prisma.SortOrder;
 };
+export type WorkRequestNullableScalarRelationFilter = {
+    is?: Prisma.WorkRequestWhereInput | null;
+    isNot?: Prisma.WorkRequestWhereInput | null;
+};
 export type WorkRequestCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     title?: Prisma.SortOrder;
     description?: Prisma.SortOrder;
     division?: Prisma.SortOrder;
     city?: Prisma.SortOrder;
+    address?: Prisma.SortOrder;
     postalCode?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     approvedFee?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     rejectionReason?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
+    departmentId?: Prisma.SortOrder;
     selectedQuotationId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
@@ -495,12 +544,14 @@ export type WorkRequestMaxOrderByAggregateInput = {
     description?: Prisma.SortOrder;
     division?: Prisma.SortOrder;
     city?: Prisma.SortOrder;
+    address?: Prisma.SortOrder;
     postalCode?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     approvedFee?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     rejectionReason?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
+    departmentId?: Prisma.SortOrder;
     selectedQuotationId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
@@ -511,18 +562,70 @@ export type WorkRequestMinOrderByAggregateInput = {
     description?: Prisma.SortOrder;
     division?: Prisma.SortOrder;
     city?: Prisma.SortOrder;
+    address?: Prisma.SortOrder;
     postalCode?: Prisma.SortOrder;
     phone?: Prisma.SortOrder;
     approvedFee?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
     rejectionReason?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
+    departmentId?: Prisma.SortOrder;
     selectedQuotationId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
 export type WorkRequestSumOrderByAggregateInput = {
     approvedFee?: Prisma.SortOrder;
+};
+export type WorkRequestCreateNestedOneWithoutAssignmentInput = {
+    create?: Prisma.XOR<Prisma.WorkRequestCreateWithoutAssignmentInput, Prisma.WorkRequestUncheckedCreateWithoutAssignmentInput>;
+    connectOrCreate?: Prisma.WorkRequestCreateOrConnectWithoutAssignmentInput;
+    connect?: Prisma.WorkRequestWhereUniqueInput;
+};
+export type WorkRequestUpdateOneRequiredWithoutAssignmentNestedInput = {
+    create?: Prisma.XOR<Prisma.WorkRequestCreateWithoutAssignmentInput, Prisma.WorkRequestUncheckedCreateWithoutAssignmentInput>;
+    connectOrCreate?: Prisma.WorkRequestCreateOrConnectWithoutAssignmentInput;
+    upsert?: Prisma.WorkRequestUpsertWithoutAssignmentInput;
+    connect?: Prisma.WorkRequestWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.WorkRequestUpdateToOneWithWhereWithoutAssignmentInput, Prisma.WorkRequestUpdateWithoutAssignmentInput>, Prisma.WorkRequestUncheckedUpdateWithoutAssignmentInput>;
+};
+export type WorkRequestCreateNestedManyWithoutDepartmentInput = {
+    create?: Prisma.XOR<Prisma.WorkRequestCreateWithoutDepartmentInput, Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput> | Prisma.WorkRequestCreateWithoutDepartmentInput[] | Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput[];
+    connectOrCreate?: Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput | Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput[];
+    createMany?: Prisma.WorkRequestCreateManyDepartmentInputEnvelope;
+    connect?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+};
+export type WorkRequestUncheckedCreateNestedManyWithoutDepartmentInput = {
+    create?: Prisma.XOR<Prisma.WorkRequestCreateWithoutDepartmentInput, Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput> | Prisma.WorkRequestCreateWithoutDepartmentInput[] | Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput[];
+    connectOrCreate?: Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput | Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput[];
+    createMany?: Prisma.WorkRequestCreateManyDepartmentInputEnvelope;
+    connect?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+};
+export type WorkRequestUpdateManyWithoutDepartmentNestedInput = {
+    create?: Prisma.XOR<Prisma.WorkRequestCreateWithoutDepartmentInput, Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput> | Prisma.WorkRequestCreateWithoutDepartmentInput[] | Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput[];
+    connectOrCreate?: Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput | Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput[];
+    upsert?: Prisma.WorkRequestUpsertWithWhereUniqueWithoutDepartmentInput | Prisma.WorkRequestUpsertWithWhereUniqueWithoutDepartmentInput[];
+    createMany?: Prisma.WorkRequestCreateManyDepartmentInputEnvelope;
+    set?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    disconnect?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    delete?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    connect?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    update?: Prisma.WorkRequestUpdateWithWhereUniqueWithoutDepartmentInput | Prisma.WorkRequestUpdateWithWhereUniqueWithoutDepartmentInput[];
+    updateMany?: Prisma.WorkRequestUpdateManyWithWhereWithoutDepartmentInput | Prisma.WorkRequestUpdateManyWithWhereWithoutDepartmentInput[];
+    deleteMany?: Prisma.WorkRequestScalarWhereInput | Prisma.WorkRequestScalarWhereInput[];
+};
+export type WorkRequestUncheckedUpdateManyWithoutDepartmentNestedInput = {
+    create?: Prisma.XOR<Prisma.WorkRequestCreateWithoutDepartmentInput, Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput> | Prisma.WorkRequestCreateWithoutDepartmentInput[] | Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput[];
+    connectOrCreate?: Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput | Prisma.WorkRequestCreateOrConnectWithoutDepartmentInput[];
+    upsert?: Prisma.WorkRequestUpsertWithWhereUniqueWithoutDepartmentInput | Prisma.WorkRequestUpsertWithWhereUniqueWithoutDepartmentInput[];
+    createMany?: Prisma.WorkRequestCreateManyDepartmentInputEnvelope;
+    set?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    disconnect?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    delete?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    connect?: Prisma.WorkRequestWhereUniqueInput | Prisma.WorkRequestWhereUniqueInput[];
+    update?: Prisma.WorkRequestUpdateWithWhereUniqueWithoutDepartmentInput | Prisma.WorkRequestUpdateWithWhereUniqueWithoutDepartmentInput[];
+    updateMany?: Prisma.WorkRequestUpdateManyWithWhereWithoutDepartmentInput | Prisma.WorkRequestUpdateManyWithWhereWithoutDepartmentInput[];
+    deleteMany?: Prisma.WorkRequestScalarWhereInput | Prisma.WorkRequestScalarWhereInput[];
 };
 export type WorkRequestCreateNestedOneWithoutPaymentsInput = {
     create?: Prisma.XOR<Prisma.WorkRequestCreateWithoutPaymentsInput, Prisma.WorkRequestUncheckedCreateWithoutPaymentsInput>;
@@ -629,12 +732,110 @@ export type WorkRequestUncheckedUpdateManyWithoutCitizenNestedInput = {
 export type EnumWorkStatusFieldUpdateOperationsInput = {
     set?: $Enums.WorkStatus;
 };
-export type WorkRequestCreateWithoutPaymentsInput = {
+export type WorkRequestCreateWithoutAssignmentInput = {
     id?: string;
     title: string;
     description: string;
     division: string;
     city: string;
+    address: string;
+    postalCode: string;
+    phone: string;
+    approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: $Enums.WorkStatus;
+    rejectionReason?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    citizen: Prisma.UserCreateNestedOneWithoutWorkRequestInput;
+    department: Prisma.DepartmentCreateNestedOneWithoutWorkRequestsInput;
+    selectedQuotation?: Prisma.QuotationCreateNestedOneWithoutSelectedForInput;
+    quotations?: Prisma.QuotationCreateNestedManyWithoutRequestInput;
+    staffInvitations?: Prisma.StaffInvitationCreateNestedManyWithoutRequestInput;
+    payments?: Prisma.PaymentCreateNestedManyWithoutRequestInput;
+};
+export type WorkRequestUncheckedCreateWithoutAssignmentInput = {
+    id?: string;
+    title: string;
+    description: string;
+    division: string;
+    city: string;
+    address: string;
+    postalCode: string;
+    phone: string;
+    approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: $Enums.WorkStatus;
+    rejectionReason?: string | null;
+    citizenId: string;
+    departmentId: string;
+    selectedQuotationId?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRequestInput;
+    staffInvitations?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutRequestInput;
+    payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRequestInput;
+};
+export type WorkRequestCreateOrConnectWithoutAssignmentInput = {
+    where: Prisma.WorkRequestWhereUniqueInput;
+    create: Prisma.XOR<Prisma.WorkRequestCreateWithoutAssignmentInput, Prisma.WorkRequestUncheckedCreateWithoutAssignmentInput>;
+};
+export type WorkRequestUpsertWithoutAssignmentInput = {
+    update: Prisma.XOR<Prisma.WorkRequestUpdateWithoutAssignmentInput, Prisma.WorkRequestUncheckedUpdateWithoutAssignmentInput>;
+    create: Prisma.XOR<Prisma.WorkRequestCreateWithoutAssignmentInput, Prisma.WorkRequestUncheckedCreateWithoutAssignmentInput>;
+    where?: Prisma.WorkRequestWhereInput;
+};
+export type WorkRequestUpdateToOneWithWhereWithoutAssignmentInput = {
+    where?: Prisma.WorkRequestWhereInput;
+    data: Prisma.XOR<Prisma.WorkRequestUpdateWithoutAssignmentInput, Prisma.WorkRequestUncheckedUpdateWithoutAssignmentInput>;
+};
+export type WorkRequestUpdateWithoutAssignmentInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    title?: Prisma.StringFieldUpdateOperationsInput | string;
+    description?: Prisma.StringFieldUpdateOperationsInput | string;
+    division?: Prisma.StringFieldUpdateOperationsInput | string;
+    city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
+    postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.StringFieldUpdateOperationsInput | string;
+    approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
+    rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    citizen?: Prisma.UserUpdateOneRequiredWithoutWorkRequestNestedInput;
+    department?: Prisma.DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput;
+    selectedQuotation?: Prisma.QuotationUpdateOneWithoutSelectedForNestedInput;
+    quotations?: Prisma.QuotationUpdateManyWithoutRequestNestedInput;
+    staffInvitations?: Prisma.StaffInvitationUpdateManyWithoutRequestNestedInput;
+    payments?: Prisma.PaymentUpdateManyWithoutRequestNestedInput;
+};
+export type WorkRequestUncheckedUpdateWithoutAssignmentInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    title?: Prisma.StringFieldUpdateOperationsInput | string;
+    description?: Prisma.StringFieldUpdateOperationsInput | string;
+    division?: Prisma.StringFieldUpdateOperationsInput | string;
+    city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
+    postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.StringFieldUpdateOperationsInput | string;
+    approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
+    rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
+    selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    quotations?: Prisma.QuotationUncheckedUpdateManyWithoutRequestNestedInput;
+    staffInvitations?: Prisma.StaffInvitationUncheckedUpdateManyWithoutRequestNestedInput;
+    payments?: Prisma.PaymentUncheckedUpdateManyWithoutRequestNestedInput;
+};
+export type WorkRequestCreateWithoutDepartmentInput = {
+    id?: string;
+    title: string;
+    description: string;
+    division: string;
+    city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -646,13 +847,16 @@ export type WorkRequestCreateWithoutPaymentsInput = {
     selectedQuotation?: Prisma.QuotationCreateNestedOneWithoutSelectedForInput;
     quotations?: Prisma.QuotationCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationCreateNestedManyWithoutRequestInput;
+    payments?: Prisma.PaymentCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentCreateNestedOneWithoutRequestInput;
 };
-export type WorkRequestUncheckedCreateWithoutPaymentsInput = {
+export type WorkRequestUncheckedCreateWithoutDepartmentInput = {
     id?: string;
     title: string;
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -664,6 +868,92 @@ export type WorkRequestUncheckedCreateWithoutPaymentsInput = {
     updatedAt?: Date | string;
     quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutRequestInput;
+    payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentUncheckedCreateNestedOneWithoutRequestInput;
+};
+export type WorkRequestCreateOrConnectWithoutDepartmentInput = {
+    where: Prisma.WorkRequestWhereUniqueInput;
+    create: Prisma.XOR<Prisma.WorkRequestCreateWithoutDepartmentInput, Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput>;
+};
+export type WorkRequestCreateManyDepartmentInputEnvelope = {
+    data: Prisma.WorkRequestCreateManyDepartmentInput | Prisma.WorkRequestCreateManyDepartmentInput[];
+    skipDuplicates?: boolean;
+};
+export type WorkRequestUpsertWithWhereUniqueWithoutDepartmentInput = {
+    where: Prisma.WorkRequestWhereUniqueInput;
+    update: Prisma.XOR<Prisma.WorkRequestUpdateWithoutDepartmentInput, Prisma.WorkRequestUncheckedUpdateWithoutDepartmentInput>;
+    create: Prisma.XOR<Prisma.WorkRequestCreateWithoutDepartmentInput, Prisma.WorkRequestUncheckedCreateWithoutDepartmentInput>;
+};
+export type WorkRequestUpdateWithWhereUniqueWithoutDepartmentInput = {
+    where: Prisma.WorkRequestWhereUniqueInput;
+    data: Prisma.XOR<Prisma.WorkRequestUpdateWithoutDepartmentInput, Prisma.WorkRequestUncheckedUpdateWithoutDepartmentInput>;
+};
+export type WorkRequestUpdateManyWithWhereWithoutDepartmentInput = {
+    where: Prisma.WorkRequestScalarWhereInput;
+    data: Prisma.XOR<Prisma.WorkRequestUpdateManyMutationInput, Prisma.WorkRequestUncheckedUpdateManyWithoutDepartmentInput>;
+};
+export type WorkRequestScalarWhereInput = {
+    AND?: Prisma.WorkRequestScalarWhereInput | Prisma.WorkRequestScalarWhereInput[];
+    OR?: Prisma.WorkRequestScalarWhereInput[];
+    NOT?: Prisma.WorkRequestScalarWhereInput | Prisma.WorkRequestScalarWhereInput[];
+    id?: Prisma.StringFilter<"WorkRequest"> | string;
+    title?: Prisma.StringFilter<"WorkRequest"> | string;
+    description?: Prisma.StringFilter<"WorkRequest"> | string;
+    division?: Prisma.StringFilter<"WorkRequest"> | string;
+    city?: Prisma.StringFilter<"WorkRequest"> | string;
+    address?: Prisma.StringFilter<"WorkRequest"> | string;
+    postalCode?: Prisma.StringFilter<"WorkRequest"> | string;
+    phone?: Prisma.StringFilter<"WorkRequest"> | string;
+    approvedFee?: Prisma.DecimalNullableFilter<"WorkRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: Prisma.EnumWorkStatusFilter<"WorkRequest"> | $Enums.WorkStatus;
+    rejectionReason?: Prisma.StringNullableFilter<"WorkRequest"> | string | null;
+    citizenId?: Prisma.StringFilter<"WorkRequest"> | string;
+    departmentId?: Prisma.StringFilter<"WorkRequest"> | string;
+    selectedQuotationId?: Prisma.StringNullableFilter<"WorkRequest"> | string | null;
+    createdAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
+    updatedAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
+};
+export type WorkRequestCreateWithoutPaymentsInput = {
+    id?: string;
+    title: string;
+    description: string;
+    division: string;
+    city: string;
+    address: string;
+    postalCode: string;
+    phone: string;
+    approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: $Enums.WorkStatus;
+    rejectionReason?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    citizen: Prisma.UserCreateNestedOneWithoutWorkRequestInput;
+    department: Prisma.DepartmentCreateNestedOneWithoutWorkRequestsInput;
+    selectedQuotation?: Prisma.QuotationCreateNestedOneWithoutSelectedForInput;
+    quotations?: Prisma.QuotationCreateNestedManyWithoutRequestInput;
+    staffInvitations?: Prisma.StaffInvitationCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentCreateNestedOneWithoutRequestInput;
+};
+export type WorkRequestUncheckedCreateWithoutPaymentsInput = {
+    id?: string;
+    title: string;
+    description: string;
+    division: string;
+    city: string;
+    address: string;
+    postalCode: string;
+    phone: string;
+    approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: $Enums.WorkStatus;
+    rejectionReason?: string | null;
+    citizenId: string;
+    departmentId: string;
+    selectedQuotationId?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRequestInput;
+    staffInvitations?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentUncheckedCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestCreateOrConnectWithoutPaymentsInput = {
     where: Prisma.WorkRequestWhereUniqueInput;
@@ -684,6 +974,7 @@ export type WorkRequestUpdateWithoutPaymentsInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -692,9 +983,11 @@ export type WorkRequestUpdateWithoutPaymentsInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     citizen?: Prisma.UserUpdateOneRequiredWithoutWorkRequestNestedInput;
+    department?: Prisma.DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput;
     selectedQuotation?: Prisma.QuotationUpdateOneWithoutSelectedForNestedInput;
     quotations?: Prisma.QuotationUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUncheckedUpdateWithoutPaymentsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -702,17 +995,20 @@ export type WorkRequestUncheckedUpdateWithoutPaymentsInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     quotations?: Prisma.QuotationUncheckedUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUncheckedUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestCreateWithoutQuotationsInput = {
     id?: string;
@@ -720,6 +1016,7 @@ export type WorkRequestCreateWithoutQuotationsInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -728,9 +1025,11 @@ export type WorkRequestCreateWithoutQuotationsInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     citizen: Prisma.UserCreateNestedOneWithoutWorkRequestInput;
+    department: Prisma.DepartmentCreateNestedOneWithoutWorkRequestsInput;
     selectedQuotation?: Prisma.QuotationCreateNestedOneWithoutSelectedForInput;
     staffInvitations?: Prisma.StaffInvitationCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestUncheckedCreateWithoutQuotationsInput = {
     id?: string;
@@ -738,17 +1037,20 @@ export type WorkRequestUncheckedCreateWithoutQuotationsInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: $Enums.WorkStatus;
     rejectionReason?: string | null;
     citizenId: string;
+    departmentId: string;
     selectedQuotationId?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     staffInvitations?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentUncheckedCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestCreateOrConnectWithoutQuotationsInput = {
     where: Prisma.WorkRequestWhereUniqueInput;
@@ -760,6 +1062,7 @@ export type WorkRequestCreateWithoutSelectedQuotationInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -768,9 +1071,11 @@ export type WorkRequestCreateWithoutSelectedQuotationInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     citizen: Prisma.UserCreateNestedOneWithoutWorkRequestInput;
+    department: Prisma.DepartmentCreateNestedOneWithoutWorkRequestsInput;
     quotations?: Prisma.QuotationCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestUncheckedCreateWithoutSelectedQuotationInput = {
     id?: string;
@@ -778,17 +1083,20 @@ export type WorkRequestUncheckedCreateWithoutSelectedQuotationInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: $Enums.WorkStatus;
     rejectionReason?: string | null;
     citizenId: string;
+    departmentId: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentUncheckedCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestCreateOrConnectWithoutSelectedQuotationInput = {
     where: Prisma.WorkRequestWhereUniqueInput;
@@ -809,6 +1117,7 @@ export type WorkRequestUpdateWithoutQuotationsInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -817,9 +1126,11 @@ export type WorkRequestUpdateWithoutQuotationsInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     citizen?: Prisma.UserUpdateOneRequiredWithoutWorkRequestNestedInput;
+    department?: Prisma.DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput;
     selectedQuotation?: Prisma.QuotationUpdateOneWithoutSelectedForNestedInput;
     staffInvitations?: Prisma.StaffInvitationUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUncheckedUpdateWithoutQuotationsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -827,17 +1138,20 @@ export type WorkRequestUncheckedUpdateWithoutQuotationsInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     staffInvitations?: Prisma.StaffInvitationUncheckedUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUncheckedUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUncheckedUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUpsertWithoutSelectedQuotationInput = {
     update: Prisma.XOR<Prisma.WorkRequestUpdateWithoutSelectedQuotationInput, Prisma.WorkRequestUncheckedUpdateWithoutSelectedQuotationInput>;
@@ -854,6 +1168,7 @@ export type WorkRequestUpdateWithoutSelectedQuotationInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -862,9 +1177,11 @@ export type WorkRequestUpdateWithoutSelectedQuotationInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     citizen?: Prisma.UserUpdateOneRequiredWithoutWorkRequestNestedInput;
+    department?: Prisma.DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput;
     quotations?: Prisma.QuotationUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUncheckedUpdateWithoutSelectedQuotationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -872,17 +1189,20 @@ export type WorkRequestUncheckedUpdateWithoutSelectedQuotationInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     quotations?: Prisma.QuotationUncheckedUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUncheckedUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUncheckedUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestCreateWithoutStaffInvitationsInput = {
     id?: string;
@@ -890,6 +1210,7 @@ export type WorkRequestCreateWithoutStaffInvitationsInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -898,9 +1219,11 @@ export type WorkRequestCreateWithoutStaffInvitationsInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     citizen: Prisma.UserCreateNestedOneWithoutWorkRequestInput;
+    department: Prisma.DepartmentCreateNestedOneWithoutWorkRequestsInput;
     selectedQuotation?: Prisma.QuotationCreateNestedOneWithoutSelectedForInput;
     quotations?: Prisma.QuotationCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestUncheckedCreateWithoutStaffInvitationsInput = {
     id?: string;
@@ -908,17 +1231,20 @@ export type WorkRequestUncheckedCreateWithoutStaffInvitationsInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: $Enums.WorkStatus;
     rejectionReason?: string | null;
     citizenId: string;
+    departmentId: string;
     selectedQuotationId?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentUncheckedCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestCreateOrConnectWithoutStaffInvitationsInput = {
     where: Prisma.WorkRequestWhereUniqueInput;
@@ -939,6 +1265,7 @@ export type WorkRequestUpdateWithoutStaffInvitationsInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -947,9 +1274,11 @@ export type WorkRequestUpdateWithoutStaffInvitationsInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     citizen?: Prisma.UserUpdateOneRequiredWithoutWorkRequestNestedInput;
+    department?: Prisma.DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput;
     selectedQuotation?: Prisma.QuotationUpdateOneWithoutSelectedForNestedInput;
     quotations?: Prisma.QuotationUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUncheckedUpdateWithoutStaffInvitationsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -957,17 +1286,20 @@ export type WorkRequestUncheckedUpdateWithoutStaffInvitationsInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     quotations?: Prisma.QuotationUncheckedUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUncheckedUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUncheckedUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestCreateWithoutCitizenInput = {
     id?: string;
@@ -975,6 +1307,7 @@ export type WorkRequestCreateWithoutCitizenInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -982,10 +1315,12 @@ export type WorkRequestCreateWithoutCitizenInput = {
     rejectionReason?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    department: Prisma.DepartmentCreateNestedOneWithoutWorkRequestsInput;
     selectedQuotation?: Prisma.QuotationCreateNestedOneWithoutSelectedForInput;
     quotations?: Prisma.QuotationCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestUncheckedCreateWithoutCitizenInput = {
     id?: string;
@@ -993,17 +1328,20 @@ export type WorkRequestUncheckedCreateWithoutCitizenInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: $Enums.WorkStatus;
     rejectionReason?: string | null;
+    departmentId: string;
     selectedQuotationId?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     quotations?: Prisma.QuotationUncheckedCreateNestedManyWithoutRequestInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedCreateNestedManyWithoutRequestInput;
     payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutRequestInput;
+    assignment?: Prisma.AssignmentUncheckedCreateNestedOneWithoutRequestInput;
 };
 export type WorkRequestCreateOrConnectWithoutCitizenInput = {
     where: Prisma.WorkRequestWhereUniqueInput;
@@ -1026,24 +1364,81 @@ export type WorkRequestUpdateManyWithWhereWithoutCitizenInput = {
     where: Prisma.WorkRequestScalarWhereInput;
     data: Prisma.XOR<Prisma.WorkRequestUpdateManyMutationInput, Prisma.WorkRequestUncheckedUpdateManyWithoutCitizenInput>;
 };
-export type WorkRequestScalarWhereInput = {
-    AND?: Prisma.WorkRequestScalarWhereInput | Prisma.WorkRequestScalarWhereInput[];
-    OR?: Prisma.WorkRequestScalarWhereInput[];
-    NOT?: Prisma.WorkRequestScalarWhereInput | Prisma.WorkRequestScalarWhereInput[];
-    id?: Prisma.StringFilter<"WorkRequest"> | string;
-    title?: Prisma.StringFilter<"WorkRequest"> | string;
-    description?: Prisma.StringFilter<"WorkRequest"> | string;
-    division?: Prisma.StringFilter<"WorkRequest"> | string;
-    city?: Prisma.StringFilter<"WorkRequest"> | string;
-    postalCode?: Prisma.StringFilter<"WorkRequest"> | string;
-    phone?: Prisma.StringFilter<"WorkRequest"> | string;
-    approvedFee?: Prisma.DecimalNullableFilter<"WorkRequest"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
-    status?: Prisma.EnumWorkStatusFilter<"WorkRequest"> | $Enums.WorkStatus;
-    rejectionReason?: Prisma.StringNullableFilter<"WorkRequest"> | string | null;
-    citizenId?: Prisma.StringFilter<"WorkRequest"> | string;
-    selectedQuotationId?: Prisma.StringNullableFilter<"WorkRequest"> | string | null;
-    createdAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
-    updatedAt?: Prisma.DateTimeFilter<"WorkRequest"> | Date | string;
+export type WorkRequestCreateManyDepartmentInput = {
+    id?: string;
+    title: string;
+    description: string;
+    division: string;
+    city: string;
+    address: string;
+    postalCode: string;
+    phone: string;
+    approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: $Enums.WorkStatus;
+    rejectionReason?: string | null;
+    citizenId: string;
+    selectedQuotationId?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+};
+export type WorkRequestUpdateWithoutDepartmentInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    title?: Prisma.StringFieldUpdateOperationsInput | string;
+    description?: Prisma.StringFieldUpdateOperationsInput | string;
+    division?: Prisma.StringFieldUpdateOperationsInput | string;
+    city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
+    postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.StringFieldUpdateOperationsInput | string;
+    approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
+    rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    citizen?: Prisma.UserUpdateOneRequiredWithoutWorkRequestNestedInput;
+    selectedQuotation?: Prisma.QuotationUpdateOneWithoutSelectedForNestedInput;
+    quotations?: Prisma.QuotationUpdateManyWithoutRequestNestedInput;
+    staffInvitations?: Prisma.StaffInvitationUpdateManyWithoutRequestNestedInput;
+    payments?: Prisma.PaymentUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUpdateOneWithoutRequestNestedInput;
+};
+export type WorkRequestUncheckedUpdateWithoutDepartmentInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    title?: Prisma.StringFieldUpdateOperationsInput | string;
+    description?: Prisma.StringFieldUpdateOperationsInput | string;
+    division?: Prisma.StringFieldUpdateOperationsInput | string;
+    city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
+    postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.StringFieldUpdateOperationsInput | string;
+    approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
+    rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    quotations?: Prisma.QuotationUncheckedUpdateManyWithoutRequestNestedInput;
+    staffInvitations?: Prisma.StaffInvitationUncheckedUpdateManyWithoutRequestNestedInput;
+    payments?: Prisma.PaymentUncheckedUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUncheckedUpdateOneWithoutRequestNestedInput;
+};
+export type WorkRequestUncheckedUpdateManyWithoutDepartmentInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    title?: Prisma.StringFieldUpdateOperationsInput | string;
+    description?: Prisma.StringFieldUpdateOperationsInput | string;
+    division?: Prisma.StringFieldUpdateOperationsInput | string;
+    city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
+    postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
+    phone?: Prisma.StringFieldUpdateOperationsInput | string;
+    approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
+    rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type WorkRequestCreateManyCitizenInput = {
     id?: string;
@@ -1051,11 +1446,13 @@ export type WorkRequestCreateManyCitizenInput = {
     description: string;
     division: string;
     city: string;
+    address: string;
     postalCode: string;
     phone: string;
     approvedFee?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: $Enums.WorkStatus;
     rejectionReason?: string | null;
+    departmentId: string;
     selectedQuotationId?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -1066,6 +1463,7 @@ export type WorkRequestUpdateWithoutCitizenInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
@@ -1073,10 +1471,12 @@ export type WorkRequestUpdateWithoutCitizenInput = {
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    department?: Prisma.DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput;
     selectedQuotation?: Prisma.QuotationUpdateOneWithoutSelectedForNestedInput;
     quotations?: Prisma.QuotationUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUncheckedUpdateWithoutCitizenInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1084,17 +1484,20 @@ export type WorkRequestUncheckedUpdateWithoutCitizenInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     quotations?: Prisma.QuotationUncheckedUpdateManyWithoutRequestNestedInput;
     staffInvitations?: Prisma.StaffInvitationUncheckedUpdateManyWithoutRequestNestedInput;
     payments?: Prisma.PaymentUncheckedUpdateManyWithoutRequestNestedInput;
+    assignment?: Prisma.AssignmentUncheckedUpdateOneWithoutRequestNestedInput;
 };
 export type WorkRequestUncheckedUpdateManyWithoutCitizenInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -1102,11 +1505,13 @@ export type WorkRequestUncheckedUpdateManyWithoutCitizenInput = {
     description?: Prisma.StringFieldUpdateOperationsInput | string;
     division?: Prisma.StringFieldUpdateOperationsInput | string;
     city?: Prisma.StringFieldUpdateOperationsInput | string;
+    address?: Prisma.StringFieldUpdateOperationsInput | string;
     postalCode?: Prisma.StringFieldUpdateOperationsInput | string;
     phone?: Prisma.StringFieldUpdateOperationsInput | string;
     approvedFee?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
     status?: Prisma.EnumWorkStatusFieldUpdateOperationsInput | $Enums.WorkStatus;
     rejectionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    departmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     selectedQuotationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -1157,20 +1562,24 @@ export type WorkRequestSelect<ExtArgs extends runtime.Types.Extensions.InternalA
     description?: boolean;
     division?: boolean;
     city?: boolean;
+    address?: boolean;
     postalCode?: boolean;
     phone?: boolean;
     approvedFee?: boolean;
     status?: boolean;
     rejectionReason?: boolean;
     citizenId?: boolean;
+    departmentId?: boolean;
     selectedQuotationId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+    department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>;
     selectedQuotation?: boolean | Prisma.WorkRequest$selectedQuotationArgs<ExtArgs>;
     quotations?: boolean | Prisma.WorkRequest$quotationsArgs<ExtArgs>;
     staffInvitations?: boolean | Prisma.WorkRequest$staffInvitationsArgs<ExtArgs>;
     payments?: boolean | Prisma.WorkRequest$paymentsArgs<ExtArgs>;
+    assignment?: boolean | Prisma.WorkRequest$assignmentArgs<ExtArgs>;
     _count?: boolean | Prisma.WorkRequestCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["workRequest"]>;
 export type WorkRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1179,16 +1588,19 @@ export type WorkRequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
     description?: boolean;
     division?: boolean;
     city?: boolean;
+    address?: boolean;
     postalCode?: boolean;
     phone?: boolean;
     approvedFee?: boolean;
     status?: boolean;
     rejectionReason?: boolean;
     citizenId?: boolean;
+    departmentId?: boolean;
     selectedQuotationId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+    department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>;
     selectedQuotation?: boolean | Prisma.WorkRequest$selectedQuotationArgs<ExtArgs>;
 }, ExtArgs["result"]["workRequest"]>;
 export type WorkRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1197,16 +1609,19 @@ export type WorkRequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
     description?: boolean;
     division?: boolean;
     city?: boolean;
+    address?: boolean;
     postalCode?: boolean;
     phone?: boolean;
     approvedFee?: boolean;
     status?: boolean;
     rejectionReason?: boolean;
     citizenId?: boolean;
+    departmentId?: boolean;
     selectedQuotationId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+    department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>;
     selectedQuotation?: boolean | Prisma.WorkRequest$selectedQuotationArgs<ExtArgs>;
 }, ExtArgs["result"]["workRequest"]>;
 export type WorkRequestSelectScalar = {
@@ -1215,41 +1630,49 @@ export type WorkRequestSelectScalar = {
     description?: boolean;
     division?: boolean;
     city?: boolean;
+    address?: boolean;
     postalCode?: boolean;
     phone?: boolean;
     approvedFee?: boolean;
     status?: boolean;
     rejectionReason?: boolean;
     citizenId?: boolean;
+    departmentId?: boolean;
     selectedQuotationId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type WorkRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "division" | "city" | "postalCode" | "phone" | "approvedFee" | "status" | "rejectionReason" | "citizenId" | "selectedQuotationId" | "createdAt" | "updatedAt", ExtArgs["result"]["workRequest"]>;
+export type WorkRequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "division" | "city" | "address" | "postalCode" | "phone" | "approvedFee" | "status" | "rejectionReason" | "citizenId" | "departmentId" | "selectedQuotationId" | "createdAt" | "updatedAt", ExtArgs["result"]["workRequest"]>;
 export type WorkRequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+    department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>;
     selectedQuotation?: boolean | Prisma.WorkRequest$selectedQuotationArgs<ExtArgs>;
     quotations?: boolean | Prisma.WorkRequest$quotationsArgs<ExtArgs>;
     staffInvitations?: boolean | Prisma.WorkRequest$staffInvitationsArgs<ExtArgs>;
     payments?: boolean | Prisma.WorkRequest$paymentsArgs<ExtArgs>;
+    assignment?: boolean | Prisma.WorkRequest$assignmentArgs<ExtArgs>;
     _count?: boolean | Prisma.WorkRequestCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type WorkRequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+    department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>;
     selectedQuotation?: boolean | Prisma.WorkRequest$selectedQuotationArgs<ExtArgs>;
 };
 export type WorkRequestIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
+    department?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>;
     selectedQuotation?: boolean | Prisma.WorkRequest$selectedQuotationArgs<ExtArgs>;
 };
 export type $WorkRequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     name: "WorkRequest";
     objects: {
         citizen: Prisma.$UserPayload<ExtArgs>;
+        department: Prisma.$DepartmentPayload<ExtArgs>;
         selectedQuotation: Prisma.$QuotationPayload<ExtArgs> | null;
         quotations: Prisma.$QuotationPayload<ExtArgs>[];
         staffInvitations: Prisma.$StaffInvitationPayload<ExtArgs>[];
         payments: Prisma.$PaymentPayload<ExtArgs>[];
+        assignment: Prisma.$AssignmentPayload<ExtArgs> | null;
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -1257,12 +1680,14 @@ export type $WorkRequestPayload<ExtArgs extends runtime.Types.Extensions.Interna
         description: string;
         division: string;
         city: string;
+        address: string;
         postalCode: string;
         phone: string;
         approvedFee: runtime.Decimal | null;
         status: $Enums.WorkStatus;
         rejectionReason: string | null;
         citizenId: string;
+        departmentId: string;
         selectedQuotationId: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -1596,10 +2021,12 @@ export interface WorkRequestDelegate<ExtArgs extends runtime.Types.Extensions.In
 export interface Prisma__WorkRequestClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
     citizen<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
+    department<T extends Prisma.DepartmentDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DepartmentDefaultArgs<ExtArgs>>): Prisma.Prisma__DepartmentClient<runtime.Types.Result.GetResult<Prisma.$DepartmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
     selectedQuotation<T extends Prisma.WorkRequest$selectedQuotationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequest$selectedQuotationArgs<ExtArgs>>): Prisma.Prisma__QuotationClient<runtime.Types.Result.GetResult<Prisma.$QuotationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     quotations<T extends Prisma.WorkRequest$quotationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequest$quotationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$QuotationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     staffInvitations<T extends Prisma.WorkRequest$staffInvitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequest$staffInvitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StaffInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     payments<T extends Prisma.WorkRequest$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequest$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    assignment<T extends Prisma.WorkRequest$assignmentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequest$assignmentArgs<ExtArgs>>): Prisma.Prisma__AssignmentClient<runtime.Types.Result.GetResult<Prisma.$AssignmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1630,12 +2057,14 @@ export interface WorkRequestFieldRefs {
     readonly description: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly division: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly city: Prisma.FieldRef<"WorkRequest", 'String'>;
+    readonly address: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly postalCode: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly phone: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly approvedFee: Prisma.FieldRef<"WorkRequest", 'Decimal'>;
     readonly status: Prisma.FieldRef<"WorkRequest", 'WorkStatus'>;
     readonly rejectionReason: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly citizenId: Prisma.FieldRef<"WorkRequest", 'String'>;
+    readonly departmentId: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly selectedQuotationId: Prisma.FieldRef<"WorkRequest", 'String'>;
     readonly createdAt: Prisma.FieldRef<"WorkRequest", 'DateTime'>;
     readonly updatedAt: Prisma.FieldRef<"WorkRequest", 'DateTime'>;
@@ -2108,6 +2537,24 @@ export type WorkRequest$paymentsArgs<ExtArgs extends runtime.Types.Extensions.In
     take?: number;
     skip?: number;
     distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[];
+};
+/**
+ * WorkRequest.assignment
+ */
+export type WorkRequest$assignmentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Assignment
+     */
+    select?: Prisma.AssignmentSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Assignment
+     */
+    omit?: Prisma.AssignmentOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.AssignmentInclude<ExtArgs> | null;
+    where?: Prisma.AssignmentWhereInput;
 };
 /**
  * WorkRequest without action

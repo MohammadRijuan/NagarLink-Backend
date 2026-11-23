@@ -1,11 +1,25 @@
-import { QuotationStatus, WorkStatus } from "../../../generated/prisma/enums";
+import { randomUUID } from "crypto";
+import { Prisma } from "../../../generated/prisma/client";
+import {
+  AssignmentStatus,
+  PaymentStatus,
+  QuotationStatus,
+  WorkStatus,
+} from "../../../generated/prisma/enums";
 import { QuotationWhereInput } from "../../../generated/prisma/models";
+import config from "../../config";
 import { IQuery } from "../../interfaces";
+import { getBkashIdToken } from "../../lib/bkash";
 import { prisma } from "../../lib/prisma";
 import { RequestUser } from "../../middlewares/checkAuth";
 import { AppError } from "../../utils/AppError";
-import { ICreateQuotation, IUpdateQuotation } from "./quotation.interface";
+import IPaySelectedQuotationPayload, {
+  ICreateQuotation,
+  IUpdateQuotation,
+} from "./quotation.interface";
 import httpStatus from "http-status";
+import axios from "axios";
+import ISelectQuotationPayload from "./quotation.interface";
 
 // Create Quotation
 const createQuotationService = async (
@@ -126,7 +140,6 @@ const updateQuotationService = async (
   payload: IUpdateQuotation,
   user: RequestUser,
 ) => {
-
   const quotation = await prisma.quotation.findFirst({
     where: {
       id,
@@ -135,10 +148,7 @@ const updateQuotationService = async (
   });
 
   if (!quotation) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      "Quotation not found",
-    );
+    throw new AppError(httpStatus.NOT_FOUND, "Quotation not found");
   }
 
   if (quotation.status !== QuotationStatus.PENDING) {
@@ -176,10 +186,7 @@ const updateQuotationStatusService = async (
   });
 
   if (!quotation) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      "Quotation not found",
-    );
+    throw new AppError(httpStatus.NOT_FOUND, "Quotation not found");
   }
 
   // 2. Check whether quotation is already processed
@@ -213,10 +220,7 @@ const updateQuotationStatusService = async (
 
 // Delete Quotation
 // Delete Quotation
-const deleteQuotationService = async (
-  id: string,
-  user: RequestUser,
-) => {
+const deleteQuotationService = async (id: string, user: RequestUser) => {
   // 1. Check whether quotation exists and belongs to this staff
   const quotation = await prisma.quotation.findFirst({
     where: {
@@ -226,10 +230,7 @@ const deleteQuotationService = async (
   });
 
   if (!quotation) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      "Quotation not found",
-    );
+    throw new AppError(httpStatus.NOT_FOUND, "Quotation not found");
   }
 
   // 2. Check whether quotation is pending
@@ -250,14 +251,16 @@ const deleteQuotationService = async (
   return result;
 };
 
+
+
+// Select Quotation by Citizen
 const selectQuotationService = async (
-  id: string,
+  payload: ISelectQuotationPayload,
   user: RequestUser,
 ) => {
-  // 1. Find quotation
   const quotation = await prisma.quotation.findUnique({
     where: {
-      id,
+      id: payload.quotationId,
     },
     include: {
       request: true,
@@ -271,7 +274,7 @@ const selectQuotationService = async (
     );
   }
 
-  // 2. Check WorkRequest ownership
+  // Only the owner of the work request can select a quotation
   if (quotation.request.citizenId !== user.userId) {
     throw new AppError(
       httpStatus.FORBIDDEN,
@@ -279,65 +282,69 @@ const selectQuotationService = async (
     );
   }
 
-  // 3. Check quotation status
+  // Only pending quotations can be selected
   if (quotation.status !== QuotationStatus.PENDING) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "This quotation cannot be selected",
+      "This quotation is no longer available",
     );
   }
 
-  // 4. Check WorkRequest status
+  // Prevent selecting another quotation after one is selected
+  if (quotation.request.selectedQuotationId) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "A quotation has already been selected",
+    );
+  }
+
   if (quotation.request.status !== WorkStatus.REQUESTED) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "This work request cannot accept a quotation",
+      "This work request is not available for quotation selection",
     );
   }
 
-  // 5. Select quotation using transaction
   const result = await prisma.$transaction(async (tx) => {
     // Approve selected quotation
-    await tx.quotation.update({
+    const selectedQuotation = await tx.quotation.update({
       where: {
-        id,
+        id: quotation.id,
       },
       data: {
         status: QuotationStatus.APPROVED,
       },
     });
 
-    // Reject other quotations
+    // Reject other quotations for this request
     await tx.quotation.updateMany({
       where: {
         requestId: quotation.requestId,
         id: {
-          not: id,
+          not: quotation.id,
         },
+        status: QuotationStatus.PENDING,
       },
       data: {
         status: QuotationStatus.REJECTED,
       },
     });
 
-    // Update WorkRequest
+    // Save selected quotation and update work request status
     const updatedRequest = await tx.workRequest.update({
       where: {
         id: quotation.requestId,
       },
       data: {
-        selectedQuotationId: id,
-        approvedFee: quotation.proposedFee,
+        selectedQuotationId: quotation.id,
         status: WorkStatus.CITIZEN_ACCEPTED,
       },
       include: {
         selectedQuotation: {
           include: {
             staff: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
+              omit: {
+                password: true,
               },
             },
           },
@@ -345,11 +352,15 @@ const selectQuotationService = async (
       },
     });
 
-    return updatedRequest;
+    return {
+      quotation: selectedQuotation,
+      workRequest: updatedRequest,
+    };
   });
 
   return result;
 };
+
 
 export const quotationServices = {
   createQuotationService,
@@ -358,5 +369,6 @@ export const quotationServices = {
   updateQuotationService,
   updateQuotationStatusService,
   deleteQuotationService,
-  selectQuotationService 
+  selectQuotationService,              
+  // paySelectedQuotationCallbackService,       //bkash
 };

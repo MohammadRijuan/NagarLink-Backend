@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { quotationServices } from "./quotation.service";
+import { RequestUser } from "../../middlewares/checkAuth";
 
 
 // Create Quotation
@@ -121,14 +122,13 @@ const deleteQuotation = catchAsync(
   },
 );
 
+
+// Select Quotation by Citizen
 const selectQuotation = catchAsync(
   async (req: Request, res: Response) => {
-    const id = req.params.id as string;
-    const user = req.user!;
-
     const result = await quotationServices.selectQuotationService(
-      id,
-      user,
+      req.body,
+      req.user!,
     );
 
     sendResponse(res, {
@@ -147,5 +147,6 @@ export const quotationControllers = {
   updateQuotation,
   updateQuotationStatus,
   deleteQuotation,
-  selectQuotation
+  selectQuotation, 
+  
 };

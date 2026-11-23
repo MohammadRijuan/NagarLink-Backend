@@ -8,12 +8,25 @@ import type * as Prisma from "../internal/prismaNamespace";
 export type AssignmentModel = runtime.Types.Result.DefaultSelection<Prisma.$AssignmentPayload>;
 export type AggregateAssignment = {
     _count: AssignmentCountAggregateOutputType | null;
+    _avg: AssignmentAvgAggregateOutputType | null;
+    _sum: AssignmentSumAggregateOutputType | null;
     _min: AssignmentMinAggregateOutputType | null;
     _max: AssignmentMaxAggregateOutputType | null;
+};
+export type AssignmentAvgAggregateOutputType = {
+    amount: runtime.Decimal | null;
+    advanceAmount: runtime.Decimal | null;
+};
+export type AssignmentSumAggregateOutputType = {
+    amount: runtime.Decimal | null;
+    advanceAmount: runtime.Decimal | null;
 };
 export type AssignmentMinAggregateOutputType = {
     id: string | null;
     status: $Enums.AssignmentStatus | null;
+    amount: runtime.Decimal | null;
+    advanceAmount: runtime.Decimal | null;
+    requestId: string | null;
     staffId: string | null;
     citizenId: string | null;
     createdAt: Date | null;
@@ -22,6 +35,9 @@ export type AssignmentMinAggregateOutputType = {
 export type AssignmentMaxAggregateOutputType = {
     id: string | null;
     status: $Enums.AssignmentStatus | null;
+    amount: runtime.Decimal | null;
+    advanceAmount: runtime.Decimal | null;
+    requestId: string | null;
     staffId: string | null;
     citizenId: string | null;
     createdAt: Date | null;
@@ -30,15 +46,29 @@ export type AssignmentMaxAggregateOutputType = {
 export type AssignmentCountAggregateOutputType = {
     id: number;
     status: number;
+    amount: number;
+    advanceAmount: number;
+    requestId: number;
     staffId: number;
     citizenId: number;
     createdAt: number;
     updatedAt: number;
     _all: number;
 };
+export type AssignmentAvgAggregateInputType = {
+    amount?: true;
+    advanceAmount?: true;
+};
+export type AssignmentSumAggregateInputType = {
+    amount?: true;
+    advanceAmount?: true;
+};
 export type AssignmentMinAggregateInputType = {
     id?: true;
     status?: true;
+    amount?: true;
+    advanceAmount?: true;
+    requestId?: true;
     staffId?: true;
     citizenId?: true;
     createdAt?: true;
@@ -47,6 +77,9 @@ export type AssignmentMinAggregateInputType = {
 export type AssignmentMaxAggregateInputType = {
     id?: true;
     status?: true;
+    amount?: true;
+    advanceAmount?: true;
+    requestId?: true;
     staffId?: true;
     citizenId?: true;
     createdAt?: true;
@@ -55,6 +88,9 @@ export type AssignmentMaxAggregateInputType = {
 export type AssignmentCountAggregateInputType = {
     id?: true;
     status?: true;
+    amount?: true;
+    advanceAmount?: true;
+    requestId?: true;
     staffId?: true;
     citizenId?: true;
     createdAt?: true;
@@ -99,6 +135,18 @@ export type AssignmentAggregateArgs<ExtArgs extends runtime.Types.Extensions.Int
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      *
+     * Select which fields to average
+    **/
+    _avg?: AssignmentAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+    **/
+    _sum?: AssignmentSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
      * Select which fields to find the minimum value
     **/
     _min?: AssignmentMinAggregateInputType;
@@ -120,17 +168,24 @@ export type AssignmentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
     take?: number;
     skip?: number;
     _count?: AssignmentCountAggregateInputType | true;
+    _avg?: AssignmentAvgAggregateInputType;
+    _sum?: AssignmentSumAggregateInputType;
     _min?: AssignmentMinAggregateInputType;
     _max?: AssignmentMaxAggregateInputType;
 };
 export type AssignmentGroupByOutputType = {
     id: string;
     status: $Enums.AssignmentStatus;
+    amount: runtime.Decimal;
+    advanceAmount: runtime.Decimal;
+    requestId: string;
     staffId: string;
     citizenId: string;
     createdAt: Date;
     updatedAt: Date;
     _count: AssignmentCountAggregateOutputType | null;
+    _avg: AssignmentAvgAggregateOutputType | null;
+    _sum: AssignmentSumAggregateOutputType | null;
     _min: AssignmentMinAggregateOutputType | null;
     _max: AssignmentMaxAggregateOutputType | null;
 };
@@ -143,10 +198,14 @@ export type AssignmentWhereInput = {
     NOT?: Prisma.AssignmentWhereInput | Prisma.AssignmentWhereInput[];
     id?: Prisma.StringFilter<"Assignment"> | string;
     status?: Prisma.EnumAssignmentStatusFilter<"Assignment"> | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFilter<"Assignment"> | string;
     staffId?: Prisma.StringFilter<"Assignment"> | string;
     citizenId?: Prisma.StringFilter<"Assignment"> | string;
     createdAt?: Prisma.DateTimeFilter<"Assignment"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Assignment"> | Date | string;
+    request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
     staff?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     citizen?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     attachments?: Prisma.WorkAttachmentListRelationFilter;
@@ -155,10 +214,14 @@ export type AssignmentWhereInput = {
 export type AssignmentOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
+    amount?: Prisma.SortOrder;
+    advanceAmount?: Prisma.SortOrder;
+    requestId?: Prisma.SortOrder;
     staffId?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    request?: Prisma.WorkRequestOrderByWithRelationInput;
     staff?: Prisma.UserOrderByWithRelationInput;
     citizen?: Prisma.UserOrderByWithRelationInput;
     attachments?: Prisma.WorkAttachmentOrderByRelationAggregateInput;
@@ -166,29 +229,38 @@ export type AssignmentOrderByWithRelationInput = {
 };
 export type AssignmentWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
+    requestId?: string;
     AND?: Prisma.AssignmentWhereInput | Prisma.AssignmentWhereInput[];
     OR?: Prisma.AssignmentWhereInput[];
     NOT?: Prisma.AssignmentWhereInput | Prisma.AssignmentWhereInput[];
     status?: Prisma.EnumAssignmentStatusFilter<"Assignment"> | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     staffId?: Prisma.StringFilter<"Assignment"> | string;
     citizenId?: Prisma.StringFilter<"Assignment"> | string;
     createdAt?: Prisma.DateTimeFilter<"Assignment"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Assignment"> | Date | string;
+    request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
     staff?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     citizen?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     attachments?: Prisma.WorkAttachmentListRelationFilter;
     feedbacks?: Prisma.FeedbackListRelationFilter;
-}, "id">;
+}, "id" | "requestId">;
 export type AssignmentOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
+    amount?: Prisma.SortOrder;
+    advanceAmount?: Prisma.SortOrder;
+    requestId?: Prisma.SortOrder;
     staffId?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     _count?: Prisma.AssignmentCountOrderByAggregateInput;
+    _avg?: Prisma.AssignmentAvgOrderByAggregateInput;
     _max?: Prisma.AssignmentMaxOrderByAggregateInput;
     _min?: Prisma.AssignmentMinOrderByAggregateInput;
+    _sum?: Prisma.AssignmentSumOrderByAggregateInput;
 };
 export type AssignmentScalarWhereWithAggregatesInput = {
     AND?: Prisma.AssignmentScalarWhereWithAggregatesInput | Prisma.AssignmentScalarWhereWithAggregatesInput[];
@@ -196,6 +268,9 @@ export type AssignmentScalarWhereWithAggregatesInput = {
     NOT?: Prisma.AssignmentScalarWhereWithAggregatesInput | Prisma.AssignmentScalarWhereWithAggregatesInput[];
     id?: Prisma.StringWithAggregatesFilter<"Assignment"> | string;
     status?: Prisma.EnumAssignmentStatusWithAggregatesFilter<"Assignment"> | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalWithAggregatesFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalWithAggregatesFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringWithAggregatesFilter<"Assignment"> | string;
     staffId?: Prisma.StringWithAggregatesFilter<"Assignment"> | string;
     citizenId?: Prisma.StringWithAggregatesFilter<"Assignment"> | string;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"Assignment"> | Date | string;
@@ -204,8 +279,11 @@ export type AssignmentScalarWhereWithAggregatesInput = {
 export type AssignmentCreateInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    request: Prisma.WorkRequestCreateNestedOneWithoutAssignmentInput;
     staff: Prisma.UserCreateNestedOneWithoutStaffAssignmentsInput;
     citizen: Prisma.UserCreateNestedOneWithoutCitizenAssignmentsInput;
     attachments?: Prisma.WorkAttachmentCreateNestedManyWithoutAssignmentInput;
@@ -214,6 +292,9 @@ export type AssignmentCreateInput = {
 export type AssignmentUncheckedCreateInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     staffId: string;
     citizenId: string;
     createdAt?: Date | string;
@@ -224,8 +305,11 @@ export type AssignmentUncheckedCreateInput = {
 export type AssignmentUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutAssignmentNestedInput;
     staff?: Prisma.UserUpdateOneRequiredWithoutStaffAssignmentsNestedInput;
     citizen?: Prisma.UserUpdateOneRequiredWithoutCitizenAssignmentsNestedInput;
     attachments?: Prisma.WorkAttachmentUpdateManyWithoutAssignmentNestedInput;
@@ -234,6 +318,9 @@ export type AssignmentUpdateInput = {
 export type AssignmentUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     staffId?: Prisma.StringFieldUpdateOperationsInput | string;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -244,6 +331,9 @@ export type AssignmentUncheckedUpdateInput = {
 export type AssignmentCreateManyInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     staffId: string;
     citizenId: string;
     createdAt?: Date | string;
@@ -252,12 +342,17 @@ export type AssignmentCreateManyInput = {
 export type AssignmentUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
 };
 export type AssignmentUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     staffId?: Prisma.StringFieldUpdateOperationsInput | string;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -266,14 +361,24 @@ export type AssignmentUncheckedUpdateManyInput = {
 export type AssignmentCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
+    amount?: Prisma.SortOrder;
+    advanceAmount?: Prisma.SortOrder;
+    requestId?: Prisma.SortOrder;
     staffId?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
 };
+export type AssignmentAvgOrderByAggregateInput = {
+    amount?: Prisma.SortOrder;
+    advanceAmount?: Prisma.SortOrder;
+};
 export type AssignmentMaxOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
+    amount?: Prisma.SortOrder;
+    advanceAmount?: Prisma.SortOrder;
+    requestId?: Prisma.SortOrder;
     staffId?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -282,10 +387,17 @@ export type AssignmentMaxOrderByAggregateInput = {
 export type AssignmentMinOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
+    amount?: Prisma.SortOrder;
+    advanceAmount?: Prisma.SortOrder;
+    requestId?: Prisma.SortOrder;
     staffId?: Prisma.SortOrder;
     citizenId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+};
+export type AssignmentSumOrderByAggregateInput = {
+    amount?: Prisma.SortOrder;
+    advanceAmount?: Prisma.SortOrder;
 };
 export type AssignmentScalarRelationFilter = {
     is?: Prisma.AssignmentWhereInput;
@@ -299,11 +411,22 @@ export type AssignmentListRelationFilter = {
 export type AssignmentOrderByRelationAggregateInput = {
     _count?: Prisma.SortOrder;
 };
+export type AssignmentNullableScalarRelationFilter = {
+    is?: Prisma.AssignmentWhereInput | null;
+    isNot?: Prisma.AssignmentWhereInput | null;
+};
 export type StringFieldUpdateOperationsInput = {
     set?: string;
 };
 export type EnumAssignmentStatusFieldUpdateOperationsInput = {
     set?: $Enums.AssignmentStatus;
+};
+export type DecimalFieldUpdateOperationsInput = {
+    set?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    increment?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    divide?: runtime.Decimal | runtime.DecimalJsLike | number | string;
 };
 export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string;
@@ -408,11 +531,42 @@ export type AssignmentUncheckedUpdateManyWithoutCitizenNestedInput = {
     updateMany?: Prisma.AssignmentUpdateManyWithWhereWithoutCitizenInput | Prisma.AssignmentUpdateManyWithWhereWithoutCitizenInput[];
     deleteMany?: Prisma.AssignmentScalarWhereInput | Prisma.AssignmentScalarWhereInput[];
 };
+export type AssignmentCreateNestedOneWithoutRequestInput = {
+    create?: Prisma.XOR<Prisma.AssignmentCreateWithoutRequestInput, Prisma.AssignmentUncheckedCreateWithoutRequestInput>;
+    connectOrCreate?: Prisma.AssignmentCreateOrConnectWithoutRequestInput;
+    connect?: Prisma.AssignmentWhereUniqueInput;
+};
+export type AssignmentUncheckedCreateNestedOneWithoutRequestInput = {
+    create?: Prisma.XOR<Prisma.AssignmentCreateWithoutRequestInput, Prisma.AssignmentUncheckedCreateWithoutRequestInput>;
+    connectOrCreate?: Prisma.AssignmentCreateOrConnectWithoutRequestInput;
+    connect?: Prisma.AssignmentWhereUniqueInput;
+};
+export type AssignmentUpdateOneWithoutRequestNestedInput = {
+    create?: Prisma.XOR<Prisma.AssignmentCreateWithoutRequestInput, Prisma.AssignmentUncheckedCreateWithoutRequestInput>;
+    connectOrCreate?: Prisma.AssignmentCreateOrConnectWithoutRequestInput;
+    upsert?: Prisma.AssignmentUpsertWithoutRequestInput;
+    disconnect?: Prisma.AssignmentWhereInput | boolean;
+    delete?: Prisma.AssignmentWhereInput | boolean;
+    connect?: Prisma.AssignmentWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.AssignmentUpdateToOneWithWhereWithoutRequestInput, Prisma.AssignmentUpdateWithoutRequestInput>, Prisma.AssignmentUncheckedUpdateWithoutRequestInput>;
+};
+export type AssignmentUncheckedUpdateOneWithoutRequestNestedInput = {
+    create?: Prisma.XOR<Prisma.AssignmentCreateWithoutRequestInput, Prisma.AssignmentUncheckedCreateWithoutRequestInput>;
+    connectOrCreate?: Prisma.AssignmentCreateOrConnectWithoutRequestInput;
+    upsert?: Prisma.AssignmentUpsertWithoutRequestInput;
+    disconnect?: Prisma.AssignmentWhereInput | boolean;
+    delete?: Prisma.AssignmentWhereInput | boolean;
+    connect?: Prisma.AssignmentWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.AssignmentUpdateToOneWithWhereWithoutRequestInput, Prisma.AssignmentUpdateWithoutRequestInput>, Prisma.AssignmentUncheckedUpdateWithoutRequestInput>;
+};
 export type AssignmentCreateWithoutAttachmentsInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    request: Prisma.WorkRequestCreateNestedOneWithoutAssignmentInput;
     staff: Prisma.UserCreateNestedOneWithoutStaffAssignmentsInput;
     citizen: Prisma.UserCreateNestedOneWithoutCitizenAssignmentsInput;
     feedbacks?: Prisma.FeedbackCreateNestedManyWithoutAssignmentInput;
@@ -420,6 +574,9 @@ export type AssignmentCreateWithoutAttachmentsInput = {
 export type AssignmentUncheckedCreateWithoutAttachmentsInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     staffId: string;
     citizenId: string;
     createdAt?: Date | string;
@@ -442,8 +599,11 @@ export type AssignmentUpdateToOneWithWhereWithoutAttachmentsInput = {
 export type AssignmentUpdateWithoutAttachmentsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutAssignmentNestedInput;
     staff?: Prisma.UserUpdateOneRequiredWithoutStaffAssignmentsNestedInput;
     citizen?: Prisma.UserUpdateOneRequiredWithoutCitizenAssignmentsNestedInput;
     feedbacks?: Prisma.FeedbackUpdateManyWithoutAssignmentNestedInput;
@@ -451,6 +611,9 @@ export type AssignmentUpdateWithoutAttachmentsInput = {
 export type AssignmentUncheckedUpdateWithoutAttachmentsInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     staffId?: Prisma.StringFieldUpdateOperationsInput | string;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -460,8 +623,11 @@ export type AssignmentUncheckedUpdateWithoutAttachmentsInput = {
 export type AssignmentCreateWithoutFeedbacksInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    request: Prisma.WorkRequestCreateNestedOneWithoutAssignmentInput;
     staff: Prisma.UserCreateNestedOneWithoutStaffAssignmentsInput;
     citizen: Prisma.UserCreateNestedOneWithoutCitizenAssignmentsInput;
     attachments?: Prisma.WorkAttachmentCreateNestedManyWithoutAssignmentInput;
@@ -469,6 +635,9 @@ export type AssignmentCreateWithoutFeedbacksInput = {
 export type AssignmentUncheckedCreateWithoutFeedbacksInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     staffId: string;
     citizenId: string;
     createdAt?: Date | string;
@@ -491,8 +660,11 @@ export type AssignmentUpdateToOneWithWhereWithoutFeedbacksInput = {
 export type AssignmentUpdateWithoutFeedbacksInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutAssignmentNestedInput;
     staff?: Prisma.UserUpdateOneRequiredWithoutStaffAssignmentsNestedInput;
     citizen?: Prisma.UserUpdateOneRequiredWithoutCitizenAssignmentsNestedInput;
     attachments?: Prisma.WorkAttachmentUpdateManyWithoutAssignmentNestedInput;
@@ -500,6 +672,9 @@ export type AssignmentUpdateWithoutFeedbacksInput = {
 export type AssignmentUncheckedUpdateWithoutFeedbacksInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     staffId?: Prisma.StringFieldUpdateOperationsInput | string;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -509,8 +684,11 @@ export type AssignmentUncheckedUpdateWithoutFeedbacksInput = {
 export type AssignmentCreateWithoutStaffInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    request: Prisma.WorkRequestCreateNestedOneWithoutAssignmentInput;
     citizen: Prisma.UserCreateNestedOneWithoutCitizenAssignmentsInput;
     attachments?: Prisma.WorkAttachmentCreateNestedManyWithoutAssignmentInput;
     feedbacks?: Prisma.FeedbackCreateNestedManyWithoutAssignmentInput;
@@ -518,6 +696,9 @@ export type AssignmentCreateWithoutStaffInput = {
 export type AssignmentUncheckedCreateWithoutStaffInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     citizenId: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -535,8 +716,11 @@ export type AssignmentCreateManyStaffInputEnvelope = {
 export type AssignmentCreateWithoutCitizenInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    request: Prisma.WorkRequestCreateNestedOneWithoutAssignmentInput;
     staff: Prisma.UserCreateNestedOneWithoutStaffAssignmentsInput;
     attachments?: Prisma.WorkAttachmentCreateNestedManyWithoutAssignmentInput;
     feedbacks?: Prisma.FeedbackCreateNestedManyWithoutAssignmentInput;
@@ -544,6 +728,9 @@ export type AssignmentCreateWithoutCitizenInput = {
 export type AssignmentUncheckedCreateWithoutCitizenInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     staffId: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -577,6 +764,9 @@ export type AssignmentScalarWhereInput = {
     NOT?: Prisma.AssignmentScalarWhereInput | Prisma.AssignmentScalarWhereInput[];
     id?: Prisma.StringFilter<"Assignment"> | string;
     status?: Prisma.EnumAssignmentStatusFilter<"Assignment"> | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFilter<"Assignment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFilter<"Assignment"> | string;
     staffId?: Prisma.StringFilter<"Assignment"> | string;
     citizenId?: Prisma.StringFilter<"Assignment"> | string;
     createdAt?: Prisma.DateTimeFilter<"Assignment"> | Date | string;
@@ -595,9 +785,73 @@ export type AssignmentUpdateManyWithWhereWithoutCitizenInput = {
     where: Prisma.AssignmentScalarWhereInput;
     data: Prisma.XOR<Prisma.AssignmentUpdateManyMutationInput, Prisma.AssignmentUncheckedUpdateManyWithoutCitizenInput>;
 };
+export type AssignmentCreateWithoutRequestInput = {
+    id?: string;
+    status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    staff: Prisma.UserCreateNestedOneWithoutStaffAssignmentsInput;
+    citizen: Prisma.UserCreateNestedOneWithoutCitizenAssignmentsInput;
+    attachments?: Prisma.WorkAttachmentCreateNestedManyWithoutAssignmentInput;
+    feedbacks?: Prisma.FeedbackCreateNestedManyWithoutAssignmentInput;
+};
+export type AssignmentUncheckedCreateWithoutRequestInput = {
+    id?: string;
+    status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    staffId: string;
+    citizenId: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    attachments?: Prisma.WorkAttachmentUncheckedCreateNestedManyWithoutAssignmentInput;
+    feedbacks?: Prisma.FeedbackUncheckedCreateNestedManyWithoutAssignmentInput;
+};
+export type AssignmentCreateOrConnectWithoutRequestInput = {
+    where: Prisma.AssignmentWhereUniqueInput;
+    create: Prisma.XOR<Prisma.AssignmentCreateWithoutRequestInput, Prisma.AssignmentUncheckedCreateWithoutRequestInput>;
+};
+export type AssignmentUpsertWithoutRequestInput = {
+    update: Prisma.XOR<Prisma.AssignmentUpdateWithoutRequestInput, Prisma.AssignmentUncheckedUpdateWithoutRequestInput>;
+    create: Prisma.XOR<Prisma.AssignmentCreateWithoutRequestInput, Prisma.AssignmentUncheckedCreateWithoutRequestInput>;
+    where?: Prisma.AssignmentWhereInput;
+};
+export type AssignmentUpdateToOneWithWhereWithoutRequestInput = {
+    where?: Prisma.AssignmentWhereInput;
+    data: Prisma.XOR<Prisma.AssignmentUpdateWithoutRequestInput, Prisma.AssignmentUncheckedUpdateWithoutRequestInput>;
+};
+export type AssignmentUpdateWithoutRequestInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    staff?: Prisma.UserUpdateOneRequiredWithoutStaffAssignmentsNestedInput;
+    citizen?: Prisma.UserUpdateOneRequiredWithoutCitizenAssignmentsNestedInput;
+    attachments?: Prisma.WorkAttachmentUpdateManyWithoutAssignmentNestedInput;
+    feedbacks?: Prisma.FeedbackUpdateManyWithoutAssignmentNestedInput;
+};
+export type AssignmentUncheckedUpdateWithoutRequestInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    staffId?: Prisma.StringFieldUpdateOperationsInput | string;
+    citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    attachments?: Prisma.WorkAttachmentUncheckedUpdateManyWithoutAssignmentNestedInput;
+    feedbacks?: Prisma.FeedbackUncheckedUpdateManyWithoutAssignmentNestedInput;
+};
 export type AssignmentCreateManyStaffInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     citizenId: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -605,6 +859,9 @@ export type AssignmentCreateManyStaffInput = {
 export type AssignmentCreateManyCitizenInput = {
     id?: string;
     status?: $Enums.AssignmentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId: string;
     staffId: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
@@ -612,8 +869,11 @@ export type AssignmentCreateManyCitizenInput = {
 export type AssignmentUpdateWithoutStaffInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutAssignmentNestedInput;
     citizen?: Prisma.UserUpdateOneRequiredWithoutCitizenAssignmentsNestedInput;
     attachments?: Prisma.WorkAttachmentUpdateManyWithoutAssignmentNestedInput;
     feedbacks?: Prisma.FeedbackUpdateManyWithoutAssignmentNestedInput;
@@ -621,6 +881,9 @@ export type AssignmentUpdateWithoutStaffInput = {
 export type AssignmentUncheckedUpdateWithoutStaffInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -630,6 +893,9 @@ export type AssignmentUncheckedUpdateWithoutStaffInput = {
 export type AssignmentUncheckedUpdateManyWithoutStaffInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     citizenId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -637,8 +903,11 @@ export type AssignmentUncheckedUpdateManyWithoutStaffInput = {
 export type AssignmentUpdateWithoutCitizenInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutAssignmentNestedInput;
     staff?: Prisma.UserUpdateOneRequiredWithoutStaffAssignmentsNestedInput;
     attachments?: Prisma.WorkAttachmentUpdateManyWithoutAssignmentNestedInput;
     feedbacks?: Prisma.FeedbackUpdateManyWithoutAssignmentNestedInput;
@@ -646,6 +915,9 @@ export type AssignmentUpdateWithoutCitizenInput = {
 export type AssignmentUncheckedUpdateWithoutCitizenInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     staffId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -655,6 +927,9 @@ export type AssignmentUncheckedUpdateWithoutCitizenInput = {
 export type AssignmentUncheckedUpdateManyWithoutCitizenInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     status?: Prisma.EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    advanceAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     staffId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -694,10 +969,14 @@ export type AssignmentCountOutputTypeCountFeedbacksArgs<ExtArgs extends runtime.
 export type AssignmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     status?: boolean;
+    amount?: boolean;
+    advanceAmount?: boolean;
+    requestId?: boolean;
     staffId?: boolean;
     citizenId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     attachments?: boolean | Prisma.Assignment$attachmentsArgs<ExtArgs>;
@@ -707,33 +986,45 @@ export type AssignmentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type AssignmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     status?: boolean;
+    amount?: boolean;
+    advanceAmount?: boolean;
+    requestId?: boolean;
     staffId?: boolean;
     citizenId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["assignment"]>;
 export type AssignmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     status?: boolean;
+    amount?: boolean;
+    advanceAmount?: boolean;
+    requestId?: boolean;
     staffId?: boolean;
     citizenId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["assignment"]>;
 export type AssignmentSelectScalar = {
     id?: boolean;
     status?: boolean;
+    amount?: boolean;
+    advanceAmount?: boolean;
+    requestId?: boolean;
     staffId?: boolean;
     citizenId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type AssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "staffId" | "citizenId" | "createdAt" | "updatedAt", ExtArgs["result"]["assignment"]>;
+export type AssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "amount" | "advanceAmount" | "requestId" | "staffId" | "citizenId" | "createdAt" | "updatedAt", ExtArgs["result"]["assignment"]>;
 export type AssignmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     attachments?: boolean | Prisma.Assignment$attachmentsArgs<ExtArgs>;
@@ -741,16 +1032,19 @@ export type AssignmentInclude<ExtArgs extends runtime.Types.Extensions.InternalA
     _count?: boolean | Prisma.AssignmentCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type AssignmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 };
 export type AssignmentIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     citizen?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 };
 export type $AssignmentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     name: "Assignment";
     objects: {
+        request: Prisma.$WorkRequestPayload<ExtArgs>;
         staff: Prisma.$UserPayload<ExtArgs>;
         citizen: Prisma.$UserPayload<ExtArgs>;
         attachments: Prisma.$WorkAttachmentPayload<ExtArgs>[];
@@ -759,6 +1053,9 @@ export type $AssignmentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
         status: $Enums.AssignmentStatus;
+        amount: runtime.Decimal;
+        advanceAmount: runtime.Decimal;
+        requestId: string;
         staffId: string;
         citizenId: string;
         createdAt: Date;
@@ -1092,6 +1389,7 @@ export interface AssignmentDelegate<ExtArgs extends runtime.Types.Extensions.Int
  */
 export interface Prisma__AssignmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
+    request<T extends Prisma.WorkRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkRequestClient<runtime.Types.Result.GetResult<Prisma.$WorkRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
     staff<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
     citizen<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
     attachments<T extends Prisma.Assignment$attachmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Assignment$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
@@ -1123,6 +1421,9 @@ export interface Prisma__AssignmentClient<T, Null = never, ExtArgs extends runti
 export interface AssignmentFieldRefs {
     readonly id: Prisma.FieldRef<"Assignment", 'String'>;
     readonly status: Prisma.FieldRef<"Assignment", 'AssignmentStatus'>;
+    readonly amount: Prisma.FieldRef<"Assignment", 'Decimal'>;
+    readonly advanceAmount: Prisma.FieldRef<"Assignment", 'Decimal'>;
+    readonly requestId: Prisma.FieldRef<"Assignment", 'String'>;
     readonly staffId: Prisma.FieldRef<"Assignment", 'String'>;
     readonly citizenId: Prisma.FieldRef<"Assignment", 'String'>;
     readonly createdAt: Prisma.FieldRef<"Assignment", 'DateTime'>;

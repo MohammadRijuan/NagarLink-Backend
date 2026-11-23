@@ -28,9 +28,6 @@ export type PaymentMinAggregateOutputType = {
     currency: string | null;
     paymentGateway: string | null;
     merchantInvoiceNumber: string | null;
-    bkashPaymentId: string | null;
-    bkashTrxId: string | null;
-    payerReference: string | null;
     paidAt: Date | null;
     refundTrxId: string | null;
     refundAmount: runtime.Decimal | null;
@@ -47,9 +44,6 @@ export type PaymentMaxAggregateOutputType = {
     currency: string | null;
     paymentGateway: string | null;
     merchantInvoiceNumber: string | null;
-    bkashPaymentId: string | null;
-    bkashTrxId: string | null;
-    payerReference: string | null;
     paidAt: Date | null;
     refundTrxId: string | null;
     refundAmount: runtime.Decimal | null;
@@ -66,9 +60,6 @@ export type PaymentCountAggregateOutputType = {
     currency: number;
     paymentGateway: number;
     merchantInvoiceNumber: number;
-    bkashPaymentId: number;
-    bkashTrxId: number;
-    payerReference: number;
     paidAt: number;
     gatewayResponse: number;
     refundTrxId: number;
@@ -95,9 +86,6 @@ export type PaymentMinAggregateInputType = {
     currency?: true;
     paymentGateway?: true;
     merchantInvoiceNumber?: true;
-    bkashPaymentId?: true;
-    bkashTrxId?: true;
-    payerReference?: true;
     paidAt?: true;
     refundTrxId?: true;
     refundAmount?: true;
@@ -114,9 +102,6 @@ export type PaymentMaxAggregateInputType = {
     currency?: true;
     paymentGateway?: true;
     merchantInvoiceNumber?: true;
-    bkashPaymentId?: true;
-    bkashTrxId?: true;
-    payerReference?: true;
     paidAt?: true;
     refundTrxId?: true;
     refundAmount?: true;
@@ -133,9 +118,6 @@ export type PaymentCountAggregateInputType = {
     currency?: true;
     paymentGateway?: true;
     merchantInvoiceNumber?: true;
-    bkashPaymentId?: true;
-    bkashTrxId?: true;
-    payerReference?: true;
     paidAt?: true;
     gatewayResponse?: true;
     refundTrxId?: true;
@@ -230,9 +212,6 @@ export type PaymentGroupByOutputType = {
     currency: string;
     paymentGateway: string;
     merchantInvoiceNumber: string;
-    bkashPaymentId: string | null;
-    bkashTrxId: string | null;
-    payerReference: string | null;
     paidAt: Date | null;
     gatewayResponse: runtime.JsonValue | null;
     refundTrxId: string | null;
@@ -261,9 +240,6 @@ export type PaymentWhereInput = {
     currency?: Prisma.StringFilter<"Payment"> | string;
     paymentGateway?: Prisma.StringFilter<"Payment"> | string;
     merchantInvoiceNumber?: Prisma.StringFilter<"Payment"> | string;
-    bkashPaymentId?: Prisma.StringNullableFilter<"Payment"> | string | null;
-    bkashTrxId?: Prisma.StringNullableFilter<"Payment"> | string | null;
-    payerReference?: Prisma.StringNullableFilter<"Payment"> | string | null;
     paidAt?: Prisma.DateTimeNullableFilter<"Payment"> | Date | string | null;
     gatewayResponse?: Prisma.JsonNullableFilter<"Payment">;
     refundTrxId?: Prisma.StringNullableFilter<"Payment"> | string | null;
@@ -274,6 +250,7 @@ export type PaymentWhereInput = {
     createdAt?: Prisma.DateTimeFilter<"Payment"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Payment"> | Date | string;
     request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
+    sslcommerzPayment?: Prisma.XOR<Prisma.SslCommerzPaymentNullableScalarRelationFilter, Prisma.SslCommerzPaymentWhereInput> | null;
 };
 export type PaymentOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -282,9 +259,6 @@ export type PaymentOrderByWithRelationInput = {
     currency?: Prisma.SortOrder;
     paymentGateway?: Prisma.SortOrder;
     merchantInvoiceNumber?: Prisma.SortOrder;
-    bkashPaymentId?: Prisma.SortOrderInput | Prisma.SortOrder;
-    bkashTrxId?: Prisma.SortOrderInput | Prisma.SortOrder;
-    payerReference?: Prisma.SortOrderInput | Prisma.SortOrder;
     paidAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     gatewayResponse?: Prisma.SortOrderInput | Prisma.SortOrder;
     refundTrxId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -295,11 +269,11 @@ export type PaymentOrderByWithRelationInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     request?: Prisma.WorkRequestOrderByWithRelationInput;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentOrderByWithRelationInput;
 };
 export type PaymentWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
     merchantInvoiceNumber?: string;
-    bkashPaymentId?: string;
     AND?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[];
     OR?: Prisma.PaymentWhereInput[];
     NOT?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[];
@@ -307,8 +281,6 @@ export type PaymentWhereUniqueInput = Prisma.AtLeast<{
     amount?: Prisma.DecimalFilter<"Payment"> | runtime.Decimal | runtime.DecimalJsLike | number | string;
     currency?: Prisma.StringFilter<"Payment"> | string;
     paymentGateway?: Prisma.StringFilter<"Payment"> | string;
-    bkashTrxId?: Prisma.StringNullableFilter<"Payment"> | string | null;
-    payerReference?: Prisma.StringNullableFilter<"Payment"> | string | null;
     paidAt?: Prisma.DateTimeNullableFilter<"Payment"> | Date | string | null;
     gatewayResponse?: Prisma.JsonNullableFilter<"Payment">;
     refundTrxId?: Prisma.StringNullableFilter<"Payment"> | string | null;
@@ -319,7 +291,8 @@ export type PaymentWhereUniqueInput = Prisma.AtLeast<{
     createdAt?: Prisma.DateTimeFilter<"Payment"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Payment"> | Date | string;
     request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
-}, "id" | "merchantInvoiceNumber" | "bkashPaymentId">;
+    sslcommerzPayment?: Prisma.XOR<Prisma.SslCommerzPaymentNullableScalarRelationFilter, Prisma.SslCommerzPaymentWhereInput> | null;
+}, "id" | "merchantInvoiceNumber">;
 export type PaymentOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     status?: Prisma.SortOrder;
@@ -327,9 +300,6 @@ export type PaymentOrderByWithAggregationInput = {
     currency?: Prisma.SortOrder;
     paymentGateway?: Prisma.SortOrder;
     merchantInvoiceNumber?: Prisma.SortOrder;
-    bkashPaymentId?: Prisma.SortOrderInput | Prisma.SortOrder;
-    bkashTrxId?: Prisma.SortOrderInput | Prisma.SortOrder;
-    payerReference?: Prisma.SortOrderInput | Prisma.SortOrder;
     paidAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     gatewayResponse?: Prisma.SortOrderInput | Prisma.SortOrder;
     refundTrxId?: Prisma.SortOrderInput | Prisma.SortOrder;
@@ -355,9 +325,6 @@ export type PaymentScalarWhereWithAggregatesInput = {
     currency?: Prisma.StringWithAggregatesFilter<"Payment"> | string;
     paymentGateway?: Prisma.StringWithAggregatesFilter<"Payment"> | string;
     merchantInvoiceNumber?: Prisma.StringWithAggregatesFilter<"Payment"> | string;
-    bkashPaymentId?: Prisma.StringNullableWithAggregatesFilter<"Payment"> | string | null;
-    bkashTrxId?: Prisma.StringNullableWithAggregatesFilter<"Payment"> | string | null;
-    payerReference?: Prisma.StringNullableWithAggregatesFilter<"Payment"> | string | null;
     paidAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Payment"> | Date | string | null;
     gatewayResponse?: Prisma.JsonNullableWithAggregatesFilter<"Payment">;
     refundTrxId?: Prisma.StringNullableWithAggregatesFilter<"Payment"> | string | null;
@@ -375,9 +342,6 @@ export type PaymentCreateInput = {
     currency?: string;
     paymentGateway?: string;
     merchantInvoiceNumber: string;
-    bkashPaymentId?: string | null;
-    bkashTrxId?: string | null;
-    payerReference?: string | null;
     paidAt?: Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: string | null;
@@ -387,6 +351,7 @@ export type PaymentCreateInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     request: Prisma.WorkRequestCreateNestedOneWithoutPaymentsInput;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentCreateNestedOneWithoutPaymentInput;
 };
 export type PaymentUncheckedCreateInput = {
     id?: string;
@@ -395,9 +360,6 @@ export type PaymentUncheckedCreateInput = {
     currency?: string;
     paymentGateway?: string;
     merchantInvoiceNumber: string;
-    bkashPaymentId?: string | null;
-    bkashTrxId?: string | null;
-    payerReference?: string | null;
     paidAt?: Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: string | null;
@@ -407,6 +369,7 @@ export type PaymentUncheckedCreateInput = {
     requestId: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentUncheckedCreateNestedOneWithoutPaymentInput;
 };
 export type PaymentUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -415,9 +378,6 @@ export type PaymentUpdateInput = {
     currency?: Prisma.StringFieldUpdateOperationsInput | string;
     paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
     merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
-    bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    bkashTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    payerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -427,6 +387,7 @@ export type PaymentUpdateInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     request?: Prisma.WorkRequestUpdateOneRequiredWithoutPaymentsNestedInput;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentUpdateOneWithoutPaymentNestedInput;
 };
 export type PaymentUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -435,9 +396,6 @@ export type PaymentUncheckedUpdateInput = {
     currency?: Prisma.StringFieldUpdateOperationsInput | string;
     paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
     merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
-    bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    bkashTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    payerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -447,6 +405,7 @@ export type PaymentUncheckedUpdateInput = {
     requestId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentUncheckedUpdateOneWithoutPaymentNestedInput;
 };
 export type PaymentCreateManyInput = {
     id?: string;
@@ -455,9 +414,6 @@ export type PaymentCreateManyInput = {
     currency?: string;
     paymentGateway?: string;
     merchantInvoiceNumber: string;
-    bkashPaymentId?: string | null;
-    bkashTrxId?: string | null;
-    payerReference?: string | null;
     paidAt?: Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: string | null;
@@ -475,9 +431,6 @@ export type PaymentUpdateManyMutationInput = {
     currency?: Prisma.StringFieldUpdateOperationsInput | string;
     paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
     merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
-    bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    bkashTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    payerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -494,9 +447,6 @@ export type PaymentUncheckedUpdateManyInput = {
     currency?: Prisma.StringFieldUpdateOperationsInput | string;
     paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
     merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
-    bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    bkashTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    payerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -514,9 +464,6 @@ export type PaymentCountOrderByAggregateInput = {
     currency?: Prisma.SortOrder;
     paymentGateway?: Prisma.SortOrder;
     merchantInvoiceNumber?: Prisma.SortOrder;
-    bkashPaymentId?: Prisma.SortOrder;
-    bkashTrxId?: Prisma.SortOrder;
-    payerReference?: Prisma.SortOrder;
     paidAt?: Prisma.SortOrder;
     gatewayResponse?: Prisma.SortOrder;
     refundTrxId?: Prisma.SortOrder;
@@ -538,9 +485,6 @@ export type PaymentMaxOrderByAggregateInput = {
     currency?: Prisma.SortOrder;
     paymentGateway?: Prisma.SortOrder;
     merchantInvoiceNumber?: Prisma.SortOrder;
-    bkashPaymentId?: Prisma.SortOrder;
-    bkashTrxId?: Prisma.SortOrder;
-    payerReference?: Prisma.SortOrder;
     paidAt?: Prisma.SortOrder;
     refundTrxId?: Prisma.SortOrder;
     refundAmount?: Prisma.SortOrder;
@@ -557,9 +501,6 @@ export type PaymentMinOrderByAggregateInput = {
     currency?: Prisma.SortOrder;
     paymentGateway?: Prisma.SortOrder;
     merchantInvoiceNumber?: Prisma.SortOrder;
-    bkashPaymentId?: Prisma.SortOrder;
-    bkashTrxId?: Prisma.SortOrder;
-    payerReference?: Prisma.SortOrder;
     paidAt?: Prisma.SortOrder;
     refundTrxId?: Prisma.SortOrder;
     refundAmount?: Prisma.SortOrder;
@@ -573,6 +514,10 @@ export type PaymentSumOrderByAggregateInput = {
     amount?: Prisma.SortOrder;
     refundAmount?: Prisma.SortOrder;
 };
+export type PaymentScalarRelationFilter = {
+    is?: Prisma.PaymentWhereInput;
+    isNot?: Prisma.PaymentWhereInput;
+};
 export type PaymentListRelationFilter = {
     every?: Prisma.PaymentWhereInput;
     some?: Prisma.PaymentWhereInput;
@@ -584,13 +529,6 @@ export type PaymentOrderByRelationAggregateInput = {
 export type EnumPaymentStatusFieldUpdateOperationsInput = {
     set?: $Enums.PaymentStatus;
 };
-export type DecimalFieldUpdateOperationsInput = {
-    set?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    increment?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-    divide?: runtime.Decimal | runtime.DecimalJsLike | number | string;
-};
 export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null;
 };
@@ -600,6 +538,18 @@ export type NullableDecimalFieldUpdateOperationsInput = {
     decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string;
     multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string;
     divide?: runtime.Decimal | runtime.DecimalJsLike | number | string;
+};
+export type PaymentCreateNestedOneWithoutSslcommerzPaymentInput = {
+    create?: Prisma.XOR<Prisma.PaymentCreateWithoutSslcommerzPaymentInput, Prisma.PaymentUncheckedCreateWithoutSslcommerzPaymentInput>;
+    connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutSslcommerzPaymentInput;
+    connect?: Prisma.PaymentWhereUniqueInput;
+};
+export type PaymentUpdateOneRequiredWithoutSslcommerzPaymentNestedInput = {
+    create?: Prisma.XOR<Prisma.PaymentCreateWithoutSslcommerzPaymentInput, Prisma.PaymentUncheckedCreateWithoutSslcommerzPaymentInput>;
+    connectOrCreate?: Prisma.PaymentCreateOrConnectWithoutSslcommerzPaymentInput;
+    upsert?: Prisma.PaymentUpsertWithoutSslcommerzPaymentInput;
+    connect?: Prisma.PaymentWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.PaymentUpdateToOneWithWhereWithoutSslcommerzPaymentInput, Prisma.PaymentUpdateWithoutSslcommerzPaymentInput>, Prisma.PaymentUncheckedUpdateWithoutSslcommerzPaymentInput>;
 };
 export type PaymentCreateNestedManyWithoutRequestInput = {
     create?: Prisma.XOR<Prisma.PaymentCreateWithoutRequestInput, Prisma.PaymentUncheckedCreateWithoutRequestInput> | Prisma.PaymentCreateWithoutRequestInput[] | Prisma.PaymentUncheckedCreateWithoutRequestInput[];
@@ -639,16 +589,13 @@ export type PaymentUncheckedUpdateManyWithoutRequestNestedInput = {
     updateMany?: Prisma.PaymentUpdateManyWithWhereWithoutRequestInput | Prisma.PaymentUpdateManyWithWhereWithoutRequestInput[];
     deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[];
 };
-export type PaymentCreateWithoutRequestInput = {
+export type PaymentCreateWithoutSslcommerzPaymentInput = {
     id?: string;
     status?: $Enums.PaymentStatus;
     amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
     currency?: string;
     paymentGateway?: string;
     merchantInvoiceNumber: string;
-    bkashPaymentId?: string | null;
-    bkashTrxId?: string | null;
-    payerReference?: string | null;
     paidAt?: Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: string | null;
@@ -657,6 +604,88 @@ export type PaymentCreateWithoutRequestInput = {
     refundedAt?: Date | string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    request: Prisma.WorkRequestCreateNestedOneWithoutPaymentsInput;
+};
+export type PaymentUncheckedCreateWithoutSslcommerzPaymentInput = {
+    id?: string;
+    status?: $Enums.PaymentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    currency?: string;
+    paymentGateway?: string;
+    merchantInvoiceNumber: string;
+    paidAt?: Date | string | null;
+    gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    refundTrxId?: string | null;
+    refundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    refundReason?: string | null;
+    refundedAt?: Date | string | null;
+    requestId: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+};
+export type PaymentCreateOrConnectWithoutSslcommerzPaymentInput = {
+    where: Prisma.PaymentWhereUniqueInput;
+    create: Prisma.XOR<Prisma.PaymentCreateWithoutSslcommerzPaymentInput, Prisma.PaymentUncheckedCreateWithoutSslcommerzPaymentInput>;
+};
+export type PaymentUpsertWithoutSslcommerzPaymentInput = {
+    update: Prisma.XOR<Prisma.PaymentUpdateWithoutSslcommerzPaymentInput, Prisma.PaymentUncheckedUpdateWithoutSslcommerzPaymentInput>;
+    create: Prisma.XOR<Prisma.PaymentCreateWithoutSslcommerzPaymentInput, Prisma.PaymentUncheckedCreateWithoutSslcommerzPaymentInput>;
+    where?: Prisma.PaymentWhereInput;
+};
+export type PaymentUpdateToOneWithWhereWithoutSslcommerzPaymentInput = {
+    where?: Prisma.PaymentWhereInput;
+    data: Prisma.XOR<Prisma.PaymentUpdateWithoutSslcommerzPaymentInput, Prisma.PaymentUncheckedUpdateWithoutSslcommerzPaymentInput>;
+};
+export type PaymentUpdateWithoutSslcommerzPaymentInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    currency?: Prisma.StringFieldUpdateOperationsInput | string;
+    paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
+    merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    refundAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    refundReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutPaymentsNestedInput;
+};
+export type PaymentUncheckedUpdateWithoutSslcommerzPaymentInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    status?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus;
+    amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string;
+    currency?: Prisma.StringFieldUpdateOperationsInput | string;
+    paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
+    merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
+    paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    refundAmount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    refundReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    requestId?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+export type PaymentCreateWithoutRequestInput = {
+    id?: string;
+    status?: $Enums.PaymentStatus;
+    amount: runtime.Decimal | runtime.DecimalJsLike | number | string;
+    currency?: string;
+    paymentGateway?: string;
+    merchantInvoiceNumber: string;
+    paidAt?: Date | string | null;
+    gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
+    refundTrxId?: string | null;
+    refundAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null;
+    refundReason?: string | null;
+    refundedAt?: Date | string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentCreateNestedOneWithoutPaymentInput;
 };
 export type PaymentUncheckedCreateWithoutRequestInput = {
     id?: string;
@@ -665,9 +694,6 @@ export type PaymentUncheckedCreateWithoutRequestInput = {
     currency?: string;
     paymentGateway?: string;
     merchantInvoiceNumber: string;
-    bkashPaymentId?: string | null;
-    bkashTrxId?: string | null;
-    payerReference?: string | null;
     paidAt?: Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: string | null;
@@ -676,6 +702,7 @@ export type PaymentUncheckedCreateWithoutRequestInput = {
     refundedAt?: Date | string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentUncheckedCreateNestedOneWithoutPaymentInput;
 };
 export type PaymentCreateOrConnectWithoutRequestInput = {
     where: Prisma.PaymentWhereUniqueInput;
@@ -708,9 +735,6 @@ export type PaymentScalarWhereInput = {
     currency?: Prisma.StringFilter<"Payment"> | string;
     paymentGateway?: Prisma.StringFilter<"Payment"> | string;
     merchantInvoiceNumber?: Prisma.StringFilter<"Payment"> | string;
-    bkashPaymentId?: Prisma.StringNullableFilter<"Payment"> | string | null;
-    bkashTrxId?: Prisma.StringNullableFilter<"Payment"> | string | null;
-    payerReference?: Prisma.StringNullableFilter<"Payment"> | string | null;
     paidAt?: Prisma.DateTimeNullableFilter<"Payment"> | Date | string | null;
     gatewayResponse?: Prisma.JsonNullableFilter<"Payment">;
     refundTrxId?: Prisma.StringNullableFilter<"Payment"> | string | null;
@@ -728,9 +752,6 @@ export type PaymentCreateManyRequestInput = {
     currency?: string;
     paymentGateway?: string;
     merchantInvoiceNumber: string;
-    bkashPaymentId?: string | null;
-    bkashTrxId?: string | null;
-    payerReference?: string | null;
     paidAt?: Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: string | null;
@@ -747,9 +768,6 @@ export type PaymentUpdateWithoutRequestInput = {
     currency?: Prisma.StringFieldUpdateOperationsInput | string;
     paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
     merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
-    bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    bkashTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    payerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -758,6 +776,7 @@ export type PaymentUpdateWithoutRequestInput = {
     refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentUpdateOneWithoutPaymentNestedInput;
 };
 export type PaymentUncheckedUpdateWithoutRequestInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -766,9 +785,6 @@ export type PaymentUncheckedUpdateWithoutRequestInput = {
     currency?: Prisma.StringFieldUpdateOperationsInput | string;
     paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
     merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
-    bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    bkashTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    payerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -777,6 +793,7 @@ export type PaymentUncheckedUpdateWithoutRequestInput = {
     refundedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    sslcommerzPayment?: Prisma.SslCommerzPaymentUncheckedUpdateOneWithoutPaymentNestedInput;
 };
 export type PaymentUncheckedUpdateManyWithoutRequestInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -785,9 +802,6 @@ export type PaymentUncheckedUpdateManyWithoutRequestInput = {
     currency?: Prisma.StringFieldUpdateOperationsInput | string;
     paymentGateway?: Prisma.StringFieldUpdateOperationsInput | string;
     merchantInvoiceNumber?: Prisma.StringFieldUpdateOperationsInput | string;
-    bkashPaymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    bkashTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
-    payerReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     paidAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     gatewayResponse?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue;
     refundTrxId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
@@ -804,9 +818,6 @@ export type PaymentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     currency?: boolean;
     paymentGateway?: boolean;
     merchantInvoiceNumber?: boolean;
-    bkashPaymentId?: boolean;
-    bkashTrxId?: boolean;
-    payerReference?: boolean;
     paidAt?: boolean;
     gatewayResponse?: boolean;
     refundTrxId?: boolean;
@@ -817,6 +828,7 @@ export type PaymentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     createdAt?: boolean;
     updatedAt?: boolean;
     request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    sslcommerzPayment?: boolean | Prisma.Payment$sslcommerzPaymentArgs<ExtArgs>;
 }, ExtArgs["result"]["payment"]>;
 export type PaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -825,9 +837,6 @@ export type PaymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
     currency?: boolean;
     paymentGateway?: boolean;
     merchantInvoiceNumber?: boolean;
-    bkashPaymentId?: boolean;
-    bkashTrxId?: boolean;
-    payerReference?: boolean;
     paidAt?: boolean;
     gatewayResponse?: boolean;
     refundTrxId?: boolean;
@@ -846,9 +855,6 @@ export type PaymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
     currency?: boolean;
     paymentGateway?: boolean;
     merchantInvoiceNumber?: boolean;
-    bkashPaymentId?: boolean;
-    bkashTrxId?: boolean;
-    payerReference?: boolean;
     paidAt?: boolean;
     gatewayResponse?: boolean;
     refundTrxId?: boolean;
@@ -867,9 +873,6 @@ export type PaymentSelectScalar = {
     currency?: boolean;
     paymentGateway?: boolean;
     merchantInvoiceNumber?: boolean;
-    bkashPaymentId?: boolean;
-    bkashTrxId?: boolean;
-    payerReference?: boolean;
     paidAt?: boolean;
     gatewayResponse?: boolean;
     refundTrxId?: boolean;
@@ -880,9 +883,10 @@ export type PaymentSelectScalar = {
     createdAt?: boolean;
     updatedAt?: boolean;
 };
-export type PaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "amount" | "currency" | "paymentGateway" | "merchantInvoiceNumber" | "bkashPaymentId" | "bkashTrxId" | "payerReference" | "paidAt" | "gatewayResponse" | "refundTrxId" | "refundAmount" | "refundReason" | "refundedAt" | "requestId" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>;
+export type PaymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "amount" | "currency" | "paymentGateway" | "merchantInvoiceNumber" | "paidAt" | "gatewayResponse" | "refundTrxId" | "refundAmount" | "refundReason" | "refundedAt" | "requestId" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>;
 export type PaymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    sslcommerzPayment?: boolean | Prisma.Payment$sslcommerzPaymentArgs<ExtArgs>;
 };
 export type PaymentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
@@ -894,6 +898,7 @@ export type $PaymentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     name: "Payment";
     objects: {
         request: Prisma.$WorkRequestPayload<ExtArgs>;
+        sslcommerzPayment: Prisma.$SslCommerzPaymentPayload<ExtArgs> | null;
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -902,9 +907,6 @@ export type $PaymentPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
         currency: string;
         paymentGateway: string;
         merchantInvoiceNumber: string;
-        bkashPaymentId: string | null;
-        bkashTrxId: string | null;
-        payerReference: string | null;
         paidAt: Date | null;
         gatewayResponse: runtime.JsonValue | null;
         refundTrxId: string | null;
@@ -1244,6 +1246,7 @@ export interface PaymentDelegate<ExtArgs extends runtime.Types.Extensions.Intern
 export interface Prisma__PaymentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
     request<T extends Prisma.WorkRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkRequestClient<runtime.Types.Result.GetResult<Prisma.$WorkRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
+    sslcommerzPayment<T extends Prisma.Payment$sslcommerzPaymentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Payment$sslcommerzPaymentArgs<ExtArgs>>): Prisma.Prisma__SslCommerzPaymentClient<runtime.Types.Result.GetResult<Prisma.$SslCommerzPaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1275,9 +1278,6 @@ export interface PaymentFieldRefs {
     readonly currency: Prisma.FieldRef<"Payment", 'String'>;
     readonly paymentGateway: Prisma.FieldRef<"Payment", 'String'>;
     readonly merchantInvoiceNumber: Prisma.FieldRef<"Payment", 'String'>;
-    readonly bkashPaymentId: Prisma.FieldRef<"Payment", 'String'>;
-    readonly bkashTrxId: Prisma.FieldRef<"Payment", 'String'>;
-    readonly payerReference: Prisma.FieldRef<"Payment", 'String'>;
     readonly paidAt: Prisma.FieldRef<"Payment", 'DateTime'>;
     readonly gatewayResponse: Prisma.FieldRef<"Payment", 'Json'>;
     readonly refundTrxId: Prisma.FieldRef<"Payment", 'String'>;
@@ -1669,6 +1669,24 @@ export type PaymentDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
      * Limit how many Payments to delete.
      */
     limit?: number;
+};
+/**
+ * Payment.sslcommerzPayment
+ */
+export type Payment$sslcommerzPaymentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SslCommerzPayment
+     */
+    select?: Prisma.SslCommerzPaymentSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the SslCommerzPayment
+     */
+    omit?: Prisma.SslCommerzPaymentOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.SslCommerzPaymentInclude<ExtArgs> | null;
+    where?: Prisma.SslCommerzPaymentWhereInput;
 };
 /**
  * Payment without action

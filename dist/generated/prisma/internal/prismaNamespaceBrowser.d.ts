@@ -32,6 +32,7 @@ export declare const ModelName: {
     readonly Department: 'Department';
     readonly Feedback: 'Feedback';
     readonly Payment: 'Payment';
+    readonly SslCommerzPayment: 'SslCommerzPayment';
     readonly Quotation: 'Quotation';
     readonly StaffApplication: 'StaffApplication';
     readonly StaffCategory: 'StaffCategory';
@@ -51,6 +52,9 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export declare const AssignmentScalarFieldEnum: {
     readonly id: 'id';
     readonly status: 'status';
+    readonly amount: 'amount';
+    readonly advanceAmount: 'advanceAmount';
+    readonly requestId: 'requestId';
     readonly staffId: 'staffId';
     readonly citizenId: 'citizenId';
     readonly createdAt: 'createdAt';
@@ -94,9 +98,6 @@ export declare const PaymentScalarFieldEnum: {
     readonly currency: 'currency';
     readonly paymentGateway: 'paymentGateway';
     readonly merchantInvoiceNumber: 'merchantInvoiceNumber';
-    readonly bkashPaymentId: 'bkashPaymentId';
-    readonly bkashTrxId: 'bkashTrxId';
-    readonly payerReference: 'payerReference';
     readonly paidAt: 'paidAt';
     readonly gatewayResponse: 'gatewayResponse';
     readonly refundTrxId: 'refundTrxId';
@@ -108,6 +109,22 @@ export declare const PaymentScalarFieldEnum: {
     readonly updatedAt: 'updatedAt';
 };
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum];
+export declare const SslCommerzPaymentScalarFieldEnum: {
+    readonly id: 'id';
+    readonly paymentId: 'paymentId';
+    readonly tranId: 'tranId';
+    readonly bankTranId: 'bankTranId';
+    readonly valId: 'valId';
+    readonly cardType: 'cardType';
+    readonly cardIssuer: 'cardIssuer';
+    readonly cardBrand: 'cardBrand';
+    readonly cardIssuerCountry: 'cardIssuerCountry';
+    readonly storeAmount: 'storeAmount';
+    readonly gatewayResponse: 'gatewayResponse';
+    readonly createdAt: 'createdAt';
+    readonly updatedAt: 'updatedAt';
+};
+export type SslCommerzPaymentScalarFieldEnum = (typeof SslCommerzPaymentScalarFieldEnum)[keyof typeof SslCommerzPaymentScalarFieldEnum];
 export declare const QuotationScalarFieldEnum: {
     readonly id: 'id';
     readonly proposedFee: 'proposedFee';
@@ -181,12 +198,14 @@ export declare const WorkRequestScalarFieldEnum: {
     readonly description: 'description';
     readonly division: 'division';
     readonly city: 'city';
+    readonly address: 'address';
     readonly postalCode: 'postalCode';
     readonly phone: 'phone';
     readonly approvedFee: 'approvedFee';
     readonly status: 'status';
     readonly rejectionReason: 'rejectionReason';
     readonly citizenId: 'citizenId';
+    readonly departmentId: 'departmentId';
     readonly selectedQuotationId: 'selectedQuotationId';
     readonly createdAt: 'createdAt';
     readonly updatedAt: 'updatedAt';

@@ -1,8 +1,8 @@
+
 import express from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { quotationControllers } from "./quotation.controller";
-import { workRequestControllers } from "../request/workRequest.controller";
 
 const router = express.Router();
 
@@ -11,6 +11,13 @@ router.post(
   "/",
   auth(Role.STAFF),
   quotationControllers.createQuotation,
+);
+
+// Citizen selects a quotation
+router.post(
+  "/select",
+  auth(Role.CITIZEN),
+  quotationControllers.selectQuotation,
 );
 
 // Admin / Manager gets all quotations
@@ -45,15 +52,7 @@ router.patch(
 router.delete(
   "/:id",
   auth(Role.ADMIN),
-  quotationControllers
-  .deleteQuotation,
-);
-
-// citizen will select the quotation
-router.patch(
-  "/:id/select-quotation",
-  auth(Role.CITIZEN),
-  quotationControllers.selectQuotation,
+  quotationControllers.deleteQuotation,
 );
 
 export const quotationRoutes = router;

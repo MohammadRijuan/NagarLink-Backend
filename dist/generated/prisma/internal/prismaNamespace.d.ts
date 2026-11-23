@@ -250,6 +250,7 @@ export declare const ModelName: {
     readonly Department: 'Department';
     readonly Feedback: 'Feedback';
     readonly Payment: 'Payment';
+    readonly SslCommerzPayment: 'SslCommerzPayment';
     readonly Quotation: 'Quotation';
     readonly StaffApplication: 'StaffApplication';
     readonly StaffCategory: 'StaffCategory';
@@ -269,7 +270,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         omit: GlobalOmitOptions;
     };
     meta: {
-        modelProps: "assignment" | "workAttachment" | "category" | "department" | "feedback" | "payment" | "quotation" | "staffApplication" | "staffCategory" | "staffInvitation" | "staffLocation" | "user" | "workRequest";
+        modelProps: "assignment" | "workAttachment" | "category" | "department" | "feedback" | "payment" | "sslCommerzPayment" | "quotation" | "staffApplication" | "staffCategory" | "staffInvitation" | "staffLocation" | "user" | "workRequest";
         txIsolationLevel: TransactionIsolationLevel;
     };
     model: {
@@ -714,6 +715,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
                 count: {
                     args: Prisma.PaymentCountArgs<ExtArgs>;
                     result: runtime.Types.Utils.Optional<Prisma.PaymentCountAggregateOutputType> | number;
+                };
+            };
+        };
+        SslCommerzPayment: {
+            payload: Prisma.$SslCommerzPaymentPayload<ExtArgs>;
+            fields: Prisma.SslCommerzPaymentFieldRefs;
+            operations: {
+                findUnique: {
+                    args: Prisma.SslCommerzPaymentFindUniqueArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload> | null;
+                };
+                findUniqueOrThrow: {
+                    args: Prisma.SslCommerzPaymentFindUniqueOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>;
+                };
+                findFirst: {
+                    args: Prisma.SslCommerzPaymentFindFirstArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload> | null;
+                };
+                findFirstOrThrow: {
+                    args: Prisma.SslCommerzPaymentFindFirstOrThrowArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>;
+                };
+                findMany: {
+                    args: Prisma.SslCommerzPaymentFindManyArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>[];
+                };
+                create: {
+                    args: Prisma.SslCommerzPaymentCreateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>;
+                };
+                createMany: {
+                    args: Prisma.SslCommerzPaymentCreateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                createManyAndReturn: {
+                    args: Prisma.SslCommerzPaymentCreateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>[];
+                };
+                delete: {
+                    args: Prisma.SslCommerzPaymentDeleteArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>;
+                };
+                update: {
+                    args: Prisma.SslCommerzPaymentUpdateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>;
+                };
+                deleteMany: {
+                    args: Prisma.SslCommerzPaymentDeleteManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateMany: {
+                    args: Prisma.SslCommerzPaymentUpdateManyArgs<ExtArgs>;
+                    result: BatchPayload;
+                };
+                updateManyAndReturn: {
+                    args: Prisma.SslCommerzPaymentUpdateManyAndReturnArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>[];
+                };
+                upsert: {
+                    args: Prisma.SslCommerzPaymentUpsertArgs<ExtArgs>;
+                    result: runtime.Types.Utils.PayloadToResult<Prisma.$SslCommerzPaymentPayload>;
+                };
+                aggregate: {
+                    args: Prisma.SslCommerzPaymentAggregateArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.AggregateSslCommerzPayment>;
+                };
+                groupBy: {
+                    args: Prisma.SslCommerzPaymentGroupByArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.SslCommerzPaymentGroupByOutputType>[];
+                };
+                count: {
+                    args: Prisma.SslCommerzPaymentCountArgs<ExtArgs>;
+                    result: runtime.Types.Utils.Optional<Prisma.SslCommerzPaymentCountAggregateOutputType> | number;
                 };
             };
         };
@@ -1272,6 +1347,9 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export declare const AssignmentScalarFieldEnum: {
     readonly id: 'id';
     readonly status: 'status';
+    readonly amount: 'amount';
+    readonly advanceAmount: 'advanceAmount';
+    readonly requestId: 'requestId';
     readonly staffId: 'staffId';
     readonly citizenId: 'citizenId';
     readonly createdAt: 'createdAt';
@@ -1315,9 +1393,6 @@ export declare const PaymentScalarFieldEnum: {
     readonly currency: 'currency';
     readonly paymentGateway: 'paymentGateway';
     readonly merchantInvoiceNumber: 'merchantInvoiceNumber';
-    readonly bkashPaymentId: 'bkashPaymentId';
-    readonly bkashTrxId: 'bkashTrxId';
-    readonly payerReference: 'payerReference';
     readonly paidAt: 'paidAt';
     readonly gatewayResponse: 'gatewayResponse';
     readonly refundTrxId: 'refundTrxId';
@@ -1329,6 +1404,22 @@ export declare const PaymentScalarFieldEnum: {
     readonly updatedAt: 'updatedAt';
 };
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum];
+export declare const SslCommerzPaymentScalarFieldEnum: {
+    readonly id: 'id';
+    readonly paymentId: 'paymentId';
+    readonly tranId: 'tranId';
+    readonly bankTranId: 'bankTranId';
+    readonly valId: 'valId';
+    readonly cardType: 'cardType';
+    readonly cardIssuer: 'cardIssuer';
+    readonly cardBrand: 'cardBrand';
+    readonly cardIssuerCountry: 'cardIssuerCountry';
+    readonly storeAmount: 'storeAmount';
+    readonly gatewayResponse: 'gatewayResponse';
+    readonly createdAt: 'createdAt';
+    readonly updatedAt: 'updatedAt';
+};
+export type SslCommerzPaymentScalarFieldEnum = (typeof SslCommerzPaymentScalarFieldEnum)[keyof typeof SslCommerzPaymentScalarFieldEnum];
 export declare const QuotationScalarFieldEnum: {
     readonly id: 'id';
     readonly proposedFee: 'proposedFee';
@@ -1402,12 +1493,14 @@ export declare const WorkRequestScalarFieldEnum: {
     readonly description: 'description';
     readonly division: 'division';
     readonly city: 'city';
+    readonly address: 'address';
     readonly postalCode: 'postalCode';
     readonly phone: 'phone';
     readonly approvedFee: 'approvedFee';
     readonly status: 'status';
     readonly rejectionReason: 'rejectionReason';
     readonly citizenId: 'citizenId';
+    readonly departmentId: 'departmentId';
     readonly selectedQuotationId: 'selectedQuotationId';
     readonly createdAt: 'createdAt';
     readonly updatedAt: 'updatedAt';
@@ -1459,6 +1552,14 @@ export type EnumAssignmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
  */
 export type ListEnumAssignmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AssignmentStatus[]'>;
 /**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>;
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>;
+/**
  * Reference to a field of type 'DateTime'
  */
 export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>;
@@ -1482,14 +1583,6 @@ export type EnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'PaymentStatus[]'
  */
 export type ListEnumPaymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentStatus[]'>;
-/**
- * Reference to a field of type 'Decimal'
- */
-export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>;
-/**
- * Reference to a field of type 'Decimal[]'
- */
-export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>;
 /**
  * Reference to a field of type 'Json'
  */
@@ -1711,6 +1804,7 @@ export type GlobalOmitConfig = {
     department?: Prisma.DepartmentOmit;
     feedback?: Prisma.FeedbackOmit;
     payment?: Prisma.PaymentOmit;
+    sslCommerzPayment?: Prisma.SslCommerzPaymentOmit;
     quotation?: Prisma.QuotationOmit;
     staffApplication?: Prisma.StaffApplicationOmit;
     staffCategory?: Prisma.StaffCategoryOmit;

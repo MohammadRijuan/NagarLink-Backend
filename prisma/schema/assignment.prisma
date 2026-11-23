@@ -3,6 +3,13 @@ model Assignment {
 
   status AssignmentStatus @default(ONGOING)
 
+  amount Decimal @db.Decimal(10, 2)
+
+  advanceAmount Decimal @db.Decimal(10, 2)
+
+  requestId String
+  request   WorkRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+
   staffId String
   staff   User   @relation("StaffAssignments", fields: [staffId], references: [id], onDelete: Cascade)
 
@@ -15,6 +22,7 @@ model Assignment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([requestId])
   @@index([staffId])
   @@index([citizenId])
   @@map("assignments")

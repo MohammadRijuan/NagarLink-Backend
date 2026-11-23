@@ -1,1 +1,1 @@
-{"version":3,"file":"assignment.route.js","sourceRoot":"","sources":["../../../../src/modules/assignment/assignment.route.ts"],"names":[],"mappings":""}
+{"version":3,"file":"assignment.route.js","sourceRoot":"","sources":["../../../../src/modules/assignment/assignment.route.ts"],"names":[],"mappings":";;;AAAA,qCAAiC;AACjC,2DAAuD;AACvD,2DAAmD;AACnD,mEAAgE;AAEhE,MAAM,MAAM,GAAG,IAAA,gBAAM,GAAE,CAAC;AAExB,MAAM,CAAC,GAAG,CACR,6BAA6B,EAC7B,IAAA,gBAAI,EAAC,YAAI,CAAC,OAAO,EAAE,YAAI,CAAC,KAAK,CAAC,EAC9B,6CAAqB,CAAC,qBAAqB,CAC5C,CAAC;AAEW,QAAA,gBAAgB,GAAG,MAAM,CAAC"}

@@ -48,7 +48,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.JsonNullValueFilter = exports.NullsOrder = exports.QueryMode = exports.NullableJsonNullValueInput = exports.SortOrder = exports.WorkRequestScalarFieldEnum = exports.UserScalarFieldEnum = exports.StaffLocationScalarFieldEnum = exports.StaffInvitationScalarFieldEnum = exports.StaffCategoryScalarFieldEnum = exports.StaffApplicationScalarFieldEnum = exports.QuotationScalarFieldEnum = exports.PaymentScalarFieldEnum = exports.FeedbackScalarFieldEnum = exports.DepartmentScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.WorkAttachmentScalarFieldEnum = exports.AssignmentScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
+exports.JsonNullValueFilter = exports.NullsOrder = exports.QueryMode = exports.NullableJsonNullValueInput = exports.SortOrder = exports.WorkRequestScalarFieldEnum = exports.UserScalarFieldEnum = exports.StaffLocationScalarFieldEnum = exports.StaffInvitationScalarFieldEnum = exports.StaffCategoryScalarFieldEnum = exports.StaffApplicationScalarFieldEnum = exports.QuotationScalarFieldEnum = exports.SslCommerzPaymentScalarFieldEnum = exports.PaymentScalarFieldEnum = exports.FeedbackScalarFieldEnum = exports.DepartmentScalarFieldEnum = exports.CategoryScalarFieldEnum = exports.WorkAttachmentScalarFieldEnum = exports.AssignmentScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/index-browser"));
 exports.Decimal = runtime.Decimal;
 exports.NullTypes = {
@@ -81,6 +81,7 @@ exports.ModelName = {
     Department: 'Department',
     Feedback: 'Feedback',
     Payment: 'Payment',
+    SslCommerzPayment: 'SslCommerzPayment',
     Quotation: 'Quotation',
     StaffApplication: 'StaffApplication',
     StaffCategory: 'StaffCategory',
@@ -101,6 +102,9 @@ exports.TransactionIsolationLevel = runtime.makeStrictEnum({
 exports.AssignmentScalarFieldEnum = {
     id: 'id',
     status: 'status',
+    amount: 'amount',
+    advanceAmount: 'advanceAmount',
+    requestId: 'requestId',
     staffId: 'staffId',
     citizenId: 'citizenId',
     createdAt: 'createdAt',
@@ -139,9 +143,6 @@ exports.PaymentScalarFieldEnum = {
     currency: 'currency',
     paymentGateway: 'paymentGateway',
     merchantInvoiceNumber: 'merchantInvoiceNumber',
-    bkashPaymentId: 'bkashPaymentId',
-    bkashTrxId: 'bkashTrxId',
-    payerReference: 'payerReference',
     paidAt: 'paidAt',
     gatewayResponse: 'gatewayResponse',
     refundTrxId: 'refundTrxId',
@@ -149,6 +150,21 @@ exports.PaymentScalarFieldEnum = {
     refundReason: 'refundReason',
     refundedAt: 'refundedAt',
     requestId: 'requestId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+};
+exports.SslCommerzPaymentScalarFieldEnum = {
+    id: 'id',
+    paymentId: 'paymentId',
+    tranId: 'tranId',
+    bankTranId: 'bankTranId',
+    valId: 'valId',
+    cardType: 'cardType',
+    cardIssuer: 'cardIssuer',
+    cardBrand: 'cardBrand',
+    cardIssuerCountry: 'cardIssuerCountry',
+    storeAmount: 'storeAmount',
+    gatewayResponse: 'gatewayResponse',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
 };
@@ -219,12 +235,14 @@ exports.WorkRequestScalarFieldEnum = {
     description: 'description',
     division: 'division',
     city: 'city',
+    address: 'address',
     postalCode: 'postalCode',
     phone: 'phone',
     approvedFee: 'approvedFee',
     status: 'status',
     rejectionReason: 'rejectionReason',
     citizenId: 'citizenId',
+    departmentId: 'departmentId',
     selectedQuotationId: 'selectedQuotationId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'

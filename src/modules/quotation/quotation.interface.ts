@@ -10,3 +10,7 @@ export interface IUpdateQuotation {
   proposedFee?: number;
   status?: QuotationStatus;
 }
+
+export default interface ISelectQuotationPayload {
+  quotationId: string;
+}

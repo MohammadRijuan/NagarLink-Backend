@@ -3,6 +3,7 @@ declare const _default: {
     database_url: string | undefined;
     node_env: string | undefined;
     app_url: string | undefined;
+    frontend_url: string | undefined;
     jwt_access_token: string;
     jwt_access_expires_in: string;
     jwt_refresh_token: string;
@@ -33,6 +34,9 @@ declare const _default: {
     bkash_app_key: string;
     bkash_app_secret: string;
     bkash_callback_url: string;
+    ssl_store_id: string | undefined;
+    ssl_store_password: string | undefined;
+    ssl_base_url: string | undefined;
 };
 export default _default;
 //# sourceMappingURL=index.d.ts.map

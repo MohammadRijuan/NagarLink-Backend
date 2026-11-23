@@ -2,6 +2,8 @@ model WorkAttachment {
   id           String  @id @default(uuid())
   assignmentId String
   fileUrl      String
+  publicId     String
+  resourceType String
   fileType     String?
   fileName     String?
 

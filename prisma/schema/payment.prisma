@@ -6,14 +6,10 @@ model Payment {
   amount   Decimal @db.Decimal(10, 2)
   currency String  @default("BDT")
 
-  paymentGateway        String @default("bkash")
+  paymentGateway        String @default("sslcommerz")
   merchantInvoiceNumber String @unique
 
-  bkashPaymentId String?   @unique
-  bkashTrxId     String?
-  payerReference String?
   paidAt         DateTime?
-
   gatewayResponse Json?
 
   refundTrxId  String?
@@ -22,7 +18,9 @@ model Payment {
   refundedAt   DateTime?
 
   requestId String
-  request   WorkRequest @relation(fields: [requestId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  request   WorkRequest @relation(fields: [requestId], references: [id], onUpdate: Cascade)
+
+  sslcommerzPayment SslCommerzPayment?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,4 +28,31 @@ model Payment {
   @@index([requestId])
   @@index([status])
   @@map("payments")
+}
+
+model SslCommerzPayment {
+  id String @id @default(uuid())
+
+  paymentId String  @unique
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  tranId String @unique
+
+  bankTranId String?
+  valId      String?
+
+  cardType   String?
+  cardIssuer String?
+  cardBrand  String?
+  cardIssuerCountry String?
+
+  storeAmount Decimal? @db.Decimal(10, 2)
+
+  gatewayResponse Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tranId])
+  @@map("sslcommerz_payments")
 }

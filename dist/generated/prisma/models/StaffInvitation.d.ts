@@ -171,6 +171,7 @@ export type StaffInvitationOrderByWithRelationInput = {
 };
 export type StaffInvitationWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
+    requestId_staffId?: Prisma.StaffInvitationRequestIdStaffIdCompoundUniqueInput;
     AND?: Prisma.StaffInvitationWhereInput | Prisma.StaffInvitationWhereInput[];
     OR?: Prisma.StaffInvitationWhereInput[];
     NOT?: Prisma.StaffInvitationWhereInput | Prisma.StaffInvitationWhereInput[];
@@ -182,7 +183,7 @@ export type StaffInvitationWhereUniqueInput = Prisma.AtLeast<{
     updatedAt?: Prisma.DateTimeFilter<"StaffInvitation"> | Date | string;
     request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
     staff?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
-}, "id">;
+}, "id" | "requestId_staffId">;
 export type StaffInvitationOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     requestId?: Prisma.SortOrder;
@@ -267,6 +268,10 @@ export type StaffInvitationUncheckedUpdateManyInput = {
     responseNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+export type StaffInvitationRequestIdStaffIdCompoundUniqueInput = {
+    requestId: string;
+    staffId: string;
 };
 export type StaffInvitationCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;

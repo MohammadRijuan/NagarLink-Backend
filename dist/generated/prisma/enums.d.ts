@@ -20,10 +20,12 @@ export declare const WorkStatus: {
     readonly PENDING: 'PENDING';
     readonly REQUESTED: 'REQUESTED';
     readonly ACCEPTED: 'ACCEPTED';
+    readonly CITIZEN_ACCEPTED: 'CITIZEN_ACCEPTED';
     readonly CITIZEN_DECLINED: 'CITIZEN_DECLINED';
     readonly ADVANCE_PAID: 'ADVANCE_PAID';
     readonly ASSIGNED: 'ASSIGNED';
     readonly COMPLETED: 'COMPLETED';
+    readonly REJECTED: 'REJECTED';
 };
 export type WorkStatus = (typeof WorkStatus)[keyof typeof WorkStatus];
 export declare const QuotationStatus: {

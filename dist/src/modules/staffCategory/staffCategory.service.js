@@ -10,7 +10,7 @@ const AppError_1 = require("../../utils/AppError");
 const enums_1 = require("../../../generated/prisma/enums");
 // Assign Categories to Staff
 const assignCategoriesToStaffService = async (staffId, payload) => {
-    // Check whether staff exists
+    // 1. Check whether staff exists
     const isStaffExist = await prisma_1.prisma.user.findFirst({
         where: {
             id: staffId,
@@ -20,68 +20,191 @@ const assignCategoriesToStaffService = async (staffId, payload) => {
     if (!isStaffExist) {
         throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "Staff not found");
     }
-    // Check whether category IDs are provided
+    // 2. Check whether category IDs are provided
     if (!payload.categoryIds.length) {
         throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Please provide at least one category");
     }
-    // Check whether all categories exist
+    // 3. Remove duplicate IDs from the request
+    const categoryIds = [...new Set(payload.categoryIds)];
+    // 4. Check whether all categories exist
     const categories = await prisma_1.prisma.category.findMany({
         where: {
             id: {
-                // in means match any value from the provided list.
-                in: payload.categoryIds, //["id-1", "id-2", "id-3"]
+                in: categoryIds,
             },
         },
     });
-    if (categories.length !== payload.categoryIds.length) {
+    if (categories.length !== categoryIds.length) {
         throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "One or more categories not found");
     }
-    // Assign categories
-    const result = await prisma_1.prisma.$transaction(payload.categoryIds.map((categoryId) => prisma_1.prisma.staffCategory.create({
-        data: {
+    // 5. Update staff category assignments
+    await prisma_1.prisma.$transaction(async (tx) => {
+        // Find currently assigned categories
+        const existingCategories = await tx.staffCategory.findMany({
+            where: {
+                staffId,
+            },
+            select: {
+                categoryId: true,
+            },
+        });
+        // Get existing category IDs
+        const existingCategoryIds = existingCategories.map((item) => item.categoryId);
+        // Check whether categories are already up to date
+        const isAlreadyUpdated = existingCategoryIds.length === categoryIds.length &&
+            categoryIds.every((id) => existingCategoryIds.includes(id));
+        if (isAlreadyUpdated) {
+            throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Categories are already up to date");
+        }
+        // Remove categories not included in the latest request
+        await tx.staffCategory.deleteMany({
+            where: {
+                staffId,
+                categoryId: {
+                    notIn: categoryIds,
+                },
+            },
+        });
+        // Get only new category IDs
+        const newCategoryIds = categoryIds.filter((categoryId) => !existingCategoryIds.includes(categoryId));
+        // Add only new categories
+        if (newCategoryIds.length > 0) {
+            await tx.staffCategory.createMany({
+                data: newCategoryIds.map((categoryId) => ({
+                    staffId,
+                    categoryId,
+                })),
+            });
+        }
+    });
+    // 6. Get all currently assigned categories
+    const result = await prisma_1.prisma.staffCategory.findMany({
+        where: {
             staffId,
-            categoryId,
-        },
-        omit: {
-            categoryId: true
         },
         include: {
             category: {
-                include: {
-                    department: true
-                },
                 omit: {
-                    departmentId: true
-                }
-            }
+                    departmentId: true,
+                },
+                include: {
+                    department: true,
+                },
+            },
         },
-    })));
-    const departments = new Map();
-    for (const { category } of result) {
-        const department = category.department;
-        let groupedDepartment = departments.get(department.id);
-        if (!groupedDepartment) {
-            groupedDepartment = {
+    });
+    // 8. Group categories by department
+    const departments = [];
+    for (const item of result) {
+        const department = item.category.department;
+        let existing = departments.find((d) => d.id === department.id);
+        if (!existing) {
+            existing = {
                 id: department.id,
                 name: department.name,
                 categories: [],
             };
-            departments.set(department.id, groupedDepartment);
+            departments.push(existing);
         }
-        groupedDepartment.categories.push({
-            id: category.id,
-            name: category.name,
+        existing.categories.push({
+            id: item.category.id,
+            name: item.category.name,
         });
     }
+    // 9. Return response
     return {
         staffId,
-        departments: [...departments.values()],
+        departments,
     };
 };
 // Get Staff Categories
-const getStaffCategoriesService = async (staffId) => { };
+const getStaffCategoriesService = async (staffId) => {
+    const isStaffExist = await prisma_1.prisma.user.findFirst({
+        where: {
+            id: staffId,
+            role: enums_1.Role.STAFF,
+        },
+    });
+    if (!isStaffExist) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "Staff not found");
+    }
+    // 2. Get all assigned categories
+    const result = await prisma_1.prisma.staffCategory.findMany({
+        where: {
+            staffId,
+        },
+        include: {
+            category: {
+                omit: {
+                    departmentId: true,
+                },
+                include: {
+                    department: true,
+                },
+            },
+        },
+    });
+    // 4. Group categories by department
+    const departments = [];
+    for (const item of result) {
+        const department = item.category.department;
+        let existing = departments.find((d) => d.id === department.id);
+        if (!existing) {
+            existing = {
+                id: department.id,
+                name: department.name,
+                categories: [],
+            };
+            departments.push(existing);
+        }
+        existing.categories.push({
+            id: item.category.id,
+            name: item.category.name,
+        });
+    }
+    // 5. Return response
+    return {
+        staffId,
+        departments,
+    };
+};
 // Remove Staff Category
-const removeStaffCategoryService = async (staffId, categoryId) => { };
+// Remove Staff Category
+const removeStaffCategoryService = async (staffId, categoryId) => {
+    // 1. Check whether staff exists
+    const isStaffExist = await prisma_1.prisma.user.findFirst({
+        where: {
+            id: staffId,
+            role: enums_1.Role.STAFF,
+        },
+    });
+    if (!isStaffExist) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "Staff not found");
+    }
+    // 2. Check whether category is assigned to this staff
+    const isCategoryAssigned = await prisma_1.prisma.staffCategory.findFirst({
+        where: {
+            staffId,
+            categoryId,
+        },
+    });
+    if (!isCategoryAssigned) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "This category is not assigned to this staff");
+    }
+    // 3. Remove category assignment
+    await prisma_1.prisma.staffCategory.delete({
+        where: {
+            staffId_categoryId: {
+                staffId,
+                categoryId,
+            },
+        },
+    });
+    // 4. Get remaining assigned categories
+    const result = await getStaffCategoriesService(staffId);
+    // 5. Return updated data
+    return result;
+};
 exports.staffCategoryServices = {
     assignCategoriesToStaffService,
     getStaffCategoriesService,

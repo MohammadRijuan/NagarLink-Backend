@@ -185,7 +185,7 @@ export type QuotationWhereInput = {
     staffId?: Prisma.StringFilter<"Quotation"> | string;
     createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string;
-    Request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
+    request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
     staff?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     selectedFor?: Prisma.XOR<Prisma.WorkRequestNullableScalarRelationFilter, Prisma.WorkRequestWhereInput> | null;
 };
@@ -197,12 +197,13 @@ export type QuotationOrderByWithRelationInput = {
     staffId?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
-    Request?: Prisma.WorkRequestOrderByWithRelationInput;
+    request?: Prisma.WorkRequestOrderByWithRelationInput;
     staff?: Prisma.UserOrderByWithRelationInput;
     selectedFor?: Prisma.WorkRequestOrderByWithRelationInput;
 };
 export type QuotationWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
+    requestId_staffId?: Prisma.QuotationRequestIdStaffIdCompoundUniqueInput;
     AND?: Prisma.QuotationWhereInput | Prisma.QuotationWhereInput[];
     OR?: Prisma.QuotationWhereInput[];
     NOT?: Prisma.QuotationWhereInput | Prisma.QuotationWhereInput[];
@@ -212,10 +213,10 @@ export type QuotationWhereUniqueInput = Prisma.AtLeast<{
     staffId?: Prisma.StringFilter<"Quotation"> | string;
     createdAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Quotation"> | Date | string;
-    Request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
+    request?: Prisma.XOR<Prisma.WorkRequestScalarRelationFilter, Prisma.WorkRequestWhereInput>;
     staff?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     selectedFor?: Prisma.XOR<Prisma.WorkRequestNullableScalarRelationFilter, Prisma.WorkRequestWhereInput> | null;
-}, "id">;
+}, "id" | "requestId_staffId">;
 export type QuotationOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     proposedFee?: Prisma.SortOrder;
@@ -248,7 +249,7 @@ export type QuotationCreateInput = {
     status?: $Enums.QuotationStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
-    Request: Prisma.WorkRequestCreateNestedOneWithoutQuotationsInput;
+    request: Prisma.WorkRequestCreateNestedOneWithoutQuotationsInput;
     staff: Prisma.UserCreateNestedOneWithoutQuotationsInput;
     selectedFor?: Prisma.WorkRequestCreateNestedOneWithoutSelectedQuotationInput;
 };
@@ -268,7 +269,7 @@ export type QuotationUpdateInput = {
     status?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-    Request?: Prisma.WorkRequestUpdateOneRequiredWithoutQuotationsNestedInput;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutQuotationsNestedInput;
     staff?: Prisma.UserUpdateOneRequiredWithoutQuotationsNestedInput;
     selectedFor?: Prisma.WorkRequestUpdateOneWithoutSelectedQuotationNestedInput;
 };
@@ -306,6 +307,10 @@ export type QuotationUncheckedUpdateManyInput = {
     staffId?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+};
+export type QuotationRequestIdStaffIdCompoundUniqueInput = {
+    requestId: string;
+    staffId: string;
 };
 export type QuotationCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -451,7 +456,7 @@ export type QuotationCreateWithoutStaffInput = {
     status?: $Enums.QuotationStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
-    Request: Prisma.WorkRequestCreateNestedOneWithoutQuotationsInput;
+    request: Prisma.WorkRequestCreateNestedOneWithoutQuotationsInput;
     selectedFor?: Prisma.WorkRequestCreateNestedOneWithoutSelectedQuotationInput;
 };
 export type QuotationUncheckedCreateWithoutStaffInput = {
@@ -502,7 +507,7 @@ export type QuotationCreateWithoutSelectedForInput = {
     status?: $Enums.QuotationStatus;
     createdAt?: Date | string;
     updatedAt?: Date | string;
-    Request: Prisma.WorkRequestCreateNestedOneWithoutQuotationsInput;
+    request: Prisma.WorkRequestCreateNestedOneWithoutQuotationsInput;
     staff: Prisma.UserCreateNestedOneWithoutQuotationsInput;
 };
 export type QuotationUncheckedCreateWithoutSelectedForInput = {
@@ -559,7 +564,7 @@ export type QuotationUpdateWithoutSelectedForInput = {
     status?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-    Request?: Prisma.WorkRequestUpdateOneRequiredWithoutQuotationsNestedInput;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutQuotationsNestedInput;
     staff?: Prisma.UserUpdateOneRequiredWithoutQuotationsNestedInput;
 };
 export type QuotationUncheckedUpdateWithoutSelectedForInput = {
@@ -598,7 +603,7 @@ export type QuotationUpdateWithoutStaffInput = {
     status?: Prisma.EnumQuotationStatusFieldUpdateOperationsInput | $Enums.QuotationStatus;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
-    Request?: Prisma.WorkRequestUpdateOneRequiredWithoutQuotationsNestedInput;
+    request?: Prisma.WorkRequestUpdateOneRequiredWithoutQuotationsNestedInput;
     selectedFor?: Prisma.WorkRequestUpdateOneWithoutSelectedQuotationNestedInput;
 };
 export type QuotationUncheckedUpdateWithoutStaffInput = {
@@ -660,7 +665,7 @@ export type QuotationSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
     staffId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
-    Request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     selectedFor?: boolean | Prisma.Quotation$selectedForArgs<ExtArgs>;
 }, ExtArgs["result"]["quotation"]>;
@@ -672,7 +677,7 @@ export type QuotationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
     staffId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
-    Request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["quotation"]>;
 export type QuotationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -683,7 +688,7 @@ export type QuotationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
     staffId?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
-    Request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["quotation"]>;
 export type QuotationSelectScalar = {
@@ -697,22 +702,22 @@ export type QuotationSelectScalar = {
 };
 export type QuotationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "proposedFee" | "status" | "requestId" | "staffId" | "createdAt" | "updatedAt", ExtArgs["result"]["quotation"]>;
 export type QuotationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-    Request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     selectedFor?: boolean | Prisma.Quotation$selectedForArgs<ExtArgs>;
 };
 export type QuotationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-    Request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 };
 export type QuotationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-    Request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
+    request?: boolean | Prisma.WorkRequestDefaultArgs<ExtArgs>;
     staff?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 };
 export type $QuotationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     name: "Quotation";
     objects: {
-        Request: Prisma.$WorkRequestPayload<ExtArgs>;
+        request: Prisma.$WorkRequestPayload<ExtArgs>;
         staff: Prisma.$UserPayload<ExtArgs>;
         selectedFor: Prisma.$WorkRequestPayload<ExtArgs> | null;
     };
@@ -1053,7 +1058,7 @@ export interface QuotationDelegate<ExtArgs extends runtime.Types.Extensions.Inte
  */
 export interface Prisma__QuotationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
-    Request<T extends Prisma.WorkRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkRequestClient<runtime.Types.Result.GetResult<Prisma.$WorkRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
+    request<T extends Prisma.WorkRequestDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkRequestDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkRequestClient<runtime.Types.Result.GetResult<Prisma.$WorkRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
     staff<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>;
     selectedFor<T extends Prisma.Quotation$selectedForArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Quotation$selectedForArgs<ExtArgs>>): Prisma.Prisma__WorkRequestClient<runtime.Types.Result.GetResult<Prisma.$WorkRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
     /**

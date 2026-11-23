@@ -16,6 +16,10 @@ const category_route_1 = require("./modules/category/category.route");
 const staffApplication_route_1 = require("./modules/staffApplication/staffApplication.route");
 const staffManagement_route_1 = require("./modules/staffManagement/staffManagement.route");
 const staffCategory_route_1 = require("./modules/staffCategory/staffCategory.route");
+const quotation_route_1 = require("./modules/quotation/quotation.route");
+const workRequest_route_1 = require("./modules/request/workRequest.route");
+const staffInvitation_route_1 = require("./modules/staffInvitation/staffInvitation.route");
+const payment_route_1 = require("./modules/payment/payment.route");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: config_1.default.app_url,
@@ -33,6 +37,10 @@ app.use("/api/v1/categories", category_route_1.categoryRoutes);
 app.use("/api/v1/staff-application", staffApplication_route_1.staffApplicationRoutes);
 app.use("/api/v1/staff", staffManagement_route_1.staffRoutes);
 app.use("/api/v1/staff-category", staffCategory_route_1.staffCategoryRoutes);
+app.use("/api/v1/quotation", quotation_route_1.quotationRoutes);
+app.use("/api/v1/work-request", workRequest_route_1.workRequestRoutes);
+app.use("/api/v1/staff-invitation", staffInvitation_route_1.staffInvitationRoutes);
+app.use("/api/v1/payments", payment_route_1.paymentRoutes);
 app.use("/", (req, res) => {
     // res.send("NagarLink Server working perfectly")
     res.json({

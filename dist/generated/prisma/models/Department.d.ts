@@ -115,11 +115,13 @@ export type DepartmentWhereInput = {
     id?: Prisma.StringFilter<"Department"> | string;
     name?: Prisma.StringFilter<"Department"> | string;
     categories?: Prisma.CategoryListRelationFilter;
+    workRequests?: Prisma.WorkRequestListRelationFilter;
 };
 export type DepartmentOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
     categories?: Prisma.CategoryOrderByRelationAggregateInput;
+    workRequests?: Prisma.WorkRequestOrderByRelationAggregateInput;
 };
 export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -128,6 +130,7 @@ export type DepartmentWhereUniqueInput = Prisma.AtLeast<{
     OR?: Prisma.DepartmentWhereInput[];
     NOT?: Prisma.DepartmentWhereInput | Prisma.DepartmentWhereInput[];
     categories?: Prisma.CategoryListRelationFilter;
+    workRequests?: Prisma.WorkRequestListRelationFilter;
 }, "id" | "name">;
 export type DepartmentOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -147,21 +150,25 @@ export type DepartmentCreateInput = {
     id?: string;
     name: string;
     categories?: Prisma.CategoryCreateNestedManyWithoutDepartmentInput;
+    workRequests?: Prisma.WorkRequestCreateNestedManyWithoutDepartmentInput;
 };
 export type DepartmentUncheckedCreateInput = {
     id?: string;
     name: string;
     categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutDepartmentInput;
+    workRequests?: Prisma.WorkRequestUncheckedCreateNestedManyWithoutDepartmentInput;
 };
 export type DepartmentUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     categories?: Prisma.CategoryUpdateManyWithoutDepartmentNestedInput;
+    workRequests?: Prisma.WorkRequestUpdateManyWithoutDepartmentNestedInput;
 };
 export type DepartmentUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
     categories?: Prisma.CategoryUncheckedUpdateManyWithoutDepartmentNestedInput;
+    workRequests?: Prisma.WorkRequestUncheckedUpdateManyWithoutDepartmentNestedInput;
 };
 export type DepartmentCreateManyInput = {
     id?: string;
@@ -203,13 +210,27 @@ export type DepartmentUpdateOneRequiredWithoutCategoriesNestedInput = {
     connect?: Prisma.DepartmentWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.DepartmentUpdateToOneWithWhereWithoutCategoriesInput, Prisma.DepartmentUpdateWithoutCategoriesInput>, Prisma.DepartmentUncheckedUpdateWithoutCategoriesInput>;
 };
+export type DepartmentCreateNestedOneWithoutWorkRequestsInput = {
+    create?: Prisma.XOR<Prisma.DepartmentCreateWithoutWorkRequestsInput, Prisma.DepartmentUncheckedCreateWithoutWorkRequestsInput>;
+    connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutWorkRequestsInput;
+    connect?: Prisma.DepartmentWhereUniqueInput;
+};
+export type DepartmentUpdateOneRequiredWithoutWorkRequestsNestedInput = {
+    create?: Prisma.XOR<Prisma.DepartmentCreateWithoutWorkRequestsInput, Prisma.DepartmentUncheckedCreateWithoutWorkRequestsInput>;
+    connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutWorkRequestsInput;
+    upsert?: Prisma.DepartmentUpsertWithoutWorkRequestsInput;
+    connect?: Prisma.DepartmentWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.DepartmentUpdateToOneWithWhereWithoutWorkRequestsInput, Prisma.DepartmentUpdateWithoutWorkRequestsInput>, Prisma.DepartmentUncheckedUpdateWithoutWorkRequestsInput>;
+};
 export type DepartmentCreateWithoutCategoriesInput = {
     id?: string;
     name: string;
+    workRequests?: Prisma.WorkRequestCreateNestedManyWithoutDepartmentInput;
 };
 export type DepartmentUncheckedCreateWithoutCategoriesInput = {
     id?: string;
     name: string;
+    workRequests?: Prisma.WorkRequestUncheckedCreateNestedManyWithoutDepartmentInput;
 };
 export type DepartmentCreateOrConnectWithoutCategoriesInput = {
     where: Prisma.DepartmentWhereUniqueInput;
@@ -227,19 +248,56 @@ export type DepartmentUpdateToOneWithWhereWithoutCategoriesInput = {
 export type DepartmentUpdateWithoutCategoriesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
+    workRequests?: Prisma.WorkRequestUpdateManyWithoutDepartmentNestedInput;
 };
 export type DepartmentUncheckedUpdateWithoutCategoriesInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     name?: Prisma.StringFieldUpdateOperationsInput | string;
+    workRequests?: Prisma.WorkRequestUncheckedUpdateManyWithoutDepartmentNestedInput;
+};
+export type DepartmentCreateWithoutWorkRequestsInput = {
+    id?: string;
+    name: string;
+    categories?: Prisma.CategoryCreateNestedManyWithoutDepartmentInput;
+};
+export type DepartmentUncheckedCreateWithoutWorkRequestsInput = {
+    id?: string;
+    name: string;
+    categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutDepartmentInput;
+};
+export type DepartmentCreateOrConnectWithoutWorkRequestsInput = {
+    where: Prisma.DepartmentWhereUniqueInput;
+    create: Prisma.XOR<Prisma.DepartmentCreateWithoutWorkRequestsInput, Prisma.DepartmentUncheckedCreateWithoutWorkRequestsInput>;
+};
+export type DepartmentUpsertWithoutWorkRequestsInput = {
+    update: Prisma.XOR<Prisma.DepartmentUpdateWithoutWorkRequestsInput, Prisma.DepartmentUncheckedUpdateWithoutWorkRequestsInput>;
+    create: Prisma.XOR<Prisma.DepartmentCreateWithoutWorkRequestsInput, Prisma.DepartmentUncheckedCreateWithoutWorkRequestsInput>;
+    where?: Prisma.DepartmentWhereInput;
+};
+export type DepartmentUpdateToOneWithWhereWithoutWorkRequestsInput = {
+    where?: Prisma.DepartmentWhereInput;
+    data: Prisma.XOR<Prisma.DepartmentUpdateWithoutWorkRequestsInput, Prisma.DepartmentUncheckedUpdateWithoutWorkRequestsInput>;
+};
+export type DepartmentUpdateWithoutWorkRequestsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    categories?: Prisma.CategoryUpdateManyWithoutDepartmentNestedInput;
+};
+export type DepartmentUncheckedUpdateWithoutWorkRequestsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    categories?: Prisma.CategoryUncheckedUpdateManyWithoutDepartmentNestedInput;
 };
 /**
  * Count Type DepartmentCountOutputType
  */
 export type DepartmentCountOutputType = {
     categories: number;
+    workRequests: number;
 };
 export type DepartmentCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     categories?: boolean | DepartmentCountOutputTypeCountCategoriesArgs;
+    workRequests?: boolean | DepartmentCountOutputTypeCountWorkRequestsArgs;
 };
 /**
  * DepartmentCountOutputType without action
@@ -256,10 +314,17 @@ export type DepartmentCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
 export type DepartmentCountOutputTypeCountCategoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     where?: Prisma.CategoryWhereInput;
 };
+/**
+ * DepartmentCountOutputType without action
+ */
+export type DepartmentCountOutputTypeCountWorkRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.WorkRequestWhereInput;
+};
 export type DepartmentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
     name?: boolean;
     categories?: boolean | Prisma.Department$categoriesArgs<ExtArgs>;
+    workRequests?: boolean | Prisma.Department$workRequestsArgs<ExtArgs>;
     _count?: boolean | Prisma.DepartmentCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["department"]>;
 export type DepartmentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -277,6 +342,7 @@ export type DepartmentSelectScalar = {
 export type DepartmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name", ExtArgs["result"]["department"]>;
 export type DepartmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     categories?: boolean | Prisma.Department$categoriesArgs<ExtArgs>;
+    workRequests?: boolean | Prisma.Department$workRequestsArgs<ExtArgs>;
     _count?: boolean | Prisma.DepartmentCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type DepartmentIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {};
@@ -285,6 +351,7 @@ export type $DepartmentPayload<ExtArgs extends runtime.Types.Extensions.Internal
     name: "Department";
     objects: {
         categories: Prisma.$CategoryPayload<ExtArgs>[];
+        workRequests: Prisma.$WorkRequestPayload<ExtArgs>[];
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -619,6 +686,7 @@ export interface DepartmentDelegate<ExtArgs extends runtime.Types.Extensions.Int
 export interface Prisma__DepartmentClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
     categories<T extends Prisma.Department$categoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
+    workRequests<T extends Prisma.Department$workRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Department$workRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1043,6 +1111,29 @@ export type Department$categoriesArgs<ExtArgs extends runtime.Types.Extensions.I
     take?: number;
     skip?: number;
     distinct?: Prisma.CategoryScalarFieldEnum | Prisma.CategoryScalarFieldEnum[];
+};
+/**
+ * Department.workRequests
+ */
+export type Department$workRequestsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkRequest
+     */
+    select?: Prisma.WorkRequestSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the WorkRequest
+     */
+    omit?: Prisma.WorkRequestOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: Prisma.WorkRequestInclude<ExtArgs> | null;
+    where?: Prisma.WorkRequestWhereInput;
+    orderBy?: Prisma.WorkRequestOrderByWithRelationInput | Prisma.WorkRequestOrderByWithRelationInput[];
+    cursor?: Prisma.WorkRequestWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.WorkRequestScalarFieldEnum | Prisma.WorkRequestScalarFieldEnum[];
 };
 /**
  * Department without action

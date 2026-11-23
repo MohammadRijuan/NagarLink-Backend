@@ -2,7 +2,7 @@ model Department {
   id   String @id @default(uuid())
   name String @unique
 
-  categories Category[]
+  categories   Category[]
   workRequests WorkRequest[]
 
   @@map("departments")
