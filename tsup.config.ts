@@ -1,19 +1,15 @@
-// tsup.config.ts
 import { defineConfig } from "tsup";
 
-export default defineConfig([
-  {
-    entry: ["src/server.ts"],
-    format: ["cjs"],
-    outDir: "dist",
-    outExtension: () => ({ js: ".cjs" }),
-    clean: true,
+export default defineConfig({
+  entry: ["src/server.ts"],
+  format: ["cjs"],
+  target: "esnext",
+  outDir: "dist",
+  outExtension() {
+    return { js: ".cjs" };
   },
-  {
-    entry: { index: "api/_handler.ts" }, 
-    format: ["esm"],
-    outDir: "api",
-    outExtension: () => ({ js: ".js" }),
-    bundle: true,
-  },
-]);
+  clean: true,
+  bundle: true,
+  splitting: false,
+  sourcemap: true,
+});
