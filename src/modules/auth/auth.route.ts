@@ -29,6 +29,9 @@ router.post(
   validateRequest({ body: loginUserSchema }),
   authControllers.loginUser,
 );
+
+router.post("/google", authControllers.googleLogin);
+
 router.get(
   "/me",
   auth(Role.CITIZEN, Role.ADMIN, Role.MANAGER, Role.STAFF),

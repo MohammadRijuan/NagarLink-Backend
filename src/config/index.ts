@@ -45,4 +45,5 @@ export default {
   ssl_store_password: process.env.SSLCOMMERZ_STORE_PASSWORD,
   ssl_base_url: process.env.SSLCOMMERZ_BASE_URL,
   ssl_is_live: process.env.SSL_IS_LIVE === "true",
+  google_client_id: process.env.GOOGLE_CLIENT_ID!,
 };

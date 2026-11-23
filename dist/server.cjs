@@ -71,7 +71,8 @@ var config_default = {
   ssl_store_id: process.env.SSLCOMMERZ_STORE_ID,
   ssl_store_password: process.env.SSLCOMMERZ_STORE_PASSWORD,
   ssl_base_url: process.env.SSLCOMMERZ_BASE_URL,
-  ssl_is_live: process.env.SSL_IS_LIVE === "true"
+  ssl_is_live: process.env.SSL_IS_LIVE === "true",
+  google_client_id: process.env.GOOGLE_CLIENT_ID
 };
 
 // src/app.ts
@@ -417,6 +418,10 @@ var Role = {
   STAFF: "STAFF",
   CITIZEN: "CITIZEN"
 };
+var AuthProvider = {
+  GOOGLE: "GOOGLE",
+  CREDENTIAL: "CREDENTIAL"
+};
 var StaffApplicationStatus = {
   PENDING: "PENDING",
   APPROVED: "APPROVED",
@@ -538,6 +543,12 @@ var jwtUtils = {
   createToken,
   verifyToken
 };
+
+// src/lib/googleAuth.ts
+var import_google_auth_library = require("google-auth-library");
+var googleClient = new import_google_auth_library.OAuth2Client({
+  client_id: config_default.google_client_id
+});
 
 // src/modules/auth/auth.service.ts
 var registerUserService = async (payload) => {
@@ -749,6 +760,133 @@ var getMyProfileService = async (user) => {
   }
   return isUserExist;
 };
+var googleLoginService = async (payload) => {
+  let googleIdTokenPayload = null;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: payload.idToken,
+      audience: config_default.google_client_id
+    });
+    googleIdTokenPayload = ticket.getPayload();
+  } catch (error) {
+    console.log("Google ID Token Verification Failed", error);
+    throw new AppError(
+      import_http_status2.default.UNAUTHORIZED,
+      "Invalid Or Expired Google Id Token"
+    );
+  }
+  if (!googleIdTokenPayload) {
+    throw new AppError(
+      import_http_status2.default.UNAUTHORIZED,
+      "Invalid Or Expired Google Id Token"
+    );
+  }
+  if (!googleIdTokenPayload.email) {
+    throw new AppError(import_http_status2.default.BAD_REQUEST, "Google Email Not Found");
+  }
+  if (!googleIdTokenPayload.name) {
+    throw new AppError(
+      import_http_status2.default.BAD_REQUEST,
+      "Google Email User Name Not Found"
+    );
+  }
+  const ifCitizenExistWithGoogleAuth = await prisma.user.findUnique({
+    where: {
+      email: googleIdTokenPayload.email,
+      role: Role.CITIZEN,
+      googleId: googleIdTokenPayload.sub
+    }
+  });
+  let user = ifCitizenExistWithGoogleAuth;
+  if (!ifCitizenExistWithGoogleAuth) {
+    const ifCitizenExistWithCredentials = await prisma.user.findUnique({
+      where: {
+        email: googleIdTokenPayload.email,
+        role: Role.CITIZEN,
+        authProvider: AuthProvider.CREDENTIAL
+      }
+    });
+    if (ifCitizenExistWithCredentials) {
+      if (!ifCitizenExistWithCredentials.emailVerified) {
+        throw new AppError(import_http_status2.default.FORBIDDEN, "Email Not Verified");
+      }
+      if (!ifCitizenExistWithCredentials.isActive) {
+        throw new AppError(import_http_status2.default.FORBIDDEN, "User Is not active");
+      }
+      if (ifCitizenExistWithCredentials.isDeleted) {
+        throw new AppError(import_http_status2.default.FORBIDDEN, "User Is Deleted");
+      }
+      user = await prisma.user.update({
+        where: {
+          id: ifCitizenExistWithCredentials.id
+        },
+        data: {
+          googleId: googleIdTokenPayload.sub
+        }
+      });
+    } else {
+      user = await prisma.user.create({
+        data: {
+          name: googleIdTokenPayload.name,
+          email: googleIdTokenPayload.email,
+          role: Role.CITIZEN,
+          googleId: googleIdTokenPayload.sub,
+          authProvider: AuthProvider.GOOGLE,
+          emailVerified: true,
+          patient: {
+            create: {
+              name: googleIdTokenPayload.name,
+              email: googleIdTokenPayload.email
+            }
+          }
+        }
+      });
+      const tempatePath = import_path2.default.join(
+        process.cwd(),
+        "src/app/templates/citizen-welcome-email.ejs"
+      );
+      const templateData = {
+        name: user.name
+      };
+      const html = await import_ejs.default.renderFile(tempatePath, templateData);
+      await transporter.sendMail({
+        from: config_default.email_sender,
+        to: user.email,
+        subject: "Welcome To PH Healthcare System",
+        html
+      });
+    }
+  }
+  if (!user) {
+    throw new AppError(import_http_status2.default.NOT_FOUND, "User Not Found");
+  }
+  if (!user.isActive) {
+    throw new AppError(import_http_status2.default.FORBIDDEN, "User Is not active");
+  }
+  if (user.isDeleted) {
+    throw new AppError(import_http_status2.default.FORBIDDEN, "User Is Deleted");
+  }
+  const jwtPayload = {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  };
+  const accessToken = jwtUtils.createToken(
+    jwtPayload,
+    config_default.jwt_access_token,
+    config_default.jwt_access_expires_in
+  );
+  const refreshToken2 = jwtUtils.createToken(
+    jwtPayload,
+    config_default.jwt_refresh_token,
+    config_default.jwt_refresh_expires_in
+  );
+  return {
+    accessToken,
+    refreshToken: refreshToken2
+  };
+};
 var refreshTokenService = async (token) => {
   const verifiedRefreshToken = jwtUtils.verifyToken(
     token,
@@ -899,8 +1037,6 @@ var resetPasswordService = async (payload) => {
     html
   });
 };
-var googleLoginService = async () => {
-};
 var authServices = {
   registerUserService,
   loginUserService,
@@ -1041,6 +1177,32 @@ var refreshToken = catchAsync(async (req, res) => {
   });
 });
 var googleLogin = catchAsync(async (req, res) => {
+  const payload = req.body;
+  const result = await authServices.googleLoginService(payload);
+  const { accessToken, refreshToken: refreshToken2 } = result;
+  res.cookie("accessToken", accessToken, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1e3 * 60 * 60 * 24
+    // 24 hour or 1 day
+  });
+  res.cookie("refreshToken", refreshToken2, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1e3 * 60 * 60 * 24 * 7
+    // 7 days
+  });
+  sendResponse(res, {
+    statusCode: import_http_status3.default.OK,
+    success: true,
+    message: "New tokens generated successfully",
+    data: {
+      accessToken,
+      refreshToken: refreshToken2
+    }
+  });
 });
 var forgotPassword = catchAsync(async (req, res) => {
   const payload = req.body;
@@ -1182,6 +1344,7 @@ router.post(
   validateRequest({ body: loginUserSchema }),
   authControllers.loginUser
 );
+router.post("/google", authControllers.googleLogin);
 router.get(
   "/me",
   auth(Role.CITIZEN, Role.ADMIN, Role.MANAGER, Role.STAFF),
