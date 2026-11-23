@@ -105,7 +105,7 @@ var catchAsync = (fn) => {
 };
 
 // src/lib/prisma.ts
-var import_config = require("dotenv/config");
+var dotenv2 = __toESM(require("dotenv"), 1);
 var import_adapter_pg = require("@prisma/adapter-pg");
 
 // generated/prisma/internal/class.ts
@@ -465,6 +465,7 @@ var PaymentStatus = {
 var PrismaClient = getPrismaClientClass();
 
 // src/lib/prisma.ts
+dotenv2.config();
 var connectionString = `${process.env.DATABASE_URL}`;
 var adapter = new import_adapter_pg.PrismaPg({ connectionString });
 var prisma = new PrismaClient({ adapter });

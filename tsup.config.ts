@@ -1,4 +1,3 @@
-
 import { defineConfig } from "tsup";
 
 export default defineConfig({
@@ -6,6 +5,9 @@ export default defineConfig({
   format: ["cjs"],
   target: "esnext",
   outDir: "dist",
+  outExtension() {
+    return { js: ".cjs" };
+  },
   clean: true,
   bundle: true,
   splitting: false,

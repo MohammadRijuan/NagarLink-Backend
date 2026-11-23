@@ -1,7 +1,13 @@
 {
   "functions": {
-    "src/app.ts": {
+    "api/index.ts": {
       "includeFiles": "src/**/*.ejs"
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ]
 }
