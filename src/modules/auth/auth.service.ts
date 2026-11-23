@@ -407,12 +407,6 @@ const googleLoginService = async (payload: IGoogleLoginPayload) => {
           googleId: googleIdTokenPayload.sub,
           authProvider: AuthProvider.GOOGLE,
           emailVerified: true,
-          patient: {
-            create: {
-              name: googleIdTokenPayload.name,
-              email: googleIdTokenPayload.email,
-            },
-          },
         },
       });
       const tempatePath = path.join(
@@ -429,7 +423,7 @@ const googleLoginService = async (payload: IGoogleLoginPayload) => {
       await transporter.sendMail({
         from: config.email_sender,
         to: user.email,
-        subject: "Welcome To PH Healthcare System",
+        subject: "Welcome To NagarLink",
 
         html,
       });
