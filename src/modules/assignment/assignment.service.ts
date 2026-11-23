@@ -31,6 +31,7 @@ const getMyAssignmentsService = async (user: RequestUser) => {
         omit: { password: true },
       },
       request: true,
+      attachments: true,
     },
     orderBy: {
       createdAt: "desc",
@@ -58,6 +59,7 @@ const getAssignmentByIdService = async (
         omit: { password: true },
       },
       request: true,
+      attachments: true,
     },
   });
 
@@ -119,6 +121,20 @@ const submitAssignmentCompletionService = async (
     );
   }
 
+  // At least one attachment is required
+  const attachmentCount = await prisma.workAttachment.count({
+    where: {
+      assignmentId: id,
+    },
+  });
+
+  if (attachmentCount === 0) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Please upload at least one attachment before submitting completion",
+    );
+  }
+
   const updatedAssignment = await prisma.assignment.update({
     where: { id },
     data: {
@@ -132,6 +148,7 @@ const submitAssignmentCompletionService = async (
         omit: { password: true },
       },
       request: true,
+      attachments: true,
     },
   });
 
@@ -145,7 +162,30 @@ const submitAssignmentCompletionService = async (
 const reviewAssignmentCompletionService = async (
   id: string,
   payload: IReviewAssignmentPayload,
+  user: RequestUser,
 ) => {
+  // Only manager and admin can review
+  if (
+    user.role !== Role.MANAGER &&
+    user.role !== Role.ADMIN
+  ) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Only managers and admins can review completion",
+    );
+  }
+
+  // Validate review status
+  if (
+    payload.status !== "COMPLETED" &&
+    payload.status !== "ONGOING"
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Invalid review status. Use COMPLETED or ONGOING",
+    );
+  }
+
   const assignment = await prisma.assignment.findUnique({
     where: { id },
   });
@@ -183,11 +223,16 @@ const reviewAssignmentCompletionService = async (
         omit: { password: true },
       },
       request: true,
+      attachments: true,
     },
   });
 
   return updatedAssignment;
 };
+
+// ============================================
+// EXPORT SERVICES
+// ============================================
 
 export const assignmentServices = {
   getMyAssignmentsService,

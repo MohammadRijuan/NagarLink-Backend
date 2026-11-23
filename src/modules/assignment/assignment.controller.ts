@@ -1,51 +1,42 @@
-
 import { Request, Response } from "express";
 import httpStatus from "http-status";
 import { assignmentServices } from "./assignment.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-
+import { RequestUser } from "../../middlewares/checkAuth";
 
 // ============================================
 // GET MY ASSIGNMENTS
 // ============================================
 
-const getMyAssignments = catchAsync(
-  async (req: Request, res: Response) => {
-    const result =
-      await assignmentServices.getMyAssignmentsService(
-        req.user!,
-      );
+const getMyAssignments = catchAsync(async (req: Request, res: Response) => {
+  const result = await assignmentServices.getMyAssignmentsService(req.user!);
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Assignments retrieved successfully",
-      data: result,
-    });
-  },
-);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Assignments retrieved successfully",
+    data: result,
+  });
+});
 
 // ============================================
 // GET ASSIGNMENT BY ID
 // ============================================
 
-const getAssignmentById = catchAsync(
-  async (req: Request, res: Response) => {
-    const result =
-      await assignmentServices.getAssignmentByIdService(
-        req.params["id"] as string,
-        req.user!,
-      );
+const getAssignmentById = catchAsync(async (req: Request, res: Response) => {
+  const result = await assignmentServices.getAssignmentByIdService(
+    req.params["id"] as string,
+    req.user!,
+  );
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Assignment retrieved successfully",
-      data: result,
-    });
-  },
-);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Assignment retrieved successfully",
+    data: result,
+  });
+});
 
 // ============================================
 // STAFF SUBMITS COMPLETION
@@ -53,11 +44,10 @@ const getAssignmentById = catchAsync(
 
 const submitAssignmentCompletion = catchAsync(
   async (req: Request, res: Response) => {
-    const result =
-      await assignmentServices.submitAssignmentCompletionService(
-        req.params["id"] as string,
-        req.user!,
-      );
+    const result = await assignmentServices.submitAssignmentCompletionService(
+      req.params["id"] as string,
+      req.user!,
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -74,11 +64,11 @@ const submitAssignmentCompletion = catchAsync(
 
 const reviewAssignmentCompletion = catchAsync(
   async (req: Request, res: Response) => {
-    const result =
-      await assignmentServices.reviewAssignmentCompletionService(
-        req.params["id"]  as string,
-        req.body,
-      );
+    const result = await assignmentServices.reviewAssignmentCompletionService(
+      req.params.id as string,
+      req.body,
+      req.user as RequestUser,
+    );
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
