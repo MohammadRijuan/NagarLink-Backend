@@ -3,6 +3,14 @@ import express from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { quotationControllers } from "./quotation.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  createQuotationSchema,
+  quotationIdParamsSchema,
+  selectQuotationSchema,
+  updateQuotationSchema,
+  updateQuotationStatusSchema,
+} from "./quotation.validation";
 
 const router = express.Router();
 
@@ -10,6 +18,7 @@ const router = express.Router();
 router.post(
   "/",
   auth(Role.STAFF),
+  validateRequest({ body: createQuotationSchema }),
   quotationControllers.createQuotation,
 );
 
@@ -17,6 +26,7 @@ router.post(
 router.post(
   "/select",
   auth(Role.CITIZEN),
+  validateRequest({ body: selectQuotationSchema }),
   quotationControllers.selectQuotation,
 );
 
@@ -31,6 +41,7 @@ router.get(
 router.get(
   "/:id",
   auth(Role.STAFF, Role.ADMIN, Role.MANAGER),
+  validateRequest({ params: quotationIdParamsSchema }),
   quotationControllers.getQuotationById,
 );
 
@@ -38,6 +49,10 @@ router.get(
 router.patch(
   "/:id",
   auth(Role.STAFF),
+  validateRequest({
+    params: quotationIdParamsSchema,
+    body: updateQuotationSchema,
+  }),
   quotationControllers.updateQuotation,
 );
 
@@ -45,6 +60,10 @@ router.patch(
 router.patch(
   "/:id/status",
   auth(Role.ADMIN, Role.MANAGER),
+  validateRequest({
+    params: quotationIdParamsSchema,
+    body: updateQuotationStatusSchema,
+  }),
   quotationControllers.updateQuotationStatus,
 );
 
@@ -52,6 +71,7 @@ router.patch(
 router.delete(
   "/:id",
   auth(Role.ADMIN),
+  validateRequest({ params: quotationIdParamsSchema }),
   quotationControllers.deleteQuotation,
 );
 

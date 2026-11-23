@@ -1360,6 +1360,8 @@ export declare const WorkAttachmentScalarFieldEnum: {
     readonly id: 'id';
     readonly assignmentId: 'assignmentId';
     readonly fileUrl: 'fileUrl';
+    readonly publicId: 'publicId';
+    readonly resourceType: 'resourceType';
     readonly fileType: 'fileType';
     readonly fileName: 'fileName';
     readonly createdAt: 'createdAt';

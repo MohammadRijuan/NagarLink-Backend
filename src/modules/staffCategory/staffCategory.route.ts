@@ -2,6 +2,12 @@ import express from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { staffCategoryControllers } from "./staffCategory.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  assignCategoriesSchema,
+  staffCategoryParamsSchema,
+  staffIdParamsSchema,
+} from "./staffCategory.validation";
 
 
 const router = express.Router();
@@ -10,6 +16,10 @@ const router = express.Router();
 router.post(
   "/:staffId/categories",
   auth(Role.ADMIN),
+  validateRequest({
+    params: staffIdParamsSchema,
+    body: assignCategoriesSchema,
+  }),
   staffCategoryControllers.assignCategoriesToStaff,
 );
 
@@ -17,6 +27,7 @@ router.post(
 router.get(
   "/:staffId/categories",
   auth(Role.ADMIN, Role.MANAGER),
+  validateRequest({ params: staffIdParamsSchema }),
   staffCategoryControllers.getStaffCategories,
 );
 
@@ -24,6 +35,7 @@ router.get(
 router.delete(
   "/:staffId/categories/:categoryId",
   auth(Role.ADMIN),
+  validateRequest({ params: staffCategoryParamsSchema }),
   staffCategoryControllers.removeStaffCategory,
 );
 

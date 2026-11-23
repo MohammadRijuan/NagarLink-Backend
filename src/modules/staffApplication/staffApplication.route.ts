@@ -2,6 +2,12 @@ import express from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { staffApplicationControllers } from "./staffApplication.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  createStaffApplicationSchema,
+  staffApplicationIdParamsSchema,
+  updateStaffApplicationSchema,
+} from "./staffApplication.validation";
 
 
 const router = express.Router();
@@ -10,6 +16,7 @@ const router = express.Router();
 router.post(
   "/",
   auth(Role.CITIZEN),
+  validateRequest({ body: createStaffApplicationSchema }),
   staffApplicationControllers.createStaffApplication
 );
 
@@ -24,6 +31,7 @@ router.get(
 router.get(
   "/:id",
   auth(Role.ADMIN, Role.MANAGER),
+  validateRequest({ params: staffApplicationIdParamsSchema }),
   staffApplicationControllers.getStaffApplicationById
 );
 
@@ -31,6 +39,10 @@ router.get(
 router.patch(
   "/:id",
   auth(Role.ADMIN),
+  validateRequest({
+    params: staffApplicationIdParamsSchema,
+    body: updateStaffApplicationSchema,
+  }),
   staffApplicationControllers.updateStaffApplication
 );
 
@@ -38,6 +50,7 @@ router.patch(
 router.delete(
   "/:id",
   auth(Role.ADMIN),
+  validateRequest({ params: staffApplicationIdParamsSchema }),
   staffApplicationControllers.deleteStaffApplication
 );
 

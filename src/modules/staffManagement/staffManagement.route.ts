@@ -2,6 +2,8 @@ import express from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { staffControllers } from "./staffManagement.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import { staffIdParamsSchema } from "./staffManagement.validation";
 
 
 const router = express.Router();
@@ -17,6 +19,7 @@ router.get(
 router.get(
   "/:id",
   auth(Role.ADMIN, Role.MANAGER),
+  validateRequest({ params: staffIdParamsSchema }),
   staffControllers.getStaffById,
 );
 
@@ -24,6 +27,7 @@ router.get(
 router.delete(
   "/:id",
   auth(Role.ADMIN,Role.MANAGER),
+  validateRequest({ params: staffIdParamsSchema }),
   staffControllers.deleteStaff,
 );
 

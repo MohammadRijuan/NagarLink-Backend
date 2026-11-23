@@ -3,6 +3,11 @@ import { Role } from "../../../generated/prisma/enums";
 import { workAttachmentControllers } from "./workAttachment.controller";
 import { auth } from "../../middlewares/checkAuth";
 import { upload } from "../../lib/multer";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  assignmentIdParamsSchema,
+  attachmentIdParamsSchema,
+} from "./workAttachment.validation";
 
 const router = Router();
 
@@ -10,6 +15,7 @@ const router = Router();
 router.post(
   "/assignments/:assignmentId",
   auth(Role.STAFF),
+  validateRequest({ params: assignmentIdParamsSchema }),
   upload.single("file"),
   workAttachmentControllers.createWorkAttachment,
 );
@@ -18,6 +24,7 @@ router.post(
 router.get(
   "/assignments/:assignmentId",
   auth(Role.CITIZEN, Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: assignmentIdParamsSchema }),
   workAttachmentControllers.getAllWorkAttachments,
 );
 
@@ -25,6 +32,7 @@ router.get(
 router.get(
   "/:id",
   auth(Role.CITIZEN, Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: attachmentIdParamsSchema }),
   workAttachmentControllers.getWorkAttachmentById,
 );
 
@@ -32,6 +40,7 @@ router.get(
 router.delete(
   "/:id",
   auth(Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: attachmentIdParamsSchema }),
   workAttachmentControllers.deleteWorkAttachment,
 );
 

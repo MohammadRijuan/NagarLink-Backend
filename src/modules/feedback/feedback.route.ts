@@ -2,6 +2,11 @@ import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
 import { auth } from "../../middlewares/checkAuth";
 import { feedbackControllers } from "./feedback.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  createFeedbackSchema,
+  staffIdParamsSchema,
+} from "./feedback.validation";
 
 const router = Router();
 
@@ -9,6 +14,7 @@ const router = Router();
 router.post(
   "/",
   auth(Role.CITIZEN),
+  validateRequest({ body: createFeedbackSchema }),
   feedbackControllers.createFeedback,
 );
 
@@ -23,6 +29,7 @@ router.get(
 router.get(
   "/staff/:staffId",
   auth(Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: staffIdParamsSchema }),
   feedbackControllers.getStaffFeedback,
 );
 

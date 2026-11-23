@@ -2,6 +2,12 @@ import express, { Router } from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { staffInvitationControllers } from "./staffInvitation.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  createStaffInvitationSchema,
+  invitationIdParamsSchema,
+  respondToInvitationSchema,
+} from "./staffInvitation.validation";
 
 
 const router = Router();
@@ -10,6 +16,7 @@ const router = Router();
 router.post(
   "/",
   auth(Role.MANAGER, Role.ADMIN),
+  validateRequest({ body: createStaffInvitationSchema }),
   staffInvitationControllers.createStaffInvitation
 );
 
@@ -31,6 +38,7 @@ router.get(
 router.get(
   "/:id",
   auth(Role.MANAGER, Role.ADMIN, Role.STAFF),
+  validateRequest({ params: invitationIdParamsSchema }),
   staffInvitationControllers.getStaffInvitationById
 );
 
@@ -38,6 +46,10 @@ router.get(
 router.patch(
   "/:id/respond",
   auth(Role.STAFF),
+  validateRequest({
+    params: invitationIdParamsSchema,
+    body: respondToInvitationSchema,
+  }),
   staffInvitationControllers.respondToInvitation
 );
 
@@ -45,6 +57,7 @@ router.patch(
 router.delete(
   "/:id",
   auth(Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: invitationIdParamsSchema }),
   staffInvitationControllers.deleteStaffInvitation
 );
 

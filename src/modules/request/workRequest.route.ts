@@ -2,6 +2,13 @@ import express, { Router } from "express";
 import { auth } from "../../middlewares/checkAuth";
 import { Role } from "../../../generated/prisma/enums";
 import { workRequestControllers } from "./workRequest.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  createWorkRequestSchema,
+  updateWorkRequestSchema,
+  updateWorkRequestStatusSchema,
+  workRequestIdParamsSchema,
+} from "./workRequest.validation";
 
 const router = Router();
 
@@ -9,6 +16,7 @@ const router = Router();
 router.post(
   "/",
   auth(Role.CITIZEN),
+  validateRequest({ body: createWorkRequestSchema }),
   workRequestControllers.createWorkRequest
 );
 
@@ -23,6 +31,7 @@ router.get(
 router.get(
   "/:id",
   auth(Role.CITIZEN, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: workRequestIdParamsSchema }),
   workRequestControllers.getWorkRequestById
 );
 
@@ -30,6 +39,10 @@ router.get(
 router.patch(
   "/:id",
   auth(Role.CITIZEN),
+  validateRequest({
+    params: workRequestIdParamsSchema,
+    body: updateWorkRequestSchema,
+  }),
   workRequestControllers.updateWorkRequest
 );
 
@@ -37,6 +50,10 @@ router.patch(
 router.patch(
   "/:id/status",
   auth(Role.MANAGER, Role.ADMIN),
+  validateRequest({
+    params: workRequestIdParamsSchema,
+    body: updateWorkRequestStatusSchema,
+  }),
   workRequestControllers.updateWorkRequestStatus
 );
 
@@ -44,6 +61,7 @@ router.patch(
 router.delete(
   "/:id",
   auth(Role.CITIZEN),
+  validateRequest({ params: workRequestIdParamsSchema }),
   workRequestControllers.deleteWorkRequest
 );
 

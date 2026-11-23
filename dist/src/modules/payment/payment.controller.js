@@ -33,9 +33,17 @@ const paymentIpn = (0, catchAsync_1.catchAsync)(async (req, res) => {
     await payment_service_1.paymentServices.paymentIpnService(req.body);
     res.status(http_status_1.default.OK).send("IPN received");
 });
+const approveReviewedPayment = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    const result = await payment_service_1.paymentServices.approveReviewedPaymentService(req.params["id"]);
+    (0, sendResponse_1.sendResponse)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: "Payment approved successfully",
+        data: result,
+    });
+});
 const getPaymentById = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const id = req.params["id"];
-    const result = await payment_service_1.paymentServices.getPaymentByIdService(id, req.user);
+    const result = await payment_service_1.paymentServices.getPaymentByIdService(req.params["id"], req.user);
     (0, sendResponse_1.sendResponse)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
@@ -49,6 +57,7 @@ exports.paymentControllers = {
     paymentFailure,
     paymentCancel,
     paymentIpn,
+    approveReviewedPayment,
     getPaymentById,
 };
 //# sourceMappingURL=payment.controller.js.map

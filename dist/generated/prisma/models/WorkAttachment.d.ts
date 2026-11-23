@@ -14,6 +14,8 @@ export type WorkAttachmentMinAggregateOutputType = {
     id: string | null;
     assignmentId: string | null;
     fileUrl: string | null;
+    publicId: string | null;
+    resourceType: string | null;
     fileType: string | null;
     fileName: string | null;
     createdAt: Date | null;
@@ -22,6 +24,8 @@ export type WorkAttachmentMaxAggregateOutputType = {
     id: string | null;
     assignmentId: string | null;
     fileUrl: string | null;
+    publicId: string | null;
+    resourceType: string | null;
     fileType: string | null;
     fileName: string | null;
     createdAt: Date | null;
@@ -30,6 +34,8 @@ export type WorkAttachmentCountAggregateOutputType = {
     id: number;
     assignmentId: number;
     fileUrl: number;
+    publicId: number;
+    resourceType: number;
     fileType: number;
     fileName: number;
     createdAt: number;
@@ -39,6 +45,8 @@ export type WorkAttachmentMinAggregateInputType = {
     id?: true;
     assignmentId?: true;
     fileUrl?: true;
+    publicId?: true;
+    resourceType?: true;
     fileType?: true;
     fileName?: true;
     createdAt?: true;
@@ -47,6 +55,8 @@ export type WorkAttachmentMaxAggregateInputType = {
     id?: true;
     assignmentId?: true;
     fileUrl?: true;
+    publicId?: true;
+    resourceType?: true;
     fileType?: true;
     fileName?: true;
     createdAt?: true;
@@ -55,6 +65,8 @@ export type WorkAttachmentCountAggregateInputType = {
     id?: true;
     assignmentId?: true;
     fileUrl?: true;
+    publicId?: true;
+    resourceType?: true;
     fileType?: true;
     fileName?: true;
     createdAt?: true;
@@ -126,6 +138,8 @@ export type WorkAttachmentGroupByOutputType = {
     id: string;
     assignmentId: string;
     fileUrl: string;
+    publicId: string;
+    resourceType: string;
     fileType: string | null;
     fileName: string | null;
     createdAt: Date;
@@ -143,6 +157,8 @@ export type WorkAttachmentWhereInput = {
     id?: Prisma.StringFilter<"WorkAttachment"> | string;
     assignmentId?: Prisma.StringFilter<"WorkAttachment"> | string;
     fileUrl?: Prisma.StringFilter<"WorkAttachment"> | string;
+    publicId?: Prisma.StringFilter<"WorkAttachment"> | string;
+    resourceType?: Prisma.StringFilter<"WorkAttachment"> | string;
     fileType?: Prisma.StringNullableFilter<"WorkAttachment"> | string | null;
     fileName?: Prisma.StringNullableFilter<"WorkAttachment"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"WorkAttachment"> | Date | string;
@@ -152,6 +168,8 @@ export type WorkAttachmentOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
     assignmentId?: Prisma.SortOrder;
     fileUrl?: Prisma.SortOrder;
+    publicId?: Prisma.SortOrder;
+    resourceType?: Prisma.SortOrder;
     fileType?: Prisma.SortOrderInput | Prisma.SortOrder;
     fileName?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -164,6 +182,8 @@ export type WorkAttachmentWhereUniqueInput = Prisma.AtLeast<{
     NOT?: Prisma.WorkAttachmentWhereInput | Prisma.WorkAttachmentWhereInput[];
     assignmentId?: Prisma.StringFilter<"WorkAttachment"> | string;
     fileUrl?: Prisma.StringFilter<"WorkAttachment"> | string;
+    publicId?: Prisma.StringFilter<"WorkAttachment"> | string;
+    resourceType?: Prisma.StringFilter<"WorkAttachment"> | string;
     fileType?: Prisma.StringNullableFilter<"WorkAttachment"> | string | null;
     fileName?: Prisma.StringNullableFilter<"WorkAttachment"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"WorkAttachment"> | Date | string;
@@ -173,6 +193,8 @@ export type WorkAttachmentOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     assignmentId?: Prisma.SortOrder;
     fileUrl?: Prisma.SortOrder;
+    publicId?: Prisma.SortOrder;
+    resourceType?: Prisma.SortOrder;
     fileType?: Prisma.SortOrderInput | Prisma.SortOrder;
     fileName?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -187,6 +209,8 @@ export type WorkAttachmentScalarWhereWithAggregatesInput = {
     id?: Prisma.StringWithAggregatesFilter<"WorkAttachment"> | string;
     assignmentId?: Prisma.StringWithAggregatesFilter<"WorkAttachment"> | string;
     fileUrl?: Prisma.StringWithAggregatesFilter<"WorkAttachment"> | string;
+    publicId?: Prisma.StringWithAggregatesFilter<"WorkAttachment"> | string;
+    resourceType?: Prisma.StringWithAggregatesFilter<"WorkAttachment"> | string;
     fileType?: Prisma.StringNullableWithAggregatesFilter<"WorkAttachment"> | string | null;
     fileName?: Prisma.StringNullableWithAggregatesFilter<"WorkAttachment"> | string | null;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"WorkAttachment"> | Date | string;
@@ -194,6 +218,8 @@ export type WorkAttachmentScalarWhereWithAggregatesInput = {
 export type WorkAttachmentCreateInput = {
     id?: string;
     fileUrl: string;
+    publicId: string;
+    resourceType: string;
     fileType?: string | null;
     fileName?: string | null;
     createdAt?: Date | string;
@@ -203,6 +229,8 @@ export type WorkAttachmentUncheckedCreateInput = {
     id?: string;
     assignmentId: string;
     fileUrl: string;
+    publicId: string;
+    resourceType: string;
     fileType?: string | null;
     fileName?: string | null;
     createdAt?: Date | string;
@@ -210,6 +238,8 @@ export type WorkAttachmentUncheckedCreateInput = {
 export type WorkAttachmentUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     fileUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    resourceType?: Prisma.StringFieldUpdateOperationsInput | string;
     fileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -219,6 +249,8 @@ export type WorkAttachmentUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     assignmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     fileUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    resourceType?: Prisma.StringFieldUpdateOperationsInput | string;
     fileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -227,6 +259,8 @@ export type WorkAttachmentCreateManyInput = {
     id?: string;
     assignmentId: string;
     fileUrl: string;
+    publicId: string;
+    resourceType: string;
     fileType?: string | null;
     fileName?: string | null;
     createdAt?: Date | string;
@@ -234,6 +268,8 @@ export type WorkAttachmentCreateManyInput = {
 export type WorkAttachmentUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     fileUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    resourceType?: Prisma.StringFieldUpdateOperationsInput | string;
     fileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -242,6 +278,8 @@ export type WorkAttachmentUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     assignmentId?: Prisma.StringFieldUpdateOperationsInput | string;
     fileUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    resourceType?: Prisma.StringFieldUpdateOperationsInput | string;
     fileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -258,6 +296,8 @@ export type WorkAttachmentCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     assignmentId?: Prisma.SortOrder;
     fileUrl?: Prisma.SortOrder;
+    publicId?: Prisma.SortOrder;
+    resourceType?: Prisma.SortOrder;
     fileType?: Prisma.SortOrder;
     fileName?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -266,6 +306,8 @@ export type WorkAttachmentMaxOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     assignmentId?: Prisma.SortOrder;
     fileUrl?: Prisma.SortOrder;
+    publicId?: Prisma.SortOrder;
+    resourceType?: Prisma.SortOrder;
     fileType?: Prisma.SortOrder;
     fileName?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -274,6 +316,8 @@ export type WorkAttachmentMinOrderByAggregateInput = {
     id?: Prisma.SortOrder;
     assignmentId?: Prisma.SortOrder;
     fileUrl?: Prisma.SortOrder;
+    publicId?: Prisma.SortOrder;
+    resourceType?: Prisma.SortOrder;
     fileType?: Prisma.SortOrder;
     fileName?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
@@ -322,6 +366,8 @@ export type NullableStringFieldUpdateOperationsInput = {
 export type WorkAttachmentCreateWithoutAssignmentInput = {
     id?: string;
     fileUrl: string;
+    publicId: string;
+    resourceType: string;
     fileType?: string | null;
     fileName?: string | null;
     createdAt?: Date | string;
@@ -329,6 +375,8 @@ export type WorkAttachmentCreateWithoutAssignmentInput = {
 export type WorkAttachmentUncheckedCreateWithoutAssignmentInput = {
     id?: string;
     fileUrl: string;
+    publicId: string;
+    resourceType: string;
     fileType?: string | null;
     fileName?: string | null;
     createdAt?: Date | string;
@@ -361,6 +409,8 @@ export type WorkAttachmentScalarWhereInput = {
     id?: Prisma.StringFilter<"WorkAttachment"> | string;
     assignmentId?: Prisma.StringFilter<"WorkAttachment"> | string;
     fileUrl?: Prisma.StringFilter<"WorkAttachment"> | string;
+    publicId?: Prisma.StringFilter<"WorkAttachment"> | string;
+    resourceType?: Prisma.StringFilter<"WorkAttachment"> | string;
     fileType?: Prisma.StringNullableFilter<"WorkAttachment"> | string | null;
     fileName?: Prisma.StringNullableFilter<"WorkAttachment"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"WorkAttachment"> | Date | string;
@@ -368,6 +418,8 @@ export type WorkAttachmentScalarWhereInput = {
 export type WorkAttachmentCreateManyAssignmentInput = {
     id?: string;
     fileUrl: string;
+    publicId: string;
+    resourceType: string;
     fileType?: string | null;
     fileName?: string | null;
     createdAt?: Date | string;
@@ -375,6 +427,8 @@ export type WorkAttachmentCreateManyAssignmentInput = {
 export type WorkAttachmentUpdateWithoutAssignmentInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     fileUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    resourceType?: Prisma.StringFieldUpdateOperationsInput | string;
     fileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -382,6 +436,8 @@ export type WorkAttachmentUpdateWithoutAssignmentInput = {
 export type WorkAttachmentUncheckedUpdateWithoutAssignmentInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     fileUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    resourceType?: Prisma.StringFieldUpdateOperationsInput | string;
     fileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -389,6 +445,8 @@ export type WorkAttachmentUncheckedUpdateWithoutAssignmentInput = {
 export type WorkAttachmentUncheckedUpdateManyWithoutAssignmentInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
     fileUrl?: Prisma.StringFieldUpdateOperationsInput | string;
+    publicId?: Prisma.StringFieldUpdateOperationsInput | string;
+    resourceType?: Prisma.StringFieldUpdateOperationsInput | string;
     fileType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     fileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
@@ -397,6 +455,8 @@ export type WorkAttachmentSelect<ExtArgs extends runtime.Types.Extensions.Intern
     id?: boolean;
     assignmentId?: boolean;
     fileUrl?: boolean;
+    publicId?: boolean;
+    resourceType?: boolean;
     fileType?: boolean;
     fileName?: boolean;
     createdAt?: boolean;
@@ -406,6 +466,8 @@ export type WorkAttachmentSelectCreateManyAndReturn<ExtArgs extends runtime.Type
     id?: boolean;
     assignmentId?: boolean;
     fileUrl?: boolean;
+    publicId?: boolean;
+    resourceType?: boolean;
     fileType?: boolean;
     fileName?: boolean;
     createdAt?: boolean;
@@ -415,6 +477,8 @@ export type WorkAttachmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
     id?: boolean;
     assignmentId?: boolean;
     fileUrl?: boolean;
+    publicId?: boolean;
+    resourceType?: boolean;
     fileType?: boolean;
     fileName?: boolean;
     createdAt?: boolean;
@@ -424,11 +488,13 @@ export type WorkAttachmentSelectScalar = {
     id?: boolean;
     assignmentId?: boolean;
     fileUrl?: boolean;
+    publicId?: boolean;
+    resourceType?: boolean;
     fileType?: boolean;
     fileName?: boolean;
     createdAt?: boolean;
 };
-export type WorkAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "assignmentId" | "fileUrl" | "fileType" | "fileName" | "createdAt", ExtArgs["result"]["workAttachment"]>;
+export type WorkAttachmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "assignmentId" | "fileUrl" | "publicId" | "resourceType" | "fileType" | "fileName" | "createdAt", ExtArgs["result"]["workAttachment"]>;
 export type WorkAttachmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     assignment?: boolean | Prisma.AssignmentDefaultArgs<ExtArgs>;
 };
@@ -447,6 +513,8 @@ export type $WorkAttachmentPayload<ExtArgs extends runtime.Types.Extensions.Inte
         id: string;
         assignmentId: string;
         fileUrl: string;
+        publicId: string;
+        resourceType: string;
         fileType: string | null;
         fileName: string | null;
         createdAt: Date;
@@ -808,6 +876,8 @@ export interface WorkAttachmentFieldRefs {
     readonly id: Prisma.FieldRef<"WorkAttachment", 'String'>;
     readonly assignmentId: Prisma.FieldRef<"WorkAttachment", 'String'>;
     readonly fileUrl: Prisma.FieldRef<"WorkAttachment", 'String'>;
+    readonly publicId: Prisma.FieldRef<"WorkAttachment", 'String'>;
+    readonly resourceType: Prisma.FieldRef<"WorkAttachment", 'String'>;
     readonly fileType: Prisma.FieldRef<"WorkAttachment", 'String'>;
     readonly fileName: Prisma.FieldRef<"WorkAttachment", 'String'>;
     readonly createdAt: Prisma.FieldRef<"WorkAttachment", 'DateTime'>;

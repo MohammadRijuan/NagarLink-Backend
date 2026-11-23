@@ -37,6 +37,7 @@ declare const _default: {
     ssl_store_id: string | undefined;
     ssl_store_password: string | undefined;
     ssl_base_url: string | undefined;
+    ssl_is_live: boolean;
 };
 export default _default;
 //# sourceMappingURL=index.d.ts.map

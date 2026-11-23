@@ -12,24 +12,7 @@ const prisma_1 = require("../../lib/prisma");
 const sslcommerz_1 = require("../../lib/sslcommerz");
 const AppError_1 = require("../../utils/AppError");
 const config_1 = __importDefault(require("../../config"));
-// ============================================
-// HELPERS
-// ============================================
-const getAppUrl = () => {
-    if (!config_1.default.app_url) {
-        throw new AppError_1.AppError(http_status_1.default.INTERNAL_SERVER_ERROR, "APP_URL is not configured");
-    }
-    return config_1.default.app_url.replace(/\/+$/, "");
-};
-const getFrontendUrl = () => {
-    if (!config_1.default.frontend_url) {
-        throw new AppError_1.AppError(http_status_1.default.INTERNAL_SERVER_ERROR, "FRONTEND_URL is not configured");
-    }
-    return config_1.default.frontend_url.replace(/\/+$/, "");
-};
-const getValidationString = (value) => typeof value === "string" || typeof value === "number"
-    ? String(value).trim()
-    : "";
+const PENDING_EXPIRY_MS = 30 * 60 * 1000; // 30 minutes
 // ============================================
 // CREATE PAYMENT
 // ============================================
@@ -48,62 +31,66 @@ const createPaymentService = async (payload, user) => {
         workRequest.status !== enums_1.WorkStatus.CITIZEN_ACCEPTED) {
         throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "No accepted quotation found");
     }
-    // Calculate 15% advance payment
+    // Already paid?
+    const paidPayment = await prisma_1.prisma.payment.findFirst({
+        where: {
+            requestId: payload.requestId,
+            status: enums_1.PaymentStatus.PAID,
+        },
+    });
+    if (paidPayment) {
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "This work request has already been paid");
+    }
+    // Existing pending payment?
+    const pendingPayment = await prisma_1.prisma.payment.findFirst({
+        where: {
+            requestId: payload.requestId,
+            status: enums_1.PaymentStatus.PENDING,
+        },
+    });
+    if (pendingPayment) {
+        // A payment held for manual review must never be expired or duplicated
+        const gatewayResponse = pendingPayment.gatewayResponse;
+        if (gatewayResponse && gatewayResponse.reviewRequired === true) {
+            throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Your previous payment is under review. Please wait for verification.");
+        }
+        const paymentAge = Date.now() - pendingPayment.createdAt.getTime();
+        if (paymentAge < PENDING_EXPIRY_MS) {
+            throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "A payment session is already active. Please try again later.");
+        }
+        // Expire the stale pending payment
+        await prisma_1.prisma.payment.updateMany({
+            where: { id: pendingPayment.id, status: enums_1.PaymentStatus.PENDING },
+            data: { status: enums_1.PaymentStatus.FAILED },
+        });
+    }
+    // 15% advance payment
     const amount = new client_1.Prisma.Decimal(workRequest.selectedQuotation.proposedFee)
         .mul(0.15)
         .toDecimalPlaces(2);
     if (amount.lessThan(10)) {
         throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Advance payment must be at least 10 BDT");
     }
-    // Keep transaction ID within a shorter length
-    const merchantInvoiceNumber = `NL-${(0, crypto_1.randomUUID)()
-        .replace(/-/g, "")
-        .slice(0, 24)}`;
-    // Reserve a pending payment.
-    // Serializable isolation helps prevent simultaneous requests
-    // from creating multiple pending payments.
-    const payment = await prisma_1.prisma.$transaction(async (tx) => {
-        const paidPayment = await tx.payment.findFirst({
-            where: {
-                requestId: payload.requestId,
-                status: enums_1.PaymentStatus.PAID,
-            },
-        });
-        if (paidPayment) {
-            throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "This work request has already been paid");
-        }
-        const pendingPayment = await tx.payment.findFirst({
-            where: {
-                requestId: payload.requestId,
-                status: enums_1.PaymentStatus.PENDING,
-            },
-        });
-        if (pendingPayment) {
-            throw new AppError_1.AppError(http_status_1.default.CONFLICT, "A payment is already pending for this work request. Please check its status before trying again.");
-        }
-        return tx.payment.create({
-            data: {
-                requestId: payload.requestId,
-                amount,
-                merchantInvoiceNumber,
-            },
-        });
-    }, {
-        isolationLevel: client_1.Prisma.TransactionIsolationLevel.Serializable,
+    const merchantInvoiceNumber = `NL-${(0, crypto_1.randomUUID)()}`;
+    // Create pending payment
+    const payment = await prisma_1.prisma.payment.create({
+        data: {
+            requestId: payload.requestId,
+            amount,
+            merchantInvoiceNumber,
+        },
     });
     // Create SSLCommerz session
-    // If the network fails, leave the payment pending.
-    // The gateway might have created the session even if our request timed out.
     let session;
     try {
         session = await (0, sslcommerz_1.createSslCommerzSession)({
             total_amount: amount.toFixed(2),
             currency: "BDT",
             tran_id: merchantInvoiceNumber,
-            success_url: `${getAppUrl()}/api/v1/payments/success`,
-            fail_url: `${getAppUrl()}/api/v1/payments/failure`,
-            cancel_url: `${getAppUrl()}/api/v1/payments/cancel`,
-            ipn_url: `${getAppUrl()}/api/v1/payments/ipn`,
+            success_url: `${config_1.default.app_url}/api/v1/payments/success`,
+            fail_url: `${config_1.default.app_url}/api/v1/payments/failure`,
+            cancel_url: `${config_1.default.app_url}/api/v1/payments/cancel`,
+            ipn_url: `${config_1.default.app_url}/api/v1/payments/ipn`,
             product_name: workRequest.title,
             product_category: "Service",
             product_profile: "general",
@@ -117,8 +104,18 @@ const createPaymentService = async (payload, user) => {
             shipping_method: "NO",
         });
     }
-    catch {
-        throw new AppError_1.AppError(http_status_1.default.BAD_GATEWAY, "Unable to connect to SSLCommerz. Please check payment status before retrying.");
+    catch (error) {
+        console.error("[SSLCommerz] Session creation error:", error);
+        await prisma_1.prisma.payment.update({
+            where: { id: payment.id },
+            data: {
+                status: enums_1.PaymentStatus.FAILED,
+                gatewayResponse: {
+                    error: "SSLCommerz session creation failed",
+                },
+            },
+        });
+        throw new AppError_1.AppError(http_status_1.default.BAD_GATEWAY, "Unable to connect to SSLCommerz");
     }
     const gatewayUrl = session.GatewayPageURL;
     if (session.status !== "SUCCESS" || !gatewayUrl) {
@@ -131,7 +128,7 @@ const createPaymentService = async (payload, user) => {
         });
         throw new AppError_1.AppError(http_status_1.default.BAD_GATEWAY, session.failedreason || "Unable to initiate SSLCommerz payment");
     }
-    // Save the initial gateway response and transaction ID
+    // Save gateway response and transaction record
     await prisma_1.prisma.$transaction(async (tx) => {
         await tx.payment.update({
             where: { id: payment.id },
@@ -157,155 +154,162 @@ const createPaymentService = async (payload, user) => {
 // VERIFY AND COMPLETE PAYMENT
 // ============================================
 const verifyAndCompletePayment = async (data) => {
-    const tranId = getValidationString(data.tran_id);
-    const valId = getValidationString(data.val_id);
+    const tranId = String(data.tran_id || "");
+    const valId = String(data.val_id || "");
     if (!tranId || !valId) {
         throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Invalid payment callback");
     }
-    // Find payment and its original SSLCommerz transaction record
+    // 1. Find payment
     const payment = await prisma_1.prisma.payment.findUnique({
-        where: {
-            merchantInvoiceNumber: tranId,
-        },
+        where: { merchantInvoiceNumber: tranId },
         include: {
-            sslcommerzPayment: true,
             request: {
                 include: {
                     selectedQuotation: true,
                 },
             },
+            sslcommerzPayment: true,
         },
     });
     if (!payment) {
         throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "Payment not found");
     }
-    // Idempotency: already-paid payments should not be processed again
+    // 2. Idempotency: already completed
     if (payment.status === enums_1.PaymentStatus.PAID) {
-        return { success: true };
+        return { success: true, status: "PAID" };
     }
     if (payment.status !== enums_1.PaymentStatus.PENDING) {
         throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Payment is not pending");
     }
-    // Ensure the transaction matches our stored transaction
-    if (!payment.sslcommerzPayment ||
+    // 3. Check transaction ID against saved gateway record
+    if (payment.sslcommerzPayment &&
         payment.sslcommerzPayment.tranId !== tranId) {
-        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Payment transaction record does not match");
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Transaction ID mismatch");
     }
-    // Validate directly with SSLCommerz
+    // 4. Validate directly with SSLCommerz (the real security check)
     const validation = await (0, sslcommerz_1.validateSslCommerzPayment)(valId);
-    const validationStatus = getValidationString(validation.status).toUpperCase();
-    const validationTranId = getValidationString(validation.tran_id);
-    const validationValId = getValidationString(validation.val_id);
-    const validationCurrency = getValidationString(validation.currency ?? validation.currency_type).toUpperCase();
-    const validationStoreId = getValidationString(validation.store_id);
-    const validationAmount = getValidationString(validation.amount);
-    let validAmount = false;
-    if (validationAmount) {
-        try {
-            validAmount = new client_1.Prisma.Decimal(validationAmount).equals(payment.amount);
-        }
-        catch {
-            validAmount = false;
-        }
+    // 5. Run checks
+    const validStatus = ["VALID", "VALIDATED"].includes(String(validation.status).toUpperCase());
+    const validTranId = validation.tran_id === tranId;
+    const validCurrency = String(validation.currency).toUpperCase() ===
+        payment.currency.toUpperCase();
+    const validAmount = validation.amount !== undefined &&
+        new client_1.Prisma.Decimal(String(validation.amount)).equals(payment.amount);
+    // The validation API may not return store_id, so fall back to the callback
+    const receivedStoreId = String(validation.store_id || data.store_id || "");
+    const validStoreId = receivedStoreId === String(config_1.default.ssl_store_id);
+    if (!config_1.default.ssl_is_live) {
+        console.log("[SSLCommerz] Validation checks:", {
+            tranId,
+            validStatus,
+            validTranId,
+            validCurrency,
+            validAmount,
+            validStoreId,
+            risk_level: validation.risk_level,
+            risk_title: validation.risk_title,
+        });
     }
-    const validationProblems = [
-        !["VALID", "VALIDATED"].includes(validationStatus) && "status",
-        validationTranId !== tranId && "transaction ID",
-        (validationValId && validationValId !== valId) && "validation ID",
-        validationCurrency !== payment.currency.trim().toUpperCase() && "currency",
-        (validationStoreId &&
-            validationStoreId !== String(config_1.default.ssl_store_id ?? "").trim()) &&
-            "store ID",
-        !validAmount && "amount",
-    ].filter(Boolean);
-    if (validationProblems.length > 0) {
-        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, `SSLCommerz transaction validation failed: ${validationProblems.join(", ")}`);
+    if (!validStatus ||
+        !validTranId ||
+        !validCurrency ||
+        !validAmount ||
+        !validStoreId) {
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "SSLCommerz transaction validation failed");
     }
-    // A risk-flagged payment must not automatically create an assignment.
-    if (String(validation.risk_level) === "1") {
-        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Payment requires additional risk review");
+    // 6. Risk review
+    // risk_level 1 = flagged by SSLCommerz. The payment itself is valid, but the
+    // merchant should review it before delivering the service.
+    const isRisky = String(validation.risk_level) === "1";
+    if (isRisky && config_1.default.ssl_is_live) {
+        // Production: keep payment PENDING and flag it for manual review
+        await prisma_1.prisma.payment.updateMany({
+            where: { id: payment.id, status: enums_1.PaymentStatus.PENDING },
+            data: {
+                gatewayResponse: {
+                    ...validation,
+                    reviewRequired: true,
+                },
+            },
+        });
+        console.warn(`[SSLCommerz] Payment ${tranId} flagged risky, held for manual review`);
+        return { success: false, status: "UNDER_REVIEW" };
+    }
+    if (isRisky) {
+        console.warn("[SSLCommerz] Risky transaction accepted because SSL_IS_LIVE=false");
     }
     if (!payment.request.selectedQuotation) {
         throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Selected quotation not found");
     }
-    // Complete payment and create assignment atomically
+    // 7. Complete payment atomically
     await prisma_1.prisma.$transaction(async (tx) => {
-        // Atomically claim the pending payment.
-        // Only one callback can successfully change PENDING to PAID.
-        const paymentUpdate = await tx.payment.updateMany({
-            where: {
-                id: payment.id,
-                status: enums_1.PaymentStatus.PENDING,
-            },
-            data: {
-                status: enums_1.PaymentStatus.PAID,
-                paidAt: new Date(),
-            },
+        const currentPayment = await tx.payment.findUnique({
+            where: { id: payment.id },
         });
-        if (paymentUpdate.count === 0) {
-            const latestPayment = await tx.payment.findUnique({
-                where: { id: payment.id },
-            });
-            if (latestPayment?.status === enums_1.PaymentStatus.PAID) {
-                return;
-            }
-            throw new AppError_1.AppError(http_status_1.default.CONFLICT, "Payment has already been processed or is no longer pending");
+        // Another request (IPN or success callback) already completed it
+        if (!currentPayment || currentPayment.status === enums_1.PaymentStatus.PAID) {
+            return;
+        }
+        if (currentPayment.status !== enums_1.PaymentStatus.PENDING) {
+            throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Payment is not pending");
         }
         const currentRequest = await tx.workRequest.findUnique({
-            where: {
-                id: payment.requestId,
-            },
-            include: {
-                selectedQuotation: true,
-            },
+            where: { id: payment.requestId },
+            include: { selectedQuotation: true },
         });
         if (!currentRequest ||
             currentRequest.status !== enums_1.WorkStatus.CITIZEN_ACCEPTED ||
             !currentRequest.selectedQuotation) {
             throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Work request is not ready for assignment");
         }
-        // Update SSLCommerz transaction details
-        await tx.sslCommerzPayment.update({
-            where: {
-                paymentId: payment.id,
-            },
+        const storeAmount = validation.store_amount
+            ? new client_1.Prisma.Decimal(String(validation.store_amount))
+            : null;
+        // Mark payment as paid
+        await tx.payment.update({
+            where: { id: payment.id },
             data: {
-                valId,
-                bankTranId: validation.bank_tran_id
-                    ? String(validation.bank_tran_id)
-                    : null,
-                cardType: validation.card_type
-                    ? String(validation.card_type)
-                    : null,
-                cardIssuer: validation.card_issuer
-                    ? String(validation.card_issuer)
-                    : null,
-                cardBrand: validation.card_brand
-                    ? String(validation.card_brand)
-                    : null,
-                cardIssuerCountry: validation.card_issuer_country
-                    ? String(validation.card_issuer_country)
-                    : null,
-                storeAmount: validation.store_amount
-                    ? new client_1.Prisma.Decimal(String(validation.store_amount))
-                    : null,
+                status: enums_1.PaymentStatus.PAID,
+                paidAt: new Date(),
                 gatewayResponse: validation,
             },
         });
-        // Update work request
-        await tx.workRequest.update({
-            where: {
-                id: payment.requestId,
+        // Update SSLCommerz transaction record
+        await tx.sslCommerzPayment.upsert({
+            where: { paymentId: payment.id },
+            create: {
+                paymentId: payment.id,
+                tranId,
+                valId,
+                bankTranId: String(validation.bank_tran_id || ""),
+                cardType: String(validation.card_type || ""),
+                cardIssuer: String(validation.card_issuer || ""),
+                cardBrand: String(validation.card_brand || ""),
+                cardIssuerCountry: String(validation.card_issuer_country || ""),
+                storeAmount,
+                gatewayResponse: validation,
             },
+            update: {
+                valId,
+                bankTranId: String(validation.bank_tran_id || ""),
+                cardType: String(validation.card_type || ""),
+                cardIssuer: String(validation.card_issuer || ""),
+                cardBrand: String(validation.card_brand || ""),
+                cardIssuerCountry: String(validation.card_issuer_country || ""),
+                storeAmount,
+                gatewayResponse: validation,
+            },
+        });
+        // Update work request status
+        await tx.workRequest.update({
+            where: { id: payment.requestId },
             data: {
                 status: enums_1.WorkStatus.ADVANCE_PAID,
             },
         });
-        // Create assignment only once per work request
+        // Create assignment only once
         await tx.assignment.upsert({
-            where: {
-                requestId: payment.requestId,
-            },
+            where: { requestId: payment.requestId },
             create: {
                 requestId: payment.requestId,
                 staffId: currentRequest.selectedQuotation.staffId,
@@ -317,51 +321,145 @@ const verifyAndCompletePayment = async (data) => {
             update: {},
         });
     });
-    return { success: true };
+    return { success: true, status: "PAID" };
 };
 // ============================================
 // SUCCESS CALLBACK
 // ============================================
 const paymentSuccessService = async (data) => {
-    await verifyAndCompletePayment(data);
-    return {
-        redirectUrl: `${getFrontendUrl()}/payment/success`,
-    };
+    try {
+        const result = await verifyAndCompletePayment(data);
+        if (result.status === "UNDER_REVIEW") {
+            return { redirectUrl: `${config_1.default.frontend_url}/payment/under-review` };
+        }
+        return { redirectUrl: `${config_1.default.frontend_url}/payment/success` };
+    }
+    catch (error) {
+        // This is a browser redirect, so never return JSON to the user
+        console.error("[SSLCommerz] Success callback failed:", error);
+        return { redirectUrl: `${config_1.default.frontend_url}/payment/failed` };
+    }
 };
 // ============================================
 // FAILURE CALLBACK
 // ============================================
-const paymentFailureService = async (_data) => {
-    // Do not trust callback data to change payment status.
-    // A delayed or forged failure callback must not overwrite
-    // a payment that was actually successful.
-    return {
-        redirectUrl: `${getFrontendUrl()}/payment/failed`,
-    };
+const markPaymentFailed = async (data) => {
+    const tranId = String(data.tran_id || "");
+    if (!tranId) {
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Transaction ID is missing");
+    }
+    const payment = await prisma_1.prisma.payment.findUnique({
+        where: { merchantInvoiceNumber: tranId },
+    });
+    if (!payment) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "Payment not found");
+    }
+    // Never overwrite a successful payment
+    if (payment.status === enums_1.PaymentStatus.PENDING) {
+        await prisma_1.prisma.payment.updateMany({
+            where: { id: payment.id, status: enums_1.PaymentStatus.PENDING },
+            data: {
+                status: enums_1.PaymentStatus.FAILED,
+                gatewayResponse: data,
+            },
+        });
+    }
+};
+const paymentFailureService = async (data) => {
+    try {
+        await markPaymentFailed(data);
+    }
+    catch (error) {
+        console.error("[SSLCommerz] Failure callback error:", error);
+    }
+    return { redirectUrl: `${config_1.default.frontend_url}/payment/failed` };
 };
 // ============================================
 // CANCEL CALLBACK
 // ============================================
-const paymentCancelService = async (_data) => {
-    // Keep the payment pending until its actual gateway status
-    // has been reconciled. Do not trust the browser callback.
-    return {
-        redirectUrl: `${getFrontendUrl()}/payment/cancelled`,
-    };
+const paymentCancelService = async (data) => {
+    try {
+        await markPaymentFailed(data);
+    }
+    catch (error) {
+        console.error("[SSLCommerz] Cancel callback error:", error);
+    }
+    return { redirectUrl: `${config_1.default.frontend_url}/payment/cancelled` };
 };
 // ============================================
-// IPN
+// IPN (server-to-server)
 // ============================================
 const paymentIpnService = async (data) => {
-    const tranId = String(data.tran_id || "");
-    const valId = String(data.val_id || "");
-    if (!tranId || !valId) {
-        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Invalid SSLCommerz IPN data");
+    const status = String(data.status || "").toUpperCase();
+    if (!["VALID", "VALIDATED"].includes(status) || !data.val_id) {
+        return;
     }
-    await verifyAndCompletePayment(data);
+    try {
+        await verifyAndCompletePayment(data);
+    }
+    catch (error) {
+        // Do not throw: it would make SSLCommerz keep retrying
+        console.error("[SSLCommerz] IPN processing failed:", error);
+    }
 };
 // ============================================
-// GET PAYMENT BY ID
+// ADMIN: APPROVE A PAYMENT HELD FOR REVIEW
+// ============================================
+const approveReviewedPaymentService = async (paymentId) => {
+    const payment = await prisma_1.prisma.payment.findUnique({
+        where: { id: paymentId },
+        include: {
+            request: { include: { selectedQuotation: true } },
+            sslcommerzPayment: true,
+        },
+    });
+    if (!payment) {
+        throw new AppError_1.AppError(http_status_1.default.NOT_FOUND, "Payment not found");
+    }
+    const gatewayResponse = payment.gatewayResponse;
+    if (payment.status !== enums_1.PaymentStatus.PENDING ||
+        !gatewayResponse ||
+        gatewayResponse.reviewRequired !== true) {
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Payment is not waiting for review");
+    }
+    if (!payment.request.selectedQuotation) {
+        throw new AppError_1.AppError(http_status_1.default.BAD_REQUEST, "Selected quotation not found");
+    }
+    const quotation = payment.request.selectedQuotation;
+    await prisma_1.prisma.$transaction(async (tx) => {
+        await tx.payment.update({
+            where: { id: payment.id },
+            data: {
+                status: enums_1.PaymentStatus.PAID,
+                paidAt: new Date(),
+                gatewayResponse: {
+                    ...gatewayResponse,
+                    reviewRequired: false,
+                    reviewApproved: true,
+                },
+            },
+        });
+        await tx.workRequest.update({
+            where: { id: payment.requestId },
+            data: { status: enums_1.WorkStatus.ADVANCE_PAID },
+        });
+        await tx.assignment.upsert({
+            where: { requestId: payment.requestId },
+            create: {
+                requestId: payment.requestId,
+                staffId: quotation.staffId,
+                citizenId: payment.request.citizenId,
+                amount: quotation.proposedFee,
+                advanceAmount: payment.amount,
+                status: enums_1.AssignmentStatus.ONGOING,
+            },
+            update: {},
+        });
+    });
+    return { success: true };
+};
+// ============================================
+// GET PAYMENT
 // ============================================
 const getPaymentByIdService = async (id, user) => {
     const payment = await prisma_1.prisma.payment.findUnique({
@@ -381,15 +479,13 @@ const getPaymentByIdService = async (id, user) => {
     }
     return payment;
 };
-// ============================================
-// EXPORT SERVICES
-// ============================================
 exports.paymentServices = {
     createPaymentService,
     paymentSuccessService,
     paymentFailureService,
     paymentCancelService,
     paymentIpnService,
+    approveReviewedPaymentService,
     getPaymentByIdService,
 };
 //# sourceMappingURL=payment.service.js.map

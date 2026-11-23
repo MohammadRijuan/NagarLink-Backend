@@ -3,6 +3,11 @@ import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
 import { auth } from "../../middlewares/checkAuth";
 import { assignmentControllers } from "./assignment.controller";
+import { validateRequest } from "../../middlewares/validateRequest";
+import {
+  assignmentIdParamsSchema,
+  reviewAssignmentSchema,
+} from "./assignment.validation";
 
 const router = Router();
 
@@ -17,6 +22,7 @@ router.get(
 router.get(
   "/:id",
   auth(Role.CITIZEN, Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: assignmentIdParamsSchema }),
   assignmentControllers.getAssignmentById,
 );
 
@@ -24,6 +30,7 @@ router.get(
 router.patch(
   "/:id/submit-completion",
   auth(Role.STAFF),
+  validateRequest({ params: assignmentIdParamsSchema }),
   assignmentControllers.submitAssignmentCompletion,
 );
 
@@ -31,6 +38,10 @@ router.patch(
 router.patch(
   "/:id/review",
   auth(Role.MANAGER, Role.ADMIN),
+  validateRequest({
+    params: assignmentIdParamsSchema,
+    body: reviewAssignmentSchema,
+  }),
   assignmentControllers.reviewAssignmentCompletion,
 );
 

@@ -114,6 +114,8 @@ exports.WorkAttachmentScalarFieldEnum = {
     id: 'id',
     assignmentId: 'assignmentId',
     fileUrl: 'fileUrl',
+    publicId: 'publicId',
+    resourceType: 'resourceType',
     fileType: 'fileType',
     fileName: 'fileName',
     createdAt: 'createdAt'

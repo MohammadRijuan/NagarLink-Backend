@@ -9,13 +9,16 @@ declare const createPaymentService: (payload: ICreatePayment, user: RequestUser)
 declare const paymentSuccessService: (data: Record<string, unknown>) => Promise<{
     redirectUrl: string;
 }>;
-declare const paymentFailureService: (_data: Record<string, unknown>) => Promise<{
+declare const paymentFailureService: (data: Record<string, unknown>) => Promise<{
     redirectUrl: string;
 }>;
-declare const paymentCancelService: (_data: Record<string, unknown>) => Promise<{
+declare const paymentCancelService: (data: Record<string, unknown>) => Promise<{
     redirectUrl: string;
 }>;
 declare const paymentIpnService: (data: Record<string, unknown>) => Promise<void>;
+declare const approveReviewedPaymentService: (paymentId: string) => Promise<{
+    success: boolean;
+}>;
 declare const getPaymentByIdService: (id: string, user: RequestUser) => Promise<{
     request: {
         id: string;
@@ -73,6 +76,7 @@ export declare const paymentServices: {
     paymentFailureService: typeof paymentFailureService;
     paymentCancelService: typeof paymentCancelService;
     paymentIpnService: typeof paymentIpnService;
+    approveReviewedPaymentService: typeof approveReviewedPaymentService;
     getPaymentByIdService: typeof getPaymentByIdService;
 };
 export {};

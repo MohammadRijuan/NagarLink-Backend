@@ -8,16 +8,21 @@ const express_1 = __importDefault(require("express"));
 const checkAuth_1 = require("../../middlewares/checkAuth");
 const enums_1 = require("../../../generated/prisma/enums");
 const staffApplication_controller_1 = require("./staffApplication.controller");
+const validateRequest_1 = require("../../middlewares/validateRequest");
+const staffApplication_validation_1 = require("./staffApplication.validation");
 const router = express_1.default.Router();
 // Apply to become staff
-router.post("/", (0, checkAuth_1.auth)(enums_1.Role.CITIZEN), staffApplication_controller_1.staffApplicationControllers.createStaffApplication);
+router.post("/", (0, checkAuth_1.auth)(enums_1.Role.CITIZEN), (0, validateRequest_1.validateRequest)({ body: staffApplication_validation_1.createStaffApplicationSchema }), staffApplication_controller_1.staffApplicationControllers.createStaffApplication);
 // Get all applications
 router.get("/", (0, checkAuth_1.auth)(enums_1.Role.ADMIN, enums_1.Role.MANAGER), staffApplication_controller_1.staffApplicationControllers.getAllStaffApplications);
 // Get single application
-router.get("/:id", (0, checkAuth_1.auth)(enums_1.Role.ADMIN, enums_1.Role.MANAGER), staffApplication_controller_1.staffApplicationControllers.getStaffApplicationById);
+router.get("/:id", (0, checkAuth_1.auth)(enums_1.Role.ADMIN, enums_1.Role.MANAGER), (0, validateRequest_1.validateRequest)({ params: staffApplication_validation_1.staffApplicationIdParamsSchema }), staffApplication_controller_1.staffApplicationControllers.getStaffApplicationById);
 // Update application (e.g. approve/reject)
-router.patch("/:id", (0, checkAuth_1.auth)(enums_1.Role.ADMIN), staffApplication_controller_1.staffApplicationControllers.updateStaffApplication);
+router.patch("/:id", (0, checkAuth_1.auth)(enums_1.Role.ADMIN), (0, validateRequest_1.validateRequest)({
+    params: staffApplication_validation_1.staffApplicationIdParamsSchema,
+    body: staffApplication_validation_1.updateStaffApplicationSchema,
+}), staffApplication_controller_1.staffApplicationControllers.updateStaffApplication);
 // Delete application
-router.delete("/:id", (0, checkAuth_1.auth)(enums_1.Role.ADMIN), staffApplication_controller_1.staffApplicationControllers.deleteStaffApplication);
+router.delete("/:id", (0, checkAuth_1.auth)(enums_1.Role.ADMIN), (0, validateRequest_1.validateRequest)({ params: staffApplication_validation_1.staffApplicationIdParamsSchema }), staffApplication_controller_1.staffApplicationControllers.deleteStaffApplication);
 exports.staffApplicationRoutes = router;
 //# sourceMappingURL=staffApplication.route.js.map
