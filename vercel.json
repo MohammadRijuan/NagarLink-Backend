@@ -2,17 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "dist/server.cjs",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": "src/app/templates/**"
-      }
+      "src": "dist/server.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/server.cjs"
+      "dest": "dist/server.js"
     }
   ]
 }
