@@ -5,7 +5,7 @@ import { prisma } from "./lib/prisma";
 import { seedAdmin, seedManager, seedStaff } from "./utils/seed";
 import { redisClient } from "./lib/redis";
 
-// const port = config.port;
+const port = config.port;
 
 const main = async () => {
   try {
@@ -19,9 +19,9 @@ const main = async () => {
     seedManager();
     seedStaff();
 
-    // app.listen(port, () => {
-    //   console.log(`NagarLink app is running on port : ${port}`);
-    // });
+    app.listen(port, () => {
+      console.log(`NagarLink app is running on port : ${port}`);
+    });
   } catch (error) {
     console.log("database disconnected", error);
     prisma.$disconnect();
