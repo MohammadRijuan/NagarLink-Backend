@@ -5,6 +5,7 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status";
 import { IRequestUser } from "./auth.interface";
 import { AppError } from "../../utils/AppError";
+import config from "../../config";
 
 const registerUser = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
@@ -28,13 +29,13 @@ const verifyUserEmail = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: config.node_env === "production",
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
   });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false,
+    secure: config.node_env === "production",
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
@@ -59,14 +60,14 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: config.node_env === "production",
     sameSite: "none",
     maxAge: 10000 * 60 * 60 * 24, //24 hour or 1day
   });
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: false,
+    secure: config.node_env === "production",
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
@@ -113,13 +114,13 @@ const refreshToken = catchAsync(async (req: Request, res: Response) => {
 
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: config.node_env === "production",
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
   });
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: false,
+    secure: config.node_env === "production",
     sameSite: "none",
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
   });
@@ -144,13 +145,13 @@ const googleLogin = catchAsync(async (req: Request, res: Response) => {
 
 	res.cookie("accessToken", accessToken, {
 		httpOnly: true,
-		secure: false,
+		secure: config.node_env === "production",
 		sameSite: "none",
 		maxAge: 1000 * 60 * 60 * 24, // 24 hour or 1 day
 	});
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,
-		secure: false,
+		secure: config.node_env === "production",
 		sameSite: "none",
 		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 	});

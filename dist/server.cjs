@@ -27,8 +27,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 
 // src/config/index.ts
-var import_dotenv = __toESM(require("dotenv"), 1);
-var import_path = __toESM(require("path"), 1);
+var import_dotenv = __toESM(require("dotenv"));
+var import_path = __toESM(require("path"));
 import_dotenv.default.config({
   path: import_path.default.join(process.cwd(), ".env")
 });
@@ -76,12 +76,12 @@ var config_default = {
 };
 
 // src/app.ts
-var import_express14 = __toESM(require("express"), 1);
-var import_cors = __toESM(require("cors"), 1);
-var import_cookie_parser = __toESM(require("cookie-parser"), 1);
+var import_express14 = __toESM(require("express"));
+var import_cors = __toESM(require("cors"));
+var import_cookie_parser = __toESM(require("cookie-parser"));
 
 // src/middlewares/notFound.ts
-var import_http_status = __toESM(require("http-status"), 1);
+var import_http_status = __toESM(require("http-status"));
 var NotFound = (req, res) => {
   res.status(import_http_status.default.NOT_FOUND).json({
     message: "Route not found",
@@ -105,11 +105,11 @@ var catchAsync = (fn) => {
 };
 
 // src/lib/prisma.ts
-var dotenv2 = __toESM(require("dotenv"), 1);
+var dotenv2 = __toESM(require("dotenv"));
 var import_adapter_pg = require("@prisma/adapter-pg");
 
 // generated/prisma/internal/class.ts
-var runtime = __toESM(require("@prisma/client/runtime/client"), 1);
+var runtime = __toESM(require("@prisma/client/runtime/client"));
 var config = {
   "previewFeatures": [],
   "clientVersion": "7.10.1",
@@ -191,7 +191,7 @@ __export(prismaNamespace_exports, {
   raw: () => raw2,
   sql: () => sql
 });
-var runtime2 = __toESM(require("@prisma/client/runtime/client"), 1);
+var runtime2 = __toESM(require("@prisma/client/runtime/client"));
 var PrismaClientKnownRequestError2 = runtime2.PrismaClientKnownRequestError;
 var PrismaClientUnknownRequestError2 = runtime2.PrismaClientUnknownRequestError;
 var PrismaClientRustPanicError2 = runtime2.PrismaClientRustPanicError;
@@ -467,7 +467,10 @@ var PrismaClient = getPrismaClientClass();
 // src/lib/prisma.ts
 dotenv2.config();
 var connectionString = `${process.env.DATABASE_URL}`;
-var adapter = new import_adapter_pg.PrismaPg({ connectionString });
+var adapter = new import_adapter_pg.PrismaPg({
+  connectionString,
+  max: process.env.VERCEL ? 1 : 10
+});
 var prisma = new PrismaClient({ adapter });
 
 // src/utils/AppError.ts
@@ -490,9 +493,9 @@ var AppError = class extends Error {
 };
 
 // src/modules/auth/auth.service.ts
-var import_http_status2 = __toESM(require("http-status"), 1);
-var import_bcryptjs = __toESM(require("bcryptjs"), 1);
-var import_crypto = __toESM(require("crypto"), 1);
+var import_http_status2 = __toESM(require("http-status"));
+var import_bcryptjs = __toESM(require("bcryptjs"));
+var import_crypto = __toESM(require("crypto"));
 
 // src/lib/redis.ts
 var import_redis = require("redis");
@@ -501,16 +504,22 @@ var redisClient = (0, import_redis.createClient)({
   password: config_default.redis_password,
   socket: {
     host: config_default.redis_host,
-    port: Number(config_default.redis_port)
+    port: Number(config_default.redis_port),
+    connectTimeout: 5e3,
+    // Give up quickly instead of retrying forever inside a serverless function
+    reconnectStrategy: (retries) => retries > 3 ? new Error("Redis unreachable") : Math.min(retries * 200, 1e3)
   }
+});
+redisClient.on("error", (error) => {
+  console.error("Redis client error:", error.message);
 });
 
 // src/modules/auth/auth.service.ts
-var import_path2 = __toESM(require("path"), 1);
-var import_ejs = __toESM(require("ejs"), 1);
+var import_path2 = __toESM(require("path"));
+var import_ejs = __toESM(require("ejs"));
 
 // src/lib/nodemailer.ts
-var import_nodemailer = __toESM(require("nodemailer"), 1);
+var import_nodemailer = __toESM(require("nodemailer"));
 var transporter = import_nodemailer.default.createTransport({
   service: "gmail",
   auth: {
@@ -520,7 +529,7 @@ var transporter = import_nodemailer.default.createTransport({
 });
 
 // src/utils/jwt.ts
-var import_jsonwebtoken = __toESM(require("jsonwebtoken"), 1);
+var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
 var createToken = (payload, secret, expiresIn) => {
   const token = import_jsonwebtoken.default.sign(payload, secret, { expiresIn });
   return token;
@@ -838,7 +847,7 @@ var googleLoginService = async (payload) => {
       });
       const tempatePath = import_path2.default.join(
         process.cwd(),
-        "src/app/templates/citizen-welcome-email.ejs"
+        "src/templates/citizen-welcome-email.ejs"
       );
       const templateData = {
         name: user.name
@@ -1055,7 +1064,7 @@ var sendResponse = (res, data) => {
 };
 
 // src/modules/auth/auth.controller.ts
-var import_http_status3 = __toESM(require("http-status"), 1);
+var import_http_status3 = __toESM(require("http-status"));
 var registerUser = catchAsync(async (req, res) => {
   const payload = req.body;
   await authServices.registerUserService(payload);
@@ -1072,14 +1081,14 @@ var verifyUserEmail = catchAsync(async (req, res) => {
   const { accessToken, refreshToken: refreshToken2, user } = result;
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24
     // 24 hour or 1 day
   });
   res.cookie("refreshToken", refreshToken2, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
@@ -1101,14 +1110,14 @@ var loginUser = catchAsync(async (req, res) => {
   const { accessToken, refreshToken: refreshToken2 } = result;
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e4 * 60 * 60 * 24
     //24 hour or 1day
   });
   res.cookie("refreshToken", refreshToken2, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
@@ -1149,14 +1158,14 @@ var refreshToken = catchAsync(async (req, res) => {
   const { accessToken, refreshToken: newRefreshToken } = result;
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24
     // 24 hour or 1 day
   });
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
@@ -1177,14 +1186,14 @@ var googleLogin = catchAsync(async (req, res) => {
   const { accessToken, refreshToken: refreshToken2 } = result;
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24
     // 24 hour or 1 day
   });
   res.cookie("refreshToken", refreshToken2, {
     httpOnly: true,
-    secure: false,
+    secure: config_default.node_env === "production",
     sameSite: "none",
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
@@ -1231,7 +1240,7 @@ var authControllers = {
 };
 
 // src/middlewares/checkAuth.ts
-var import_http_status4 = __toESM(require("http-status"), 1);
+var import_http_status4 = __toESM(require("http-status"));
 var auth = (...requiredRoles) => {
   return catchAsync(async (req, res, next) => {
     const token = req.cookies.accessToken ? req.cookies.accessToken : req.headers.authorization?.startsWith("Bearer") ? req.headers.authorization?.split(" ")[1] : req.headers.authorization;
@@ -1263,7 +1272,7 @@ var auth = (...requiredRoles) => {
 };
 
 // src/middlewares/validateRequest.ts
-var import_http_status5 = __toESM(require("http-status"), 1);
+var import_http_status5 = __toESM(require("http-status"));
 var validateRequest = (schemas) => catchAsync((req, _res, next) => {
   for (const part of ["params", "body"]) {
     const schema = schemas[part];
@@ -1364,7 +1373,7 @@ router.post(
 var authRoutes = router;
 
 // src/middlewares/globalErrorHandler.ts
-var import_http_status6 = __toESM(require("http-status"), 1);
+var import_http_status6 = __toESM(require("http-status"));
 var globalHandleError = async (err, _req, res, _next) => {
   if (config_default.node_env === "development") {
     console.log("Error from global error handler", err);
@@ -1417,7 +1426,7 @@ var globalHandleError = async (err, _req, res, _next) => {
 var import_express2 = require("express");
 
 // src/modules/user/user.service.ts
-var import_http_status7 = __toESM(require("http-status"), 1);
+var import_http_status7 = __toESM(require("http-status"));
 var getAllUserService = async (query) => {
   const limit = query.limit ? Number(query.limit) : 10;
   const page = query.page ? Number(query.page) : 1;
@@ -1615,7 +1624,7 @@ var userServices = {
 };
 
 // src/modules/user/user.controller.ts
-var import_http_status8 = __toESM(require("http-status"), 1);
+var import_http_status8 = __toESM(require("http-status"));
 var getAllUsers = catchAsync(async (req, res) => {
   const { data, meta } = await userServices.getAllUserService(req.query);
   sendResponse(res, {
@@ -1720,10 +1729,10 @@ var userRoutes = router2;
 var import_express3 = require("express");
 
 // src/modules/department/department.controller.ts
-var import_http_status10 = __toESM(require("http-status"), 1);
+var import_http_status10 = __toESM(require("http-status"));
 
 // src/modules/department/department.service.ts
-var import_http_status9 = __toESM(require("http-status"), 1);
+var import_http_status9 = __toESM(require("http-status"));
 var createDepartmentService = async (payload) => {
   const name = payload.name.trim();
   const existingDepartment = await prisma.department.findFirst({
@@ -1948,10 +1957,10 @@ var departmentRoutes = router3;
 var import_express4 = require("express");
 
 // src/modules/category/category.controller.ts
-var import_http_status12 = __toESM(require("http-status"), 1);
+var import_http_status12 = __toESM(require("http-status"));
 
 // src/modules/category/category.service.ts
-var import_http_status11 = __toESM(require("http-status"), 1);
+var import_http_status11 = __toESM(require("http-status"));
 var createCategoryService = async (payload) => {
   const categoryName = payload.name.trim().toLowerCase();
   const isExistCategory = await prisma.category.findFirst({
@@ -2208,13 +2217,13 @@ router4.delete(
 var categoryRoutes = router4;
 
 // src/modules/staffApplication/staffApplication.route.ts
-var import_express5 = __toESM(require("express"), 1);
+var import_express5 = __toESM(require("express"));
 
 // src/modules/staffApplication/staffApplication.controller.ts
-var import_http_status14 = __toESM(require("http-status"), 1);
+var import_http_status14 = __toESM(require("http-status"));
 
 // src/modules/staffApplication/staffApplication.service.ts
-var import_http_status13 = __toESM(require("http-status"), 1);
+var import_http_status13 = __toESM(require("http-status"));
 var createStaffApplicationService = async (payload, user) => {
   const existingApplication = await prisma.staffApplication.findUnique({
     where: {
@@ -2584,13 +2593,13 @@ router5.delete(
 var staffApplicationRoutes = router5;
 
 // src/modules/staffManagement/staffManagement.route.ts
-var import_express6 = __toESM(require("express"), 1);
+var import_express6 = __toESM(require("express"));
 
 // src/modules/staffManagement/staffManagement.controller.ts
-var import_http_status16 = __toESM(require("http-status"), 1);
+var import_http_status16 = __toESM(require("http-status"));
 
 // src/modules/staffManagement/staffManagement.service.ts
-var import_http_status15 = __toESM(require("http-status"), 1);
+var import_http_status15 = __toESM(require("http-status"));
 var getAllStaffService = async (query) => {
   const limit = query.limit ? Number(query.limit) : 10;
   const page = query.page ? Number(query.page) : 1;
@@ -2776,13 +2785,13 @@ router6.delete(
 var staffRoutes = router6;
 
 // src/modules/staffCategory/staffCategory.route.ts
-var import_express7 = __toESM(require("express"), 1);
+var import_express7 = __toESM(require("express"));
 
 // src/modules/staffCategory/staffCategory.controller.ts
-var import_http_status18 = __toESM(require("http-status"), 1);
+var import_http_status18 = __toESM(require("http-status"));
 
 // src/modules/staffCategory/staffCategory.service.ts
-var import_http_status17 = __toESM(require("http-status"), 1);
+var import_http_status17 = __toESM(require("http-status"));
 var assignCategoriesToStaffService = async (staffId, payload) => {
   const isStaffExist = await prisma.user.findFirst({
     where: {
@@ -3067,13 +3076,13 @@ router7.delete(
 var staffCategoryRoutes = router7;
 
 // src/modules/quotation/quotation.route.ts
-var import_express8 = __toESM(require("express"), 1);
+var import_express8 = __toESM(require("express"));
 
 // src/modules/quotation/quotation.controller.ts
-var import_http_status20 = __toESM(require("http-status"), 1);
+var import_http_status20 = __toESM(require("http-status"));
 
 // src/modules/quotation/quotation.service.ts
-var import_http_status19 = __toESM(require("http-status"), 1);
+var import_http_status19 = __toESM(require("http-status"));
 var createQuotationService = async (payload, user) => {
   const quotation = await prisma.quotation.findFirst({
     where: {
@@ -3533,7 +3542,7 @@ var quotationRoutes = router8;
 var import_express9 = require("express");
 
 // src/modules/request/workRequest.service.ts
-var import_http_status21 = __toESM(require("http-status"), 1);
+var import_http_status21 = __toESM(require("http-status"));
 var createWorkRequestService = async (payload, user) => {
   const citizen = await prisma.user.findUnique({
     where: {
@@ -3820,7 +3829,7 @@ var workRequestServices = {
 };
 
 // src/modules/request/workRequest.controller.ts
-var import_http_status22 = __toESM(require("http-status"), 1);
+var import_http_status22 = __toESM(require("http-status"));
 var createWorkRequest = catchAsync(async (req, res) => {
   const user = req.user;
   const payload = req.body;
@@ -4000,10 +4009,10 @@ var workRequestRoutes = router9;
 var import_express10 = require("express");
 
 // src/modules/staffInvitation/staffInvitation.controller.ts
-var import_http_status24 = __toESM(require("http-status"), 1);
+var import_http_status24 = __toESM(require("http-status"));
 
 // src/modules/staffInvitation/staffInvitation.service.ts
-var import_http_status23 = __toESM(require("http-status"), 1);
+var import_http_status23 = __toESM(require("http-status"));
 var createStaffInvitationService = async (payload, user) => {
   if (user.role !== Role.MANAGER && user.role !== Role.ADMIN) {
     throw new AppError(
@@ -4569,10 +4578,10 @@ var staffInvitationRoutes = router10;
 var import_express11 = require("express");
 
 // src/modules/payment/payment.controller.ts
-var import_http_status26 = __toESM(require("http-status"), 1);
+var import_http_status26 = __toESM(require("http-status"));
 
 // src/modules/payment/payment.service.ts
-var import_http_status25 = __toESM(require("http-status"), 1);
+var import_http_status25 = __toESM(require("http-status"));
 var import_crypto2 = require("crypto");
 
 // src/lib/sslcommerz.ts
@@ -5168,10 +5177,10 @@ var paymentRoutes = router11;
 var import_express12 = require("express");
 
 // src/modules/assignment/assignment.controller.ts
-var import_http_status28 = __toESM(require("http-status"), 1);
+var import_http_status28 = __toESM(require("http-status"));
 
 // src/modules/assignment/assignment.service.ts
-var import_http_status27 = __toESM(require("http-status"), 1);
+var import_http_status27 = __toESM(require("http-status"));
 var getMyAssignmentsService = async (user) => {
   const where = user.role === Role.CITIZEN ? { citizenId: user.userId } : user.role === Role.STAFF ? { staffId: user.userId } : {};
   const assignments = await prisma.assignment.findMany({
@@ -5425,10 +5434,10 @@ var assignmentRoutes = router12;
 var import_express13 = require("express");
 
 // src/modules/workAttachment/workAttachment.controller.ts
-var import_http_status30 = __toESM(require("http-status"), 1);
+var import_http_status30 = __toESM(require("http-status"));
 
 // src/modules/workAttachment/workAttachment.service.ts
-var import_http_status29 = __toESM(require("http-status"), 1);
+var import_http_status29 = __toESM(require("http-status"));
 
 // src/lib/cloudinary.ts
 var import_cloudinary = require("cloudinary");
@@ -5663,7 +5672,7 @@ var workAttachmentControllers = {
 };
 
 // src/lib/multer.ts
-var import_multer = __toESM(require("multer"), 1);
+var import_multer = __toESM(require("multer"));
 var storage = import_multer.default.memoryStorage();
 var upload = (0, import_multer.default)({ storage });
 
@@ -5736,8 +5745,8 @@ app.use(NotFound);
 var app_default = app;
 
 // src/utils/seed.ts
-var import_bcryptjs2 = __toESM(require("bcryptjs"), 1);
-var import_http_status31 = __toESM(require("http-status"), 1);
+var import_bcryptjs2 = __toESM(require("bcryptjs"));
+var import_http_status31 = __toESM(require("http-status"));
 var seedAdmin = async () => {
   try {
     const isAdmin = await prisma.user.findFirst({
@@ -5892,3 +5901,4 @@ var main = async () => {
   }
 };
 main();
+//# sourceMappingURL=server.cjs.map

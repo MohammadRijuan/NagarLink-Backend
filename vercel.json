@@ -1,13 +1,9 @@
 {
   "functions": {
-    "api/index.ts": {
-      "includeFiles": "src/**/*.ejs"
+    "api/index.js": {
+      "includeFiles": "src/templates/**",
+      "maxDuration": 30
     }
   },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api"
-    }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }

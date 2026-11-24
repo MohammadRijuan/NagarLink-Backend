@@ -411,7 +411,7 @@ const googleLoginService = async (payload: IGoogleLoginPayload) => {
       });
       const tempatePath = path.join(
         process.cwd(),
-        "src/app/templates/citizen-welcome-email.ejs",
+        "src/templates/citizen-welcome-email.ejs",
       );
 
       const templateData = {
