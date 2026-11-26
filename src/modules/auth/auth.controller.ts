@@ -193,6 +193,18 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const logout = catchAsync(async (req: Request, res: Response) => {
+  res.clearCookie("accessToken")
+  res.clearCookie("refreshToken")
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Password Changed successfully",
+    data: null,
+  });
+});
+
 export const authControllers = {
   registerUser,
   loginUser,
@@ -202,4 +214,5 @@ export const authControllers = {
   forgotPassword,
   resetPassword,
   verifyUserEmail,
+  logout
 };

@@ -19,11 +19,13 @@ router.post(
   validateRequest({ body: registerUserSchema }),
   authControllers.registerUser,
 );
+
 router.post(
   "/verify-email",
   validateRequest({ body: verifyUserEmailSchema }),
   authControllers.verifyUserEmail,
 );
+
 router.post(
   "/login",
   validateRequest({ body: loginUserSchema }),
@@ -37,21 +39,30 @@ router.get(
   auth(Role.CITIZEN, Role.ADMIN, Role.MANAGER, Role.STAFF),
   authControllers.getMyProfile,
 );
+
 router.post("/refresh-token", authControllers.refreshToken);
+
 router.post(
   "/forgot-password",
   validateRequest({ body: forgotPasswordSchema }),
   authControllers.forgotPassword,
 );
+
 router.post(
   "/reset-password",
   validateRequest({ body: resetPasswordSchema }),
   authControllers.resetPassword,
 );
+
 router.post(
   "/google",
   validateRequest({ body: googleLoginSchema }),
   authControllers.googleLogin,
+);
+
+router.post(
+  "/logout",
+  authControllers.logout,
 );
 
 export const authRoutes = router;
