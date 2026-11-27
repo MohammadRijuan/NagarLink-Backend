@@ -200,7 +200,7 @@ const logout = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: "Password Changed successfully",
+    message: "logged out successfully",
     data: null,
   });
 });
