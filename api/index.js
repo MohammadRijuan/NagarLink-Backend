@@ -3197,6 +3197,10 @@ var omitPhone = (contact) => {
   const { phone: _phone, ...contactWithoutPhone } = contact;
   return contactWithoutPhone;
 };
+var projectStaffInvitationDetail = (invitation) => ({
+  ...invitation,
+  request: omitPhone(invitation.request)
+});
 var projectWorkRequestContact = (request, viewer) => viewer.role === Role.CITIZEN ? request : omitPhone(request);
 var omitPhoneAndPassword = (user) => {
   const {
@@ -4565,6 +4569,9 @@ var getStaffInvitationByIdService = async (id, user) => {
         }
       },
       request: {
+        omit: {
+          phone: true
+        },
         include: {
           department: true,
           citizen: {
@@ -4587,7 +4594,7 @@ var getStaffInvitationByIdService = async (id, user) => {
       "You are not allowed to view this invitation"
     );
   }
-  return invitation;
+  return projectStaffInvitationDetail(invitation);
 };
 var respondToInvitationService = async (id, payload, user) => {
   const invitation = await prisma.staffInvitation.findUnique({

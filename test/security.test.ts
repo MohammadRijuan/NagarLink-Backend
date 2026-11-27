@@ -14,6 +14,7 @@ import {
   projectAssignmentContacts,
   projectQuotationContacts,
   projectSelectedQuotation,
+  projectStaffInvitationDetail,
   projectWorkRequestContact,
 } from "../src/utils/contactPrivacy";
 
@@ -232,6 +233,41 @@ test("work requests expose a phone only to their citizen owner", () => {
       ),
     false,
   );
+});
+
+test("staff invitation detail response omits request.phone and preserves other fields", () => {
+  const invitation = {
+    id: "invitation-1",
+    staffId: "staff-1",
+    status: "REQUESTED",
+    request: {
+      id: "request-1",
+      title: "Repair service",
+      phone: "citizen-phone",
+      department: { id: "department-1", name: "Public Works" },
+      citizen: {
+        id: "citizen-1",
+        name: "Assigned Citizen",
+        email: "citizen@example.test",
+      },
+    },
+    staff: {
+      id: "staff-1",
+      name: "Assigned Staff",
+      email: "staff@example.test",
+      division: "Dhaka",
+      district: "Dhaka",
+      address: "Staff address",
+      postalCode: "1000",
+    },
+  };
+  const result = projectStaffInvitationDetail(invitation);
+
+  assert.equal("phone" in result.request, false);
+  assert.equal(result.request.title, "Repair service");
+  assert.deepEqual(result.request.department, invitation.request.department);
+  assert.deepEqual(result.request.citizen, invitation.request.citizen);
+  assert.deepEqual(result.staff, invitation.staff);
 });
 
 test("credentialed CORS reflects only explicitly configured frontend origins", async () => {

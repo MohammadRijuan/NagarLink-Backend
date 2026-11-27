@@ -8,10 +8,21 @@ type PhoneUser = {
   phone: string | null;
 };
 
-export const omitPhone = <T extends PhoneUser>(contact: T) => {
-  const { phone: _phone, ...contactWithoutPhone } = contact;
+export const omitPhone = <T extends object>(contact: T) => {
+  const { phone: _phone, ...contactWithoutPhone } = contact as T & {
+    phone?: unknown;
+  };
   return contactWithoutPhone;
 };
+
+export const projectStaffInvitationDetail = <
+  T extends { request: object },
+>(
+  invitation: T,
+) => ({
+  ...invitation,
+  request: omitPhone(invitation.request),
+});
 
 export const projectWorkRequestContact = <T extends PhoneUser>(
   request: T,

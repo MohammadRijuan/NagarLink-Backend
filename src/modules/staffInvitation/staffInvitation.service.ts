@@ -4,7 +4,10 @@ import { IQuery } from "../../interfaces";
 import { prisma } from "../../lib/prisma";
 import { RequestUser } from "../../middlewares/checkAuth";
 import { AppError } from "../../utils/AppError";
-import { projectWorkRequestContact } from "../../utils/contactPrivacy";
+import {
+  projectStaffInvitationDetail,
+  projectWorkRequestContact,
+} from "../../utils/contactPrivacy";
 import {
   ICreateStaffInvitation,
   IRespondToInvitation,
@@ -346,6 +349,9 @@ const getStaffInvitationByIdService = async (
         },
       },
       request: {
+        omit: {
+          phone: true,
+        },
         include: {
           department: true,
           citizen: {
@@ -372,7 +378,7 @@ const getStaffInvitationByIdService = async (
     );
   }
 
-  return invitation;
+  return projectStaffInvitationDetail(invitation);
 };
 
 const respondToInvitationService = async (
