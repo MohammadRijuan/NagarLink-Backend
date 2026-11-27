@@ -23,6 +23,25 @@ import { JwtPayload, SignOptions } from "jsonwebtoken";
 import { TokenPayload } from "google-auth-library";
 import { googleClient } from "../../lib/googleAuth";
 
+const INVALID_CREDENTIALS_MESSAGE = "Invalid email or password";
+const DUMMY_PASSWORD_HASH =
+  "$2b$10$HZXM36wwFm6Rpef9jHeZMOZPSSaT7tzA4TCucU/IT.X3bV4wPvgHe";
+
+const isValidGooglePayload = (
+  payload: TokenPayload | undefined,
+  clientId: string,
+): payload is TokenPayload =>
+  payload !== undefined &&
+  (payload.iss === "accounts.google.com" ||
+    payload.iss === "https://accounts.google.com") &&
+  payload.aud === clientId &&
+  (payload.azp === undefined || payload.azp === clientId) &&
+  typeof payload.exp === "number" &&
+  payload.exp * 1000 > Date.now() &&
+  typeof payload.sub === "string" &&
+  payload.sub.length > 0 &&
+  payload.email_verified === true;
+
 const registerUserService = async (payload: IRegisterUserPayload) => {
   const { name, password } = payload;
 
@@ -254,31 +273,20 @@ const loginUserService = async (payload: ILoginUserPayload) => {
     },
   });
 
-  if (!user) {
-    throw new AppError(httpStatus.UNAUTHORIZED, "User not found");
-  }
-
-  // user account delete or not
-  if (user?.isDeleted) {
-    throw new AppError(httpStatus.FORBIDDEN, "User is Deleted");
-  }
-
-  // user active or not
-  if (user && !user.isActive) {
-    throw new AppError(httpStatus.FORBIDDEN, "User is Blocked");
-  }
-
-  if (user.password === null && user.googleId !== null) {
-    throw new AppError(
-      httpStatus.CONFLICT,
-      "User already has account with google... try to login with google",
-    );
-  }
-
   const isPasswordMatched = await bcrypt.compare(
     password,
-    user.password as string,
+    user?.password ?? DUMMY_PASSWORD_HASH,
   );
+
+  if (
+    !user ||
+    !user.password ||
+    !isPasswordMatched ||
+    !user.isActive ||
+    user.isDeleted
+  ) {
+    throw new AppError(httpStatus.UNAUTHORIZED, INVALID_CREDENTIALS_MESSAGE);
+  }
 
   const jwtPayload = {
     userId: user.id,
@@ -323,37 +331,32 @@ const getMyProfileService = async (user: IRequestUser) => {
 };
 
 const googleLoginService = async (payload: IGoogleLoginPayload) => {
-  let googleIdTokenPayload: TokenPayload | null | undefined = null;
+  const googleClientId = config.google_client_id?.trim();
+  if (!googleClientId) {
+    throw new AppError(
+      httpStatus.SERVICE_UNAVAILABLE,
+      "Google sign-in is unavailable",
+    );
+  }
+
+  let googleIdTokenPayload: TokenPayload | undefined;
   try {
     const ticket = await googleClient.verifyIdToken({
       idToken: payload.idToken,
-      audience: config.google_client_id,
+      audience: googleClientId,
     });
 
     googleIdTokenPayload = ticket.getPayload();
-  } catch (error) {
-    console.log("Google ID Token Verification Failed", error);
-    throw new AppError(
-      httpStatus.UNAUTHORIZED,
-      "Invalid Or Expired Google Id Token",
-    );
+  } catch {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid Google ID token");
   }
 
-  if (!googleIdTokenPayload) {
-    throw new AppError(
-      httpStatus.UNAUTHORIZED,
-      "Invalid Or Expired Google Id Token",
-    );
-  }
-
-  if (!googleIdTokenPayload.email) {
-    throw new AppError(httpStatus.BAD_REQUEST, "Google Email Not Found");
-  }
-  if (!googleIdTokenPayload.name) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Google Email User Name Not Found",
-    );
+  if (
+    !isValidGooglePayload(googleIdTokenPayload, googleClientId) ||
+    !googleIdTokenPayload.email ||
+    !googleIdTokenPayload.name
+  ) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid Google ID token");
   }
 
   const ifCitizenExistWithGoogleAuth = await prisma.user.findUnique({

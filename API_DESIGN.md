@@ -174,7 +174,7 @@ listed, it does not require a JSON body.
 | `POST` | `/auth/refresh-token` | Refresh-token cookie | Reads `refreshToken` cookie and returns replacement tokens. |
 | `POST` | `/auth/forgot-password` | Public | `email`. Sends a password-reset OTP. |
 | `POST` | `/auth/reset-password` | Public | `email`, six-digit `otp`, `newPassword`. |
-| `POST` | `/auth/google` | Public | `idToken`. The route exists, but its controller is currently an empty stub and does not send a response. |
+| `POST` | `/auth/google` | Public | `idToken`. The backend verifies the Google ID token against `GOOGLE_CLIENT_ID` before signing in or registering a citizen. |
 
 Password length is 8–128 characters for registration and reset. Email input is
 trimmed, lowercased, and validated.
