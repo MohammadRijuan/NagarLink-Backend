@@ -1102,6 +1102,12 @@ var sendResponse = (res, data) => {
 
 // src/modules/auth/auth.controller.ts
 var import_http_status4 = __toESM(require("http-status"));
+var authCookieOptions = () => ({
+  httpOnly: true,
+  secure: config_default.node_env === "production",
+  sameSite: "none",
+  path: "/"
+});
 var registerUser = catchAsync(async (req, res) => {
   const payload = req.body;
   await authServices.registerUserService(payload);
@@ -1117,16 +1123,12 @@ var verifyUserEmail = catchAsync(async (req, res) => {
   const result = await authServices.verifyUserEmailService(payload);
   const { accessToken, refreshToken: refreshToken2, user } = result;
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e3 * 60 * 60 * 24
     // 24 hour or 1 day
   });
   res.cookie("refreshToken", refreshToken2, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
   });
@@ -1146,16 +1148,12 @@ var loginUser = catchAsync(async (req, res) => {
   const result = await authServices.loginUserService(payload);
   const { accessToken, refreshToken: refreshToken2 } = result;
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e4 * 60 * 60 * 24
     //24 hour or 1day
   });
   res.cookie("refreshToken", refreshToken2, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
   });
@@ -1194,16 +1192,12 @@ var refreshToken = catchAsync(async (req, res) => {
   );
   const { accessToken, refreshToken: newRefreshToken } = result;
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e3 * 60 * 60 * 24
     // 24 hour or 1 day
   });
   res.cookie("refreshToken", newRefreshToken, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
   });
@@ -1222,16 +1216,12 @@ var googleLogin = catchAsync(async (req, res) => {
   const result = await authServices.googleLoginService(payload);
   const { accessToken, refreshToken: refreshToken2 } = result;
   res.cookie("accessToken", accessToken, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e3 * 60 * 60 * 24
     // 24 hour or 1 day
   });
   res.cookie("refreshToken", refreshToken2, {
-    httpOnly: true,
-    secure: config_default.node_env === "production",
-    sameSite: "none",
+    ...authCookieOptions(),
     maxAge: 1e3 * 60 * 60 * 24 * 7
     // 7 days
   });
@@ -1266,12 +1256,12 @@ var resetPassword = catchAsync(async (req, res) => {
   });
 });
 var logout = catchAsync(async (req, res) => {
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken", authCookieOptions());
+  res.clearCookie("refreshToken", authCookieOptions());
   sendResponse(res, {
     statusCode: import_http_status4.default.OK,
     success: true,
-    message: "Password Changed successfully",
+    message: "logged out successfully",
     data: null
   });
 });

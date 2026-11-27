@@ -4,6 +4,7 @@ import type { AddressInfo } from "node:net";
 import test = require("node:test");
 import type { TestContext } from "node:test";
 import express = require("express");
+import cookieParser = require("cookie-parser");
 import bcrypt = require("bcryptjs");
 import { AuthProvider, Role } from "../generated/prisma/enums";
 import type { User } from "../generated/prisma/client";
@@ -441,6 +442,76 @@ test("login rejects missing and incorrect passwords without setting authenticati
     assert.equal(invalidPasswordResponse.status, 401);
     assert.equal(invalidPasswordResponse.headers.get("set-cookie"), null);
     assert.equal(issuedTokens.length, 0);
+  } finally {
+    server.close();
+    await once(server, "close");
+  }
+});
+
+test("logout expires both authentication cookies with matching attributes", async (context: TestContext) => {
+  const previousNodeEnv = config.node_env;
+  config.node_env = "production";
+  context.after(() => {
+    config.node_env = previousNodeEnv;
+  });
+
+  const app = express();
+  app.use(cookieParser());
+  app.use("/auth", authRoutes);
+  app.use(
+    (
+      error: { statusCode?: number; message?: string },
+      _request: express.Request,
+      response: express.Response,
+      _next: express.NextFunction,
+    ) => {
+      response
+        .status(error.statusCode ?? 500)
+        .json({ message: error.message });
+    },
+  );
+  const server = app.listen(0, "127.0.0.1");
+  await once(server, "listening");
+
+  try {
+    const address = server.address() as AddressInfo;
+    const response = await fetch(
+      `http://127.0.0.1:${address.port}/auth/logout`,
+      { method: "POST" },
+    );
+    assert.equal(response.status, 200);
+
+    const cookies = response.headers.getSetCookie();
+    assert.equal(cookies.length, 2);
+
+    const accessCookie = cookies.find((cookie) =>
+      cookie.startsWith("accessToken="),
+    );
+    const refreshCookie = cookies.find((cookie) =>
+      cookie.startsWith("refreshToken="),
+    );
+    assert.ok(accessCookie);
+    assert.ok(refreshCookie);
+
+    for (const cookie of [accessCookie, refreshCookie]) {
+      assert.match(cookie, /;\s*Path=\//i);
+      assert.match(cookie, /;\s*HttpOnly(?:;|$)/i);
+      assert.match(cookie, /;\s*Secure(?:;|$)/i);
+      assert.match(cookie, /;\s*SameSite=None(?:;|$)/i);
+      assert.match(cookie, /;\s*Expires=.*1970/i);
+      assert.doesNotMatch(cookie, /;\s*Domain=/i);
+    }
+
+    const currentUserResponse = await fetch(
+      `http://127.0.0.1:${address.port}/auth/me`,
+    );
+    assert.equal(currentUserResponse.status, 401);
+
+    const refreshResponse = await fetch(
+      `http://127.0.0.1:${address.port}/auth/refresh-token`,
+      { method: "POST" },
+    );
+    assert.equal(refreshResponse.status, 401);
   } finally {
     server.close();
     await once(server, "close");
