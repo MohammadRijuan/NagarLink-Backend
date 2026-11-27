@@ -2,65 +2,82 @@
 import httpStatus from "http-status";
 import {
   AssignmentStatus,
+  PaymentStatus,
   Role,
 } from "../../../generated/prisma/enums";
+
 import { prisma } from "../../lib/prisma";
 import { RequestUser } from "../../middlewares/checkAuth";
 import { AppError } from "../../utils/AppError";
+import { projectAssignmentContacts } from "../../utils/contactPrivacy";
+
 import { IReviewAssignmentPayload } from "./assignment.interface";
 
-// ============================================
-// GET MY ASSIGNMENTS
-// ============================================
-
-const getMyAssignmentsService = async (user: RequestUser) => {
-  const where =
-    user.role === Role.CITIZEN
-      ? { citizenId: user.userId }
-      : user.role === Role.STAFF
-        ? { staffId: user.userId }
-        : {};
-
-  const assignments = await prisma.assignment.findMany({
-    where,
-    include: {
-      staff: {
-        omit: { password: true },
-      },
-      citizen: {
-        omit: { password: true },
-      },
-      request: true,
-      attachments: true,
+// Shared Prisma relations for assignment responses
+const assignmentInclude = {
+  staff: {
+    omit: {
+      password: true,
     },
+  },
+  citizen: {
+    omit: {
+      password: true,
+    },
+  },
+  request: {
+    include: {
+      payments: {
+        where: {
+          status: PaymentStatus.PAID,
+        },
+        select: {
+          id: true,
+          status: true,
+        },
+      },
+    },
+  },
+  attachments: true,
+};
+
+// 1. Get assignments according to logged-in user
+const getMyAssignmentsService = async (user: RequestUser) => {
+  let where = {};
+
+  if (user.role === Role.CITIZEN) {
+    where = {
+      citizenId: user.userId,
+    };
+  } else if (user.role === Role.STAFF) {
+    where = {
+      staffId: user.userId,
+    };
+  }
+
+  const result = await prisma.assignment.findMany({
+    where,
+    include: assignmentInclude,
     orderBy: {
       createdAt: "desc",
     },
   });
 
-  return assignments;
+  return result.map((assignment) =>
+    projectAssignmentContacts(assignment, user),
+  );
 };
 
-// ============================================
-// GET ASSIGNMENT BY ID
-// ============================================
-
+// 2. Get assignment by ID
 const getAssignmentByIdService = async (
   id: string,
   user: RequestUser,
 ) => {
   const assignment = await prisma.assignment.findUnique({
-    where: { id },
-    include: {
-      staff: {
-        omit: { password: true },
-      },
-      citizen: {
-        omit: { password: true },
-      },
-      request: true,
-      attachments: true,
+    where: {
+      id,
     },
+    include: assignmentInclude,
   });
 
   if (!assignment) {
@@ -70,34 +87,36 @@ const getAssignmentByIdService = async (
     );
   }
 
-  const isOwner =
+  const isParticipant =
     assignment.citizenId === user.userId ||
     assignment.staffId === user.userId;
 
-  const isAdminOrManager =
-    user.role === Role.ADMIN ||
-    user.role === Role.MANAGER;
+  const isManagerOrAdmin =
+    user.role === Role.MANAGER ||
+    user.role === Role.ADMIN;
 
-  if (!isOwner && !isAdminOrManager) {
+  if (!isParticipant && !isManagerOrAdmin) {
     throw new AppError(
       httpStatus.FORBIDDEN,
-      "You are not allowed to view this assignment",
+      "You are not allowed to access this assignment",
     );
   }
 
-  return assignment;
+  return projectAssignmentContacts(assignment, user);
 };
 
-// ============================================
-// STAFF SUBMITS WORK COMPLETION
-// ============================================
-
+// 3. Staff submits assignment completion
 const submitAssignmentCompletionService = async (
   id: string,
   user: RequestUser,
 ) => {
   const assignment = await prisma.assignment.findUnique({
-    where: { id },
+    where: {
+      id,
+    },
+    include: {
+      attachments: true,
+    },
   });
 
   if (!assignment) {
@@ -117,77 +136,50 @@ const submitAssignmentCompletionService = async (
   if (assignment.status !== AssignmentStatus.ONGOING) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "Only ongoing assignments can be submitted for completion",
+      "Only ongoing assignments can be submitted",
     );
   }
 
-  // At least one attachment is required
-  const attachmentCount = await prisma.workAttachment.count({
-    where: {
-      assignmentId: id,
-    },
-  });
-
-  if (attachmentCount === 0) {
+  if (assignment.attachments.length === 0) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "Please upload at least one attachment before submitting completion",
+      "Please upload at least one attachment before submitting",
     );
   }
 
-  const updatedAssignment = await prisma.assignment.update({
-    where: { id },
+  const result = await prisma.assignment.update({
+    where: {
+      id,
+    },
     data: {
       status: AssignmentStatus.COMPLETION_SUBMITTED,
     },
-    include: {
-      staff: {
-        omit: { password: true },
-      },
-      citizen: {
-        omit: { password: true },
-      },
-      request: true,
-      attachments: true,
-    },
+    include: assignmentInclude,
   });
 
-  return updatedAssignment;
+  return projectAssignmentContacts(result, user);
 };
 
-// ============================================
-// MANAGER/ADMIN REVIEWS COMPLETION
-// ============================================
-
+// 4. Manager/Admin reviews submitted completion
 const reviewAssignmentCompletionService = async (
   id: string,
   payload: IReviewAssignmentPayload,
   user: RequestUser,
 ) => {
-  // Only manager and admin can review
   if (
     user.role !== Role.MANAGER &&
     user.role !== Role.ADMIN
   ) {
     throw new AppError(
       httpStatus.FORBIDDEN,
-      "Only managers and admins can review completion",
-    );
-  }
-
-  // Validate review status
-  if (
-    payload.status !== "COMPLETED" &&
-    payload.status !== "ONGOING"
-  ) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      "Invalid review status. Use COMPLETED or ONGOING",
+      "Only managers and admins can review assignments",
     );
   }
 
   const assignment = await prisma.assignment.findUnique({
-    where: { id },
+    where: {
+      id,
+    },
   });
 
   if (!assignment) {
@@ -203,37 +195,34 @@ const reviewAssignmentCompletionService = async (
   ) {
     throw new AppError(
       httpStatus.BAD_REQUEST,
-      "This assignment has not been submitted for completion",
+      "This assignment has not been submitted for review",
     );
   }
 
-  const updatedAssignment = await prisma.assignment.update({
-    where: { id },
+  if (
+    payload.status !== AssignmentStatus.COMPLETED &&
+    payload.status !== AssignmentStatus.ONGOING
+  ) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Invalid assignment review status",
+    );
+  }
+
+  const result = await prisma.assignment.update({
+    where: {
+      id,
+    },
     data: {
-      status:
-        payload.status === "COMPLETED"
-          ? AssignmentStatus.COMPLETED
-          : AssignmentStatus.ONGOING,
+      status: payload.status,
     },
-    include: {
-      staff: {
-        omit: { password: true },
-      },
-      citizen: {
-        omit: { password: true },
-      },
-      request: true,
-      attachments: true,
-    },
+    include: assignmentInclude,
   });
 
-  return updatedAssignment;
+  return projectAssignmentContacts(result, user);
 };
 
-// ============================================
-// EXPORT SERVICES
-// ============================================
-
+// Export services
 export const assignmentServices = {
   getMyAssignmentsService,
   getAssignmentByIdService,

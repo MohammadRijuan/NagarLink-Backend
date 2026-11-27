@@ -264,6 +264,10 @@ CREATE UNIQUE INDEX "sslcommerz_payments_paymentId_key" ON "sslcommerz_payments"
 -- CreateIndex
 CREATE UNIQUE INDEX "sslcommerz_payments_tranId_key" ON "sslcommerz_payments"("tranId");
 
+CREATE UNIQUE INDEX "payments_one_active_per_request"
+ON "payments" ("requestId")
+WHERE "status" IN ('PENDING', 'PAID');
+
 -- CreateIndex
 CREATE INDEX "sslcommerz_payments_tranId_idx" ON "sslcommerz_payments"("tranId");
 

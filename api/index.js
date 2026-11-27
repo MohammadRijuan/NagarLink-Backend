@@ -35,7 +35,7 @@ __export(vercel_exports, {
 module.exports = __toCommonJS(vercel_exports);
 
 // src/app.ts
-var import_express14 = __toESM(require("express"));
+var import_express15 = __toESM(require("express"));
 
 // src/config/index.ts
 var import_dotenv = __toESM(require("dotenv"));
@@ -49,6 +49,7 @@ var config_default = {
   node_env: process.env.NODE_ENV,
   app_url: process.env.APP_URL,
   frontend_url: process.env.FRONTEND_URL,
+  frontend_origins: process.env.FRONTEND_ORIGINS,
   jwt_access_token: process.env.JWT_ACCESS_SECRET,
   jwt_access_expires_in: process.env.JWT_ACCESS_EXPIRES_IN,
   jwt_refresh_token: process.env.JWT_REFRESH_SECRET,
@@ -87,13 +88,76 @@ var config_default = {
 };
 
 // src/app.ts
-var import_cors = __toESM(require("cors"));
 var import_cookie_parser = __toESM(require("cookie-parser"));
 
-// src/middlewares/notFound.ts
+// src/config/cors.ts
 var import_http_status = __toESM(require("http-status"));
+
+// src/utils/AppError.ts
+var AppError = class extends Error {
+  // Declaring a public property to store the HTTP status code
+  statusCode;
+  // Constructor runs automatically whenever we create an AppError object
+  // statusCode = HTTP status (404, 400, 500, etc.)
+  // message = Error description
+  // stack = Optional custom stack trace; defaults to an empty string
+  constructor(statusCode, message, stack = "") {
+    super(message);
+    this.statusCode = statusCode;
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+};
+
+// src/config/cors.ts
+var cors = require("cors");
+var parseFrontendOrigins = (frontendUrl, additionalOrigins) => {
+  if (!frontendUrl?.trim()) {
+    throw new Error("FRONTEND_URL must be configured for credentialed CORS.");
+  }
+  const configuredOrigins = [
+    frontendUrl,
+    ...(additionalOrigins ?? "").split(",")
+  ].map((origin) => origin.trim()).filter(Boolean);
+  const origins = /* @__PURE__ */ new Set();
+  for (const value of configuredOrigins) {
+    let url;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new Error(`Invalid frontend origin configured for CORS: ${value}`);
+    }
+    if (url.protocol !== "http:" && url.protocol !== "https:" || url.pathname !== "/" || url.search || url.hash) {
+      throw new Error(`Invalid frontend origin configured for CORS: ${value}`);
+    }
+    origins.add(url.origin);
+  }
+  return [...origins];
+};
+var createCorsMiddleware = (allowedOrigins) => cors({
+  origin: (origin, callback) => {
+    callback(null, Boolean(origin && allowedOrigins.includes(origin)));
+  },
+  credentials: true
+});
+var enforceAllowedOrigins = (allowedOrigins) => (req, _res, next) => {
+  const origin = req.get("origin");
+  const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
+  if (isMutation && origin && !allowedOrigins.includes(origin)) {
+    return next(
+      new AppError(import_http_status.default.FORBIDDEN, "Request origin is not allowed.")
+    );
+  }
+  next();
+};
+
+// src/middlewares/notFound.ts
+var import_http_status2 = __toESM(require("http-status"));
 var NotFound = (req, res) => {
-  res.status(import_http_status.default.NOT_FOUND).json({
+  res.status(import_http_status2.default.NOT_FOUND).json({
     message: "Route not found",
     path: req.originalUrl,
     date: /* @__PURE__ */ new Date()
@@ -483,27 +547,8 @@ var adapter = new import_adapter_pg.PrismaPg({
 });
 var prisma = new PrismaClient({ adapter });
 
-// src/utils/AppError.ts
-var AppError = class extends Error {
-  // Declaring a public property to store the HTTP status code
-  statusCode;
-  // Constructor runs automatically whenever we create an AppError object
-  // statusCode = HTTP status (404, 400, 500, etc.)
-  // message = Error description
-  // stack = Optional custom stack trace; defaults to an empty string
-  constructor(statusCode, message, stack = "") {
-    super(message);
-    this.statusCode = statusCode;
-    if (stack) {
-      this.stack = stack;
-    } else {
-      Error.captureStackTrace(this, this.constructor);
-    }
-  }
-};
-
 // src/modules/auth/auth.service.ts
-var import_http_status2 = __toESM(require("http-status"));
+var import_http_status3 = __toESM(require("http-status"));
 var import_bcryptjs = __toESM(require("bcryptjs"));
 var import_crypto = __toESM(require("crypto"));
 
@@ -581,7 +626,7 @@ var registerUserService = async (payload) => {
   });
   if (isUserExist) {
     throw new AppError(
-      import_http_status2.default.CONFLICT,
+      import_http_status3.default.CONFLICT,
       "User with this email already exist"
     );
   }
@@ -640,32 +685,32 @@ var verifyUserEmailService = async (payload) => {
     where: { email }
   });
   if (isUserExist?.isDeleted) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is Deleted");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is Deleted");
   }
   if (isUserExist && !isUserExist.isActive) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is Blocked");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is Blocked");
   }
   if (isUserExist?.emailVerified) {
-    throw new AppError(import_http_status2.default.CONFLICT, "Email ALready Verified");
+    throw new AppError(import_http_status3.default.CONFLICT, "Email ALready Verified");
   }
   if (isUserExist) {
     throw new AppError(
-      import_http_status2.default.CONFLICT,
+      import_http_status3.default.CONFLICT,
       "User with this email already exists"
     );
   }
   const otpKey = `citizen-registration-otp:${email}`;
   const redisOtp = await redisClient.get(otpKey);
   if (!redisOtp) {
-    throw new AppError(import_http_status2.default.BAD_REQUEST, "Invalid OTP");
+    throw new AppError(import_http_status3.default.BAD_REQUEST, "Invalid OTP");
   }
   if (redisOtp !== otp) {
-    throw new AppError(import_http_status2.default.BAD_REQUEST, "OTP Does Not Match");
+    throw new AppError(import_http_status3.default.BAD_REQUEST, "OTP Does Not Match");
   }
   const userRegistrationKey = `citizen-registration-data:${email}`;
   const redisUserData = await redisClient.get(userRegistrationKey);
   if (!redisUserData) {
-    throw new AppError(import_http_status2.default.NOT_FOUND, "citizen Doesnt Exist");
+    throw new AppError(import_http_status3.default.NOT_FOUND, "citizen Doesnt Exist");
   }
   const userPayload = JSON.parse(redisUserData);
   const createUser = await prisma.user.create({
@@ -727,17 +772,17 @@ var loginUserService = async (payload) => {
     }
   });
   if (!user) {
-    throw new AppError(import_http_status2.default.UNAUTHORIZED, "User not found");
+    throw new AppError(import_http_status3.default.UNAUTHORIZED, "User not found");
   }
   if (user?.isDeleted) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is Deleted");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is Deleted");
   }
   if (user && !user.isActive) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is Blocked");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is Blocked");
   }
   if (user.password === null && user.googleId !== null) {
     throw new AppError(
-      import_http_status2.default.CONFLICT,
+      import_http_status3.default.CONFLICT,
       "User already has account with google... try to login with google"
     );
   }
@@ -776,7 +821,7 @@ var getMyProfileService = async (user) => {
     }
   });
   if (!isUserExist) {
-    throw new AppError(import_http_status2.default.NOT_FOUND, "User does not exist");
+    throw new AppError(import_http_status3.default.NOT_FOUND, "User does not exist");
   }
   return isUserExist;
 };
@@ -791,22 +836,22 @@ var googleLoginService = async (payload) => {
   } catch (error) {
     console.log("Google ID Token Verification Failed", error);
     throw new AppError(
-      import_http_status2.default.UNAUTHORIZED,
+      import_http_status3.default.UNAUTHORIZED,
       "Invalid Or Expired Google Id Token"
     );
   }
   if (!googleIdTokenPayload) {
     throw new AppError(
-      import_http_status2.default.UNAUTHORIZED,
+      import_http_status3.default.UNAUTHORIZED,
       "Invalid Or Expired Google Id Token"
     );
   }
   if (!googleIdTokenPayload.email) {
-    throw new AppError(import_http_status2.default.BAD_REQUEST, "Google Email Not Found");
+    throw new AppError(import_http_status3.default.BAD_REQUEST, "Google Email Not Found");
   }
   if (!googleIdTokenPayload.name) {
     throw new AppError(
-      import_http_status2.default.BAD_REQUEST,
+      import_http_status3.default.BAD_REQUEST,
       "Google Email User Name Not Found"
     );
   }
@@ -828,13 +873,13 @@ var googleLoginService = async (payload) => {
     });
     if (ifCitizenExistWithCredentials) {
       if (!ifCitizenExistWithCredentials.emailVerified) {
-        throw new AppError(import_http_status2.default.FORBIDDEN, "Email Not Verified");
+        throw new AppError(import_http_status3.default.FORBIDDEN, "Email Not Verified");
       }
       if (!ifCitizenExistWithCredentials.isActive) {
-        throw new AppError(import_http_status2.default.FORBIDDEN, "User Is not active");
+        throw new AppError(import_http_status3.default.FORBIDDEN, "User Is not active");
       }
       if (ifCitizenExistWithCredentials.isDeleted) {
-        throw new AppError(import_http_status2.default.FORBIDDEN, "User Is Deleted");
+        throw new AppError(import_http_status3.default.FORBIDDEN, "User Is Deleted");
       }
       user = await prisma.user.update({
         where: {
@@ -872,13 +917,13 @@ var googleLoginService = async (payload) => {
     }
   }
   if (!user) {
-    throw new AppError(import_http_status2.default.NOT_FOUND, "User Not Found");
+    throw new AppError(import_http_status3.default.NOT_FOUND, "User Not Found");
   }
   if (!user.isActive) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User Is not active");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User Is not active");
   }
   if (user.isDeleted) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User Is Deleted");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User Is Deleted");
   }
   const jwtPayload = {
     userId: user.id,
@@ -908,7 +953,7 @@ var refreshTokenService = async (token) => {
   );
   if (!verifiedRefreshToken.success || !verifiedRefreshToken.data) {
     throw new AppError(
-      import_http_status2.default.UNAUTHORIZED,
+      import_http_status3.default.UNAUTHORIZED,
       config_default.node_env === "development" ? verifiedRefreshToken.error : "Invalid Refresh token"
     );
   }
@@ -920,7 +965,7 @@ var refreshTokenService = async (token) => {
   });
   if (!user || user.isDeleted || !user.isActive) {
     throw new AppError(
-      import_http_status2.default.FORBIDDEN,
+      import_http_status3.default.FORBIDDEN,
       "User is inactive, deleted, or not found"
     );
   }
@@ -953,19 +998,19 @@ var forgotPasswordService = async (payload) => {
     }
   });
   if (!isUserExist) {
-    throw new AppError(import_http_status2.default.NOT_FOUND, "User Does not exist");
+    throw new AppError(import_http_status3.default.NOT_FOUND, "User Does not exist");
   }
   if (isUserExist.emailVerified === false) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User email is not verified");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User email is not verified");
   }
   if (!isUserExist.isActive) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is blocked");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is blocked");
   }
   if (isUserExist.isDeleted) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is deleted");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is deleted");
   }
   if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
-    throw new AppError(import_http_status2.default.CONFLICT, "user has account with google id");
+    throw new AppError(import_http_status3.default.CONFLICT, "user has account with google id");
   }
   const key = `forgot-password-otp : ${isUserExist.email}`;
   const otp = import_crypto.default.randomInt(1e5, 1e6);
@@ -1001,27 +1046,27 @@ var resetPasswordService = async (payload) => {
     }
   });
   if (!isUserExist) {
-    throw new AppError(import_http_status2.default.NOT_FOUND, "User Does not exist");
+    throw new AppError(import_http_status3.default.NOT_FOUND, "User Does not exist");
   }
   if (isUserExist.emailVerified === false) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User email is not verified");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User email is not verified");
   }
   if (!isUserExist.isActive) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is blocked");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is blocked");
   }
   if (isUserExist.isDeleted) {
-    throw new AppError(import_http_status2.default.FORBIDDEN, "User is deleted");
+    throw new AppError(import_http_status3.default.FORBIDDEN, "User is deleted");
   }
   if (isUserExist.googleId && isUserExist.authProvider === "GOOGLE") {
-    throw new AppError(import_http_status2.default.CONFLICT, "user has account with google id");
+    throw new AppError(import_http_status3.default.CONFLICT, "user has account with google id");
   }
   const key = `forgot-password-otp : ${isUserExist.email}`;
   const redisOtp = await redisClient.get(key);
   if (!redisOtp) {
-    throw new AppError(import_http_status2.default.BAD_REQUEST, "Invalid otp");
+    throw new AppError(import_http_status3.default.BAD_REQUEST, "Invalid otp");
   }
   if (redisOtp !== otp) {
-    throw new AppError(import_http_status2.default.BAD_REQUEST, "Otp does not match");
+    throw new AppError(import_http_status3.default.BAD_REQUEST, "Otp does not match");
   }
   const hashedNewPassword = await import_bcryptjs.default.hash(
     newPassword,
@@ -1074,12 +1119,12 @@ var sendResponse = (res, data) => {
 };
 
 // src/modules/auth/auth.controller.ts
-var import_http_status3 = __toESM(require("http-status"));
+var import_http_status4 = __toESM(require("http-status"));
 var registerUser = catchAsync(async (req, res) => {
   const payload = req.body;
   await authServices.registerUserService(payload);
   sendResponse(res, {
-    statusCode: import_http_status3.default.CREATED,
+    statusCode: import_http_status4.default.CREATED,
     success: true,
     message: "Otp has sent to your email to verify",
     data: null
@@ -1104,7 +1149,7 @@ var verifyUserEmail = catchAsync(async (req, res) => {
     // 7 days
   });
   sendResponse(res, {
-    statusCode: import_http_status3.default.CREATED,
+    statusCode: import_http_status4.default.CREATED,
     success: true,
     message: "Email Verified Successfully",
     data: {
@@ -1133,7 +1178,7 @@ var loginUser = catchAsync(async (req, res) => {
     // 7 days
   });
   sendResponse(res, {
-    statusCode: import_http_status3.default.CREATED,
+    statusCode: import_http_status4.default.CREATED,
     success: true,
     message: "user logged in successfully",
     data: {
@@ -1146,13 +1191,13 @@ var getMyProfile = catchAsync(async (req, res) => {
   const user = req.user;
   if (!user) {
     throw new AppError(
-      import_http_status3.default.UNAUTHORIZED,
+      import_http_status4.default.UNAUTHORIZED,
       "user information is missing in the request"
     );
   }
   const result = await authServices.getMyProfileService(user);
   sendResponse(res, {
-    statusCode: import_http_status3.default.OK,
+    statusCode: import_http_status4.default.OK,
     success: true,
     message: "User Profile Retrived successfully",
     data: result
@@ -1160,7 +1205,7 @@ var getMyProfile = catchAsync(async (req, res) => {
 });
 var refreshToken = catchAsync(async (req, res) => {
   if (!req.cookies.refreshToken) {
-    throw new AppError(import_http_status3.default.UNAUTHORIZED, "Refresh token is missing");
+    throw new AppError(import_http_status4.default.UNAUTHORIZED, "Refresh token is missing");
   }
   const result = await authServices.refreshTokenService(
     req.cookies.refreshToken
@@ -1181,7 +1226,7 @@ var refreshToken = catchAsync(async (req, res) => {
     // 7 days
   });
   sendResponse(res, {
-    statusCode: import_http_status3.default.OK,
+    statusCode: import_http_status4.default.OK,
     success: true,
     message: "New tokens generated successfully",
     data: {
@@ -1209,7 +1254,7 @@ var googleLogin = catchAsync(async (req, res) => {
     // 7 days
   });
   sendResponse(res, {
-    statusCode: import_http_status3.default.OK,
+    statusCode: import_http_status4.default.OK,
     success: true,
     message: "New tokens generated successfully",
     data: {
@@ -1222,7 +1267,7 @@ var forgotPassword = catchAsync(async (req, res) => {
   const payload = req.body;
   await authServices.forgotPasswordService(payload);
   sendResponse(res, {
-    statusCode: import_http_status3.default.OK,
+    statusCode: import_http_status4.default.OK,
     success: true,
     message: `otp sent to email : ${payload.email}`,
     data: null
@@ -1232,7 +1277,17 @@ var resetPassword = catchAsync(async (req, res) => {
   const payload = req.body;
   await authServices.resetPasswordService(payload);
   sendResponse(res, {
-    statusCode: import_http_status3.default.OK,
+    statusCode: import_http_status4.default.OK,
+    success: true,
+    message: "Password Changed successfully",
+    data: null
+  });
+});
+var logout = catchAsync(async (req, res) => {
+  res.clearCookie("accessToken");
+  res.clearCookie("refreshToken");
+  sendResponse(res, {
+    statusCode: import_http_status4.default.OK,
     success: true,
     message: "Password Changed successfully",
     data: null
@@ -1246,43 +1301,82 @@ var authControllers = {
   googleLogin,
   forgotPassword,
   resetPassword,
-  verifyUserEmail
+  verifyUserEmail,
+  logout
 };
 
 // src/middlewares/checkAuth.ts
-var import_http_status4 = __toESM(require("http-status"));
+var import_http_status6 = __toESM(require("http-status"));
+
+// src/middlewares/authPolicy.ts
+var import_http_status5 = __toESM(require("http-status"));
+var authorizeAuthenticatedUser = (user, requiredRoles) => {
+  if (!user) {
+    throw new AppError(
+      import_http_status5.default.UNAUTHORIZED,
+      "User not found. Please log in again."
+    );
+  }
+  if (!user.isActive || user.isDeleted) {
+    throw new AppError(
+      import_http_status5.default.FORBIDDEN,
+      "Your account is inactive or deleted."
+    );
+  }
+  if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
+    throw new AppError(
+      import_http_status5.default.FORBIDDEN,
+      "You do not have permission to access this resource."
+    );
+  }
+  return {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  };
+};
+
+// src/middlewares/checkAuth.ts
 var auth = (...requiredRoles) => {
   return catchAsync(async (req, res, next) => {
     const token = req.cookies.accessToken ? req.cookies.accessToken : req.headers.authorization?.startsWith("Bearer") ? req.headers.authorization?.split(" ")[1] : req.headers.authorization;
     if (!token) {
       throw new AppError(
-        import_http_status4.default.UNAUTHORIZED,
+        import_http_status6.default.UNAUTHORIZED,
         "You are not logged in.... please login to access this resource"
       );
     }
     const verifiedToken = jwtUtils.verifyToken(token, config_default.jwt_access_token);
     if (!verifiedToken.success) {
-      throw new AppError(import_http_status4.default.UNAUTHORIZED, verifiedToken.error);
+      throw new AppError(import_http_status6.default.UNAUTHORIZED, verifiedToken.error);
     }
-    const { email, name, userId, role } = verifiedToken.data;
-    if (requiredRoles.length && !requiredRoles.includes(role)) {
-      throw new AppError(
-        import_http_status4.default.FORBIDDEN,
-        "You dont have permission to access this resource"
-      );
+    const { userId } = verifiedToken.data;
+    if (typeof userId !== "string" || userId.length === 0) {
+      throw new AppError(import_http_status6.default.UNAUTHORIZED, "Invalid access token");
     }
-    req.user = {
-      email,
-      name,
-      userId,
-      role
-    };
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        isDeleted: true
+      }
+    });
+    const authenticatedUser = authorizeAuthenticatedUser(
+      user,
+      requiredRoles
+    );
+    req.user = authenticatedUser;
     next();
   });
 };
 
 // src/middlewares/validateRequest.ts
-var import_http_status5 = __toESM(require("http-status"));
+var import_http_status7 = __toESM(require("http-status"));
 var validateRequest = (schemas) => catchAsync((req, _res, next) => {
   for (const part of ["params", "body"]) {
     const schema = schemas[part];
@@ -1293,7 +1387,7 @@ var validateRequest = (schemas) => catchAsync((req, _res, next) => {
     const result = schema.safeParse(value);
     if (!result.success) {
       throw new AppError(
-        import_http_status5.default.BAD_REQUEST,
+        import_http_status7.default.BAD_REQUEST,
         result.error.issues[0]?.message ?? "Invalid request"
       );
     }
@@ -1380,41 +1474,45 @@ router.post(
   validateRequest({ body: googleLoginSchema }),
   authControllers.googleLogin
 );
+router.post(
+  "/logout",
+  authControllers.logout
+);
 var authRoutes = router;
 
 // src/middlewares/globalErrorHandler.ts
-var import_http_status6 = __toESM(require("http-status"));
+var import_http_status8 = __toESM(require("http-status"));
 var globalHandleError = async (err, _req, res, _next) => {
   if (config_default.node_env === "development") {
     console.log("Error from global error handler", err);
   }
-  let statusCode = import_http_status6.default.INTERNAL_SERVER_ERROR;
+  let statusCode = import_http_status8.default.INTERNAL_SERVER_ERROR;
   let errorMessage = err.message || "Internal server error";
   const errorName = err.name || "Internal Server error";
   if (err instanceof prismaNamespace_exports.PrismaClientValidationError) {
-    statusCode = import_http_status6.default.BAD_REQUEST;
+    statusCode = import_http_status8.default.BAD_REQUEST;
     errorMessage = "You have provided incorrect field type or missing fields";
   } else if (err instanceof prismaNamespace_exports.PrismaClientKnownRequestError) {
     if (err.code === "P2002") {
-      statusCode = import_http_status6.default.BAD_REQUEST;
+      statusCode = import_http_status8.default.BAD_REQUEST;
       errorMessage = "Duplicate Key Error";
     } else if (err.code === "P2023") {
-      statusCode = import_http_status6.default.BAD_REQUEST;
+      statusCode = import_http_status8.default.BAD_REQUEST;
       errorMessage = "foreign Key Error";
     } else if (err.code === "P2025") {
-      statusCode = import_http_status6.default.BAD_REQUEST;
+      statusCode = import_http_status8.default.BAD_REQUEST;
       errorMessage = "An operation failed because it depends on one or more records that were required but not found.";
     }
   } else if (err instanceof prismaNamespace_exports.PrismaClientInitializationError) {
     if (err.errorCode === "P1000") {
-      statusCode = import_http_status6.default.UNAUTHORIZED;
+      statusCode = import_http_status8.default.UNAUTHORIZED;
       errorMessage = "Authentication error... please check your credentials";
     } else if (err.errorCode === "P1001") {
-      statusCode = import_http_status6.default.BAD_REQUEST;
+      statusCode = import_http_status8.default.BAD_REQUEST;
       errorMessage = "Can't reach database server";
     }
   } else if (err instanceof prismaNamespace_exports.PrismaClientUnknownRequestError) {
-    statusCode = import_http_status6.default.INTERNAL_SERVER_ERROR;
+    statusCode = import_http_status8.default.INTERNAL_SERVER_ERROR;
     errorMessage = "Error occurred during query execution";
   } else if (err instanceof AppError) {
     errorMessage = err.message;
@@ -1424,7 +1522,7 @@ var globalHandleError = async (err, _req, res, _next) => {
   }
   res.status(statusCode).json({
     success: false,
-    statusCode: statusCode || import_http_status6.default.INTERNAL_SERVER_ERROR,
+    statusCode: statusCode || import_http_status8.default.INTERNAL_SERVER_ERROR,
     name: config_default.node_env === "development" ? errorName : "Internal Server Error",
     message: config_default.node_env === "development" ? errorMessage : "Internal Server Error",
     error: config_default.node_env === "development" ? err : void 0,
@@ -1436,7 +1534,7 @@ var globalHandleError = async (err, _req, res, _next) => {
 var import_express2 = require("express");
 
 // src/modules/user/user.service.ts
-var import_http_status7 = __toESM(require("http-status"));
+var import_http_status9 = __toESM(require("http-status"));
 var getAllUserService = async (query) => {
   const limit = query.limit ? Number(query.limit) : 10;
   const page = query.page ? Number(query.page) : 1;
@@ -1500,26 +1598,26 @@ var getUserByIdService = async (userId) => {
     }
   });
   if (!user) {
-    throw new AppError(import_http_status7.default.NOT_FOUND, "User not found");
+    throw new AppError(import_http_status9.default.NOT_FOUND, "User not found");
   }
   if (user.isDeleted || !user.isActive) {
-    throw new AppError(import_http_status7.default.FORBIDDEN, "User is inactive or deleted");
+    throw new AppError(import_http_status9.default.FORBIDDEN, "User is inactive or deleted");
   }
   if (user.role === "CITIZEN") {
     throw new AppError(
-      import_http_status7.default.FORBIDDEN,
+      import_http_status9.default.FORBIDDEN,
       "You are not allowed to access this information"
     );
   }
   if (user.role === "MANAGER") {
     throw new AppError(
-      import_http_status7.default.FORBIDDEN,
+      import_http_status9.default.FORBIDDEN,
       "You are not allowed to access this information"
     );
   }
   if (user.role === "STAFF") {
     throw new AppError(
-      import_http_status7.default.FORBIDDEN,
+      import_http_status9.default.FORBIDDEN,
       "You are not allowed to access this information"
     );
   }
@@ -1532,10 +1630,10 @@ var updateUserByIdService = async (userId, payload) => {
     }
   });
   if (!User) {
-    throw new AppError(import_http_status7.default.NOT_FOUND, "User not found");
+    throw new AppError(import_http_status9.default.NOT_FOUND, "User not found");
   }
   if (User.isDeleted) {
-    throw new AppError(import_http_status7.default.FORBIDDEN, "User is deleted");
+    throw new AppError(import_http_status9.default.FORBIDDEN, "User is deleted");
   }
   const updatedUser = await prisma.user.update({
     where: {
@@ -1555,10 +1653,10 @@ var deleteUserByIdService = async (userId) => {
     }
   });
   if (!User) {
-    throw new AppError(import_http_status7.default.NOT_FOUND, "User not found");
+    throw new AppError(import_http_status9.default.NOT_FOUND, "User not found");
   }
   if (User.isDeleted) {
-    throw new AppError(import_http_status7.default.FORBIDDEN, "User is deleted");
+    throw new AppError(import_http_status9.default.FORBIDDEN, "User is deleted");
   }
   const deleteUser = await prisma.user.delete({
     where: {
@@ -1634,11 +1732,11 @@ var userServices = {
 };
 
 // src/modules/user/user.controller.ts
-var import_http_status8 = __toESM(require("http-status"));
+var import_http_status10 = __toESM(require("http-status"));
 var getAllUsers = catchAsync(async (req, res) => {
   const { data, meta } = await userServices.getAllUserService(req.query);
   sendResponse(res, {
-    statusCode: import_http_status8.default.OK,
+    statusCode: import_http_status10.default.OK,
     success: true,
     message: "All user retrieved successfully",
     data,
@@ -1649,7 +1747,7 @@ var getUserById = catchAsync(async (req, res) => {
   const id = req.params.id;
   const result = await userServices.getUserByIdService(id);
   sendResponse(res, {
-    statusCode: import_http_status8.default.OK,
+    statusCode: import_http_status10.default.OK,
     success: true,
     message: "User data retrieved successfully",
     data: result
@@ -1660,7 +1758,7 @@ var updateUserById = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await userServices.updateUserByIdService(id, payload);
   sendResponse(res, {
-    statusCode: import_http_status8.default.OK,
+    statusCode: import_http_status10.default.OK,
     success: true,
     message: "User updated successfully",
     data: result
@@ -1670,7 +1768,7 @@ var deleteUserById = catchAsync(async (req, res) => {
   const id = req?.params.id;
   await userServices.deleteUserByIdService(id);
   sendResponse(res, {
-    statusCode: import_http_status8.default.OK,
+    statusCode: import_http_status10.default.OK,
     success: true,
     message: "User deleted successfully",
     data: null
@@ -1679,7 +1777,7 @@ var deleteUserById = catchAsync(async (req, res) => {
 var getAllStaffs = catchAsync(async (req, res) => {
   const { data, meta } = await userServices.getAllStaffsService(req.query);
   sendResponse(res, {
-    statusCode: import_http_status8.default.OK,
+    statusCode: import_http_status10.default.OK,
     success: true,
     message: "All staff retrieved successfully",
     data,
@@ -1739,10 +1837,10 @@ var userRoutes = router2;
 var import_express3 = require("express");
 
 // src/modules/department/department.controller.ts
-var import_http_status10 = __toESM(require("http-status"));
+var import_http_status12 = __toESM(require("http-status"));
 
 // src/modules/department/department.service.ts
-var import_http_status9 = __toESM(require("http-status"));
+var import_http_status11 = __toESM(require("http-status"));
 var createDepartmentService = async (payload) => {
   const name = payload.name.trim();
   const existingDepartment = await prisma.department.findFirst({
@@ -1754,7 +1852,7 @@ var createDepartmentService = async (payload) => {
     }
   });
   if (existingDepartment) {
-    throw new AppError(import_http_status9.default.CONFLICT, "Department already exists");
+    throw new AppError(import_http_status11.default.CONFLICT, "Department already exists");
   }
   const department = await prisma.department.create({
     data: {
@@ -1786,7 +1884,7 @@ var getDepartmentByIdService = async (departmentId) => {
     }
   });
   if (!department) {
-    throw new AppError(import_http_status9.default.NOT_FOUND, "Department does not exist");
+    throw new AppError(import_http_status11.default.NOT_FOUND, "Department does not exist");
   }
   return department;
 };
@@ -1797,12 +1895,12 @@ var updateDepartmentByIdService = async (payload, departmentId) => {
     }
   });
   if (!isDepartment) {
-    throw new AppError(import_http_status9.default.NOT_FOUND, "Department does not exist");
+    throw new AppError(import_http_status11.default.NOT_FOUND, "Department does not exist");
   }
   const newName = payload.name.trim();
   if (isDepartment.name.toLowerCase() === newName.toLowerCase()) {
     throw new AppError(
-      import_http_status9.default.BAD_REQUEST,
+      import_http_status11.default.BAD_REQUEST,
       "Department name is already up to date"
     );
   }
@@ -1819,7 +1917,7 @@ var updateDepartmentByIdService = async (payload, departmentId) => {
   });
   if (existingDepartment) {
     throw new AppError(
-      import_http_status9.default.CONFLICT,
+      import_http_status11.default.CONFLICT,
       "This department name already exists"
     );
   }
@@ -1840,7 +1938,7 @@ var deleteDepartmentByIdService = async (departmentId) => {
     }
   });
   if (!department) {
-    throw new AppError(import_http_status9.default.NOT_FOUND, "Department does not exist");
+    throw new AppError(import_http_status11.default.NOT_FOUND, "Department does not exist");
   }
   const deletedDepartment = await prisma.department.delete({
     where: {
@@ -1862,7 +1960,7 @@ var createDepartment = catchAsync(async (req, res) => {
   const payload = req.body;
   const result = await departmentServices.createDepartmentService(payload);
   sendResponse(res, {
-    statusCode: import_http_status10.default.OK,
+    statusCode: import_http_status12.default.OK,
     success: true,
     message: "Created a new department successfully",
     data: result
@@ -1871,7 +1969,7 @@ var createDepartment = catchAsync(async (req, res) => {
 var getAllDepartments = catchAsync(async (req, res) => {
   const result = await departmentServices.getAllDepartmentService();
   sendResponse(res, {
-    statusCode: import_http_status10.default.OK,
+    statusCode: import_http_status12.default.OK,
     success: true,
     message: "All Department retrieved successfully",
     data: result
@@ -1883,7 +1981,7 @@ var getDepartmentById = catchAsync(async (req, res) => {
     id
   );
   sendResponse(res, {
-    statusCode: import_http_status10.default.OK,
+    statusCode: import_http_status12.default.OK,
     success: true,
     message: "department retrieved successfully",
     data: result
@@ -1897,7 +1995,7 @@ var updateDepartment = catchAsync(async (req, res) => {
     id
   );
   sendResponse(res, {
-    statusCode: import_http_status10.default.OK,
+    statusCode: import_http_status12.default.OK,
     success: true,
     message: "Deprtment data updated successfully",
     data: result
@@ -1909,7 +2007,7 @@ var deleteDepartment = catchAsync(async (req, res) => {
     id
   );
   sendResponse(res, {
-    statusCode: import_http_status10.default.OK,
+    statusCode: import_http_status12.default.OK,
     success: true,
     message: "department deleted successfully",
     data: result
@@ -1967,10 +2065,10 @@ var departmentRoutes = router3;
 var import_express4 = require("express");
 
 // src/modules/category/category.controller.ts
-var import_http_status12 = __toESM(require("http-status"));
+var import_http_status14 = __toESM(require("http-status"));
 
 // src/modules/category/category.service.ts
-var import_http_status11 = __toESM(require("http-status"));
+var import_http_status13 = __toESM(require("http-status"));
 var createCategoryService = async (payload) => {
   const categoryName = payload.name.trim().toLowerCase();
   const isExistCategory = await prisma.category.findFirst({
@@ -1981,7 +2079,7 @@ var createCategoryService = async (payload) => {
   });
   if (isExistCategory) {
     throw new AppError(
-      import_http_status11.default.CONFLICT,
+      import_http_status13.default.CONFLICT,
       "Category already exists in this department"
     );
   }
@@ -2024,7 +2122,7 @@ var getCategoriesByDepartmentService = async (departmentId) => {
     }
   });
   if (!department) {
-    throw new AppError(import_http_status11.default.NOT_FOUND, "Department does not exist");
+    throw new AppError(import_http_status13.default.NOT_FOUND, "Department does not exist");
   }
   return department;
 };
@@ -2041,7 +2139,7 @@ var getCategoryByIdService = async (categoryId) => {
     }
   });
   if (!isCategory) {
-    throw new AppError(import_http_status11.default.NOT_FOUND, "Category not exist");
+    throw new AppError(import_http_status13.default.NOT_FOUND, "Category not exist");
   }
   return isCategory;
 };
@@ -2054,12 +2152,12 @@ var updateCategoryService = async (categoryId, payload) => {
   });
   if (!isExistCategory) {
     throw new AppError(
-      import_http_status11.default.NOT_FOUND,
+      import_http_status13.default.NOT_FOUND,
       "Category does not exists "
     );
   }
   if (isExistCategory.name.toLowerCase() === categoryName) {
-    throw new AppError(import_http_status11.default.CONFLICT, "Your current category is same as updated one");
+    throw new AppError(import_http_status13.default.CONFLICT, "Your current category is same as updated one");
   }
   const updatedCategory = await prisma.category.update({
     where: {
@@ -2086,7 +2184,7 @@ var deleteCategoryService = async (categoryId) => {
   });
   if (!isExistCategory) {
     throw new AppError(
-      import_http_status11.default.NOT_FOUND,
+      import_http_status13.default.NOT_FOUND,
       "Category does not exists "
     );
   }
@@ -2110,7 +2208,7 @@ var categoryServices = {
 var createCategory = catchAsync(async (req, res) => {
   const result = await categoryServices.createCategoryService(req.body);
   sendResponse(res, {
-    statusCode: import_http_status12.default.CREATED,
+    statusCode: import_http_status14.default.CREATED,
     success: true,
     message: "Category created successfully",
     data: result
@@ -2119,7 +2217,7 @@ var createCategory = catchAsync(async (req, res) => {
 var getAllCategories = catchAsync(async (req, res) => {
   const result = await categoryServices.getAllCategoriesService();
   sendResponse(res, {
-    statusCode: import_http_status12.default.OK,
+    statusCode: import_http_status14.default.OK,
     success: true,
     message: "Categories retrieved successfully",
     data: result
@@ -2129,7 +2227,7 @@ var getCategoriesByDepartment = catchAsync(async (req, res) => {
   const { departmentId } = req.params;
   const result = await categoryServices.getCategoriesByDepartmentService(departmentId);
   sendResponse(res, {
-    statusCode: import_http_status12.default.OK,
+    statusCode: import_http_status14.default.OK,
     success: true,
     message: "Department categories retrieved successfully",
     data: result
@@ -2139,7 +2237,7 @@ var getCategoryById = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await categoryServices.getCategoryByIdService(id);
   sendResponse(res, {
-    statusCode: import_http_status12.default.OK,
+    statusCode: import_http_status14.default.OK,
     success: true,
     message: "Category retrieved successfully",
     data: result
@@ -2149,7 +2247,7 @@ var updateCategory = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await categoryServices.updateCategoryService(id, req.body);
   sendResponse(res, {
-    statusCode: import_http_status12.default.OK,
+    statusCode: import_http_status14.default.OK,
     success: true,
     message: "Category updated successfully",
     data: result
@@ -2159,7 +2257,7 @@ var deleteCategory = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await categoryServices.deleteCategoryService(id);
   sendResponse(res, {
-    statusCode: import_http_status12.default.OK,
+    statusCode: import_http_status14.default.OK,
     success: true,
     message: "Category deleted successfully",
     data: result
@@ -2230,10 +2328,10 @@ var categoryRoutes = router4;
 var import_express5 = __toESM(require("express"));
 
 // src/modules/staffApplication/staffApplication.controller.ts
-var import_http_status14 = __toESM(require("http-status"));
+var import_http_status16 = __toESM(require("http-status"));
 
 // src/modules/staffApplication/staffApplication.service.ts
-var import_http_status13 = __toESM(require("http-status"));
+var import_http_status15 = __toESM(require("http-status"));
 var createStaffApplicationService = async (payload, user) => {
   const existingApplication = await prisma.staffApplication.findUnique({
     where: {
@@ -2242,7 +2340,7 @@ var createStaffApplicationService = async (payload, user) => {
   });
   if (existingApplication) {
     throw new AppError(
-      import_http_status13.default.CONFLICT,
+      import_http_status15.default.CONFLICT,
       "You have already submitted a staff application"
     );
   }
@@ -2378,7 +2476,7 @@ var getStaffApplicationByIdService = async (id) => {
     }
   });
   if (!result) {
-    throw new AppError(import_http_status13.default.NOT_FOUND, "Staff application not found");
+    throw new AppError(import_http_status15.default.NOT_FOUND, "Staff application not found");
   }
   return result;
 };
@@ -2389,11 +2487,11 @@ var updateStaffApplicationService = async (id, payload) => {
     }
   });
   if (!isExist) {
-    throw new AppError(import_http_status13.default.NOT_FOUND, "Staff application not found");
+    throw new AppError(import_http_status15.default.NOT_FOUND, "Staff application not found");
   }
   if (isExist.status !== StaffApplicationStatus.PENDING) {
     throw new AppError(
-      import_http_status13.default.BAD_REQUEST,
+      import_http_status15.default.BAD_REQUEST,
       "This application has already been reviewed"
     );
   }
@@ -2453,7 +2551,7 @@ var deleteStaffApplicationService = async (id) => {
     }
   });
   if (!isExist) {
-    throw new AppError(import_http_status13.default.NOT_FOUND, "Staff application not found");
+    throw new AppError(import_http_status15.default.NOT_FOUND, "Staff application not found");
   }
   const result = await prisma.staffApplication.delete({
     where: {
@@ -2487,7 +2585,7 @@ var createStaffApplication = catchAsync(
       user
     );
     sendResponse(res, {
-      statusCode: import_http_status14.default.OK,
+      statusCode: import_http_status16.default.OK,
       success: true,
       message: "Staff application form submitted successfully",
       data: result
@@ -2498,7 +2596,7 @@ var getAllStaffApplications = catchAsync(
   async (req, res) => {
     const { data, meta } = await staffApplicationServices.getAllStaffApplicationsService(req.query);
     sendResponse(res, {
-      statusCode: import_http_status14.default.OK,
+      statusCode: import_http_status16.default.OK,
       success: true,
       message: "All Staff application retrieved successfully",
       data,
@@ -2511,7 +2609,7 @@ var getStaffApplicationById = catchAsync(
     const id = req.params.id;
     const result = await staffApplicationServices.getStaffApplicationByIdService(id);
     sendResponse(res, {
-      statusCode: import_http_status14.default.OK,
+      statusCode: import_http_status16.default.OK,
       success: true,
       message: "Desitre Staff application retrieved successfully",
       data: result
@@ -2524,7 +2622,7 @@ var updateStaffApplication = catchAsync(
     const payload = req.body;
     const result = await staffApplicationServices.updateStaffApplicationService(id, payload);
     sendResponse(res, {
-      statusCode: import_http_status14.default.OK,
+      statusCode: import_http_status16.default.OK,
       success: true,
       message: "Staff application status updated successfully",
       data: result
@@ -2536,7 +2634,7 @@ var deleteStaffApplication = catchAsync(
     const id = req.params.id;
     const result = await staffApplicationServices.deleteStaffApplicationService(id);
     sendResponse(res, {
-      statusCode: import_http_status14.default.OK,
+      statusCode: import_http_status16.default.OK,
       success: true,
       message: " Staff application deleted successfully",
       data: result
@@ -2606,10 +2704,10 @@ var staffApplicationRoutes = router5;
 var import_express6 = __toESM(require("express"));
 
 // src/modules/staffManagement/staffManagement.controller.ts
-var import_http_status16 = __toESM(require("http-status"));
+var import_http_status18 = __toESM(require("http-status"));
 
 // src/modules/staffManagement/staffManagement.service.ts
-var import_http_status15 = __toESM(require("http-status"));
+var import_http_status17 = __toESM(require("http-status"));
 var getAllStaffService = async (query) => {
   const limit = query.limit ? Number(query.limit) : 10;
   const page = query.page ? Number(query.page) : 1;
@@ -2697,7 +2795,7 @@ var getStaffByIdService = async (id) => {
   });
   if (!staff) {
     throw new AppError(
-      import_http_status15.default.NOT_FOUND,
+      import_http_status17.default.NOT_FOUND,
       "Staff not found"
     );
   }
@@ -2712,7 +2810,7 @@ var deleteStaffService = async (id) => {
   });
   if (!isExist) {
     throw new AppError(
-      import_http_status15.default.NOT_FOUND,
+      import_http_status17.default.NOT_FOUND,
       "Staff not found"
     );
   }
@@ -2736,7 +2834,7 @@ var staffServices = {
 var getAllStaff = catchAsync(async (req, res) => {
   const { data, meta } = await staffServices.getAllStaffService(req.query);
   sendResponse(res, {
-    statusCode: import_http_status16.default.OK,
+    statusCode: import_http_status18.default.OK,
     success: true,
     message: "User data retrieved successfully",
     data,
@@ -2747,7 +2845,7 @@ var getStaffById = catchAsync(async (req, res) => {
   const staffId = req.params.id;
   const result = await staffServices.getStaffByIdService(staffId);
   sendResponse(res, {
-    statusCode: import_http_status16.default.OK,
+    statusCode: import_http_status18.default.OK,
     success: true,
     message: "User data retrieved successfully",
     data: result
@@ -2757,7 +2855,7 @@ var deleteStaff = catchAsync(async (req, res) => {
   const staffId = req.params.id;
   const result = await staffServices.deleteStaffService(staffId);
   sendResponse(res, {
-    statusCode: import_http_status16.default.OK,
+    statusCode: import_http_status18.default.OK,
     success: true,
     message: "Staff deleted successfully",
     data: result
@@ -2798,10 +2896,10 @@ var staffRoutes = router6;
 var import_express7 = __toESM(require("express"));
 
 // src/modules/staffCategory/staffCategory.controller.ts
-var import_http_status18 = __toESM(require("http-status"));
+var import_http_status20 = __toESM(require("http-status"));
 
 // src/modules/staffCategory/staffCategory.service.ts
-var import_http_status17 = __toESM(require("http-status"));
+var import_http_status19 = __toESM(require("http-status"));
 var assignCategoriesToStaffService = async (staffId, payload) => {
   const isStaffExist = await prisma.user.findFirst({
     where: {
@@ -2810,11 +2908,11 @@ var assignCategoriesToStaffService = async (staffId, payload) => {
     }
   });
   if (!isStaffExist) {
-    throw new AppError(import_http_status17.default.NOT_FOUND, "Staff not found");
+    throw new AppError(import_http_status19.default.NOT_FOUND, "Staff not found");
   }
   if (!payload.categoryIds.length) {
     throw new AppError(
-      import_http_status17.default.BAD_REQUEST,
+      import_http_status19.default.BAD_REQUEST,
       "Please provide at least one category"
     );
   }
@@ -2828,7 +2926,7 @@ var assignCategoriesToStaffService = async (staffId, payload) => {
   });
   if (categories.length !== categoryIds.length) {
     throw new AppError(
-      import_http_status17.default.NOT_FOUND,
+      import_http_status19.default.NOT_FOUND,
       "One or more categories not found"
     );
   }
@@ -2847,7 +2945,7 @@ var assignCategoriesToStaffService = async (staffId, payload) => {
     const isAlreadyUpdated = existingCategoryIds.length === categoryIds.length && categoryIds.every((id) => existingCategoryIds.includes(id));
     if (isAlreadyUpdated) {
       throw new AppError(
-        import_http_status17.default.BAD_REQUEST,
+        import_http_status19.default.BAD_REQUEST,
         "Categories are already up to date"
       );
     }
@@ -2916,7 +3014,7 @@ var getStaffCategoriesService = async (staffId) => {
     }
   });
   if (!isStaffExist) {
-    throw new AppError(import_http_status17.default.NOT_FOUND, "Staff not found");
+    throw new AppError(import_http_status19.default.NOT_FOUND, "Staff not found");
   }
   const result = await prisma.staffCategory.findMany({
     where: {
@@ -2963,7 +3061,7 @@ var removeStaffCategoryService = async (staffId, categoryId) => {
     }
   });
   if (!isStaffExist) {
-    throw new AppError(import_http_status17.default.NOT_FOUND, "Staff not found");
+    throw new AppError(import_http_status19.default.NOT_FOUND, "Staff not found");
   }
   const isCategoryAssigned = await prisma.staffCategory.findFirst({
     where: {
@@ -2973,7 +3071,7 @@ var removeStaffCategoryService = async (staffId, categoryId) => {
   });
   if (!isCategoryAssigned) {
     throw new AppError(
-      import_http_status17.default.NOT_FOUND,
+      import_http_status19.default.NOT_FOUND,
       "This category is not assigned to this staff"
     );
   }
@@ -3004,7 +3102,7 @@ var assignCategoriesToStaff = catchAsync(
       payload
     );
     sendResponse(res, {
-      statusCode: import_http_status18.default.CREATED,
+      statusCode: import_http_status20.default.CREATED,
       success: true,
       message: "Categories assigned to staff successfully",
       data: result
@@ -3018,7 +3116,7 @@ var getStaffCategories = catchAsync(
       staffId
     );
     sendResponse(res, {
-      statusCode: import_http_status18.default.OK,
+      statusCode: import_http_status20.default.OK,
       success: true,
       message: "Staff categories retrieved successfully",
       data: result
@@ -3034,7 +3132,7 @@ var removeStaffCategory = catchAsync(
       categoryId
     );
     sendResponse(res, {
-      statusCode: import_http_status18.default.OK,
+      statusCode: import_http_status20.default.OK,
       success: true,
       message: "Staff's category removed successfully",
       data: result
@@ -3089,69 +3187,163 @@ var staffCategoryRoutes = router7;
 var import_express8 = __toESM(require("express"));
 
 // src/modules/quotation/quotation.controller.ts
-var import_http_status20 = __toESM(require("http-status"));
+var import_http_status22 = __toESM(require("http-status"));
 
 // src/modules/quotation/quotation.service.ts
-var import_http_status19 = __toESM(require("http-status"));
+var import_http_status21 = __toESM(require("http-status"));
+
+// src/utils/contactPrivacy.ts
+var omitPhone = (contact) => {
+  const { phone: _phone, ...contactWithoutPhone } = contact;
+  return contactWithoutPhone;
+};
+var projectWorkRequestContact = (request, viewer) => viewer.role === Role.CITIZEN ? request : omitPhone(request);
+var omitPhoneAndPassword = (user) => {
+  const {
+    phone: _phone,
+    password: _password,
+    ...userWithoutSensitiveFields
+  } = user;
+  return userWithoutSensitiveFields;
+};
+var projectAssignmentContacts = (assignment, viewer) => {
+  const isPaid = assignment.request.payments.some(
+    (payment) => payment.status === PaymentStatus.PAID
+  );
+  const isAssignedCitizen = viewer.role === Role.CITIZEN && assignment.citizenId === viewer.userId;
+  const isAssignedStaff = viewer.role === Role.STAFF && assignment.staffId === viewer.userId;
+  const {
+    phone: staffPhone,
+    ...staffWithoutPhone
+  } = assignment.staff;
+  const {
+    phone: citizenPhone,
+    ...citizenWithoutPhone
+  } = assignment.citizen;
+  const {
+    phone: requestPhone,
+    payments: _payments,
+    ...requestWithoutSensitiveData
+  } = assignment.request;
+  return {
+    ...assignment,
+    staff: {
+      ...staffWithoutPhone,
+      ...isPaid && isAssignedCitizen ? { phone: staffPhone } : {}
+    },
+    citizen: {
+      ...citizenWithoutPhone,
+      ...isPaid && isAssignedStaff ? { phone: citizenPhone } : {}
+    },
+    request: {
+      ...requestWithoutSensitiveData,
+      ...isPaid && isAssignedStaff ? { phone: requestPhone } : {}
+    }
+  };
+};
+var projectQuotationContacts = (quotation, viewer) => {
+  const isPaid = quotation.request.payments.some(
+    (payment) => payment.status === PaymentStatus.PAID
+  );
+  const isAssignedStaff = viewer.role === Role.STAFF && quotation.request.assignment?.staffId === viewer.userId;
+  const {
+    phone: requestPhone,
+    payments: _payments,
+    assignment: _assignment,
+    ...requestWithoutSensitiveData
+  } = quotation.request;
+  return {
+    ...quotation,
+    staff: omitPhoneAndPassword(quotation.staff),
+    request: {
+      ...requestWithoutSensitiveData,
+      ...isPaid && isAssignedStaff ? { phone: requestPhone } : {}
+    }
+  };
+};
+var projectSelectedQuotation = (quotation) => {
+  const { phone: requestPhone, ...requestWithoutPhone } = quotation.request;
+  return {
+    ...quotation,
+    staff: omitPhoneAndPassword(quotation.staff),
+    request: requestWithoutPhone
+  };
+};
+
+// src/modules/quotation/quotation.service.ts
 var createQuotationService = async (payload, user) => {
-  const quotation = await prisma.quotation.findFirst({
+  const { requestId, proposedFee } = payload;
+  const request = await prisma.workRequest.findUnique({
     where: {
-      requestId: payload.requestId,
+      id: requestId
+    }
+  });
+  if (!request) {
+    throw new AppError(
+      import_http_status21.default.NOT_FOUND,
+      "Work request not found"
+    );
+  }
+  const existingQuotation = await prisma.quotation.findFirst({
+    where: {
+      requestId,
       staffId: user.userId
     }
   });
-  if (quotation) {
+  if (existingQuotation) {
     throw new AppError(
-      import_http_status19.default.BAD_REQUEST,
+      import_http_status21.default.CONFLICT,
       "You have already submitted a quotation for this request"
     );
   }
   const result = await prisma.quotation.create({
     data: {
-      proposedFee: payload.proposedFee,
-      requestId: payload.requestId,
+      requestId,
+      proposedFee,
       staffId: user.userId
     }
   });
   return result;
 };
 var getAllQuotationsService = async (query) => {
-  const limit = query.limit ? Number(query.limit) : 10;
-  const page = query.page ? Number(query.page) : 1;
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
   const skip = (page - 1) * limit;
-  const sortBy = query.sortBy ? query.sortBy : "createdAt";
-  const sortOrder = query.sortOrder ? query.sortOrder : "desc";
-  const andConditions = [];
-  if (query.status) {
-    andConditions.push({
+  const where = {
+    ...query.status ? {
       status: query.status
-    });
-  }
-  const quotations = await prisma.quotation.findMany({
-    where: {
-      AND: andConditions
-    },
-    take: limit,
-    skip,
-    orderBy: {
-      [sortBy]: sortOrder
-    },
-    include: {
-      staff: {
-        omit: {
-          password: true
-        }
+    } : {}
+  };
+  const [data, total] = await prisma.$transaction([
+    prisma.quotation.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: "desc"
       },
-      request: true
-    }
-  });
-  const total = await prisma.quotation.count({
-    where: {
-      AND: andConditions
-    }
-  });
+      include: {
+        staff: {
+          omit: {
+            password: true
+          }
+        },
+        request: {
+          omit: {
+            phone: true
+          }
+        }
+      }
+    }),
+    prisma.quotation.count({
+      where
+    })
+  ]);
   return {
-    data: quotations,
+    data: data.map((quotation) => ({
+      ...quotation,
+      staff: omitPhoneAndPassword(quotation.staff)
+    })),
     meta: {
       page,
       limit,
@@ -3161,10 +3353,9 @@ var getAllQuotationsService = async (query) => {
   };
 };
 var getQuotationByIdService = async (id, user) => {
-  const quotation = await prisma.quotation.findFirst({
+  const quotation = await prisma.quotation.findUnique({
     where: {
-      id,
-      staffId: user.userId
+      id
     },
     include: {
       staff: {
@@ -3172,13 +3363,39 @@ var getQuotationByIdService = async (id, user) => {
           password: true
         }
       },
-      request: true
+      request: {
+        include: {
+          payments: {
+            where: {
+              status: PaymentStatus.PAID
+            },
+            select: {
+              id: true,
+              status: true
+            }
+          },
+          assignment: {
+            select: {
+              staffId: true
+            }
+          }
+        }
+      }
     }
   });
   if (!quotation) {
-    throw new AppError(import_http_status19.default.NOT_FOUND, "Quotation not found");
+    throw new AppError(
+      import_http_status21.default.NOT_FOUND,
+      "Quotation not found"
+    );
   }
-  return quotation;
+  if (user.role === Role.STAFF && quotation.staffId !== user.userId) {
+    throw new AppError(
+      import_http_status21.default.FORBIDDEN,
+      "You are not allowed to access this quotation"
+    );
+  }
+  return projectQuotationContacts(quotation, user);
 };
 var updateQuotationService = async (id, payload, user) => {
   const quotation = await prisma.quotation.findFirst({
@@ -3188,12 +3405,27 @@ var updateQuotationService = async (id, payload, user) => {
     }
   });
   if (!quotation) {
-    throw new AppError(import_http_status19.default.NOT_FOUND, "Quotation not found");
+    throw new AppError(
+      import_http_status21.default.NOT_FOUND,
+      "Quotation not found or you are not its owner"
+    );
   }
   if (quotation.status !== QuotationStatus.PENDING) {
     throw new AppError(
-      import_http_status19.default.BAD_REQUEST,
-      "You cannot update an approved or rejected quotation"
+      import_http_status21.default.BAD_REQUEST,
+      "Only pending quotations can be updated"
+    );
+  }
+  if (payload.status !== void 0) {
+    throw new AppError(
+      import_http_status21.default.BAD_REQUEST,
+      "Staff cannot update quotation status"
+    );
+  }
+  if (payload.proposedFee === void 0) {
+    throw new AppError(
+      import_http_status21.default.BAD_REQUEST,
+      "Proposed fee is required"
     );
   }
   const result = await prisma.quotation.update({
@@ -3213,12 +3445,15 @@ var updateQuotationStatusService = async (id, payload, user) => {
     }
   });
   if (!quotation) {
-    throw new AppError(import_http_status19.default.NOT_FOUND, "Quotation not found");
+    throw new AppError(
+      import_http_status21.default.NOT_FOUND,
+      "Quotation not found"
+    );
   }
   if (quotation.status !== QuotationStatus.PENDING) {
     throw new AppError(
-      import_http_status19.default.BAD_REQUEST,
-      "Quotation status has already been updated"
+      import_http_status21.default.BAD_REQUEST,
+      "Only pending quotations can be reviewed"
     );
   }
   const result = await prisma.quotation.update({
@@ -3234,25 +3469,34 @@ var updateQuotationStatusService = async (id, payload, user) => {
           password: true
         }
       },
-      request: true
+      request: {
+        omit: {
+          phone: true
+        }
+      }
     }
   });
-  return result;
+  return {
+    ...result,
+    staff: omitPhoneAndPassword(result.staff)
+  };
 };
 var deleteQuotationService = async (id, user) => {
-  const quotation = await prisma.quotation.findFirst({
+  const quotation = await prisma.quotation.findUnique({
     where: {
-      id,
-      staffId: user.userId
+      id
     }
   });
   if (!quotation) {
-    throw new AppError(import_http_status19.default.NOT_FOUND, "Quotation not found");
+    throw new AppError(
+      import_http_status21.default.NOT_FOUND,
+      "Quotation not found"
+    );
   }
   if (quotation.status !== QuotationStatus.PENDING) {
     throw new AppError(
-      import_http_status19.default.BAD_REQUEST,
-      "You cannot delete an approved or rejected quotation"
+      import_http_status21.default.BAD_REQUEST,
+      "Only pending quotations can be deleted"
     );
   }
   const result = await prisma.quotation.delete({
@@ -3268,41 +3512,64 @@ var selectQuotationService = async (payload, user) => {
       id: payload.quotationId
     },
     include: {
-      request: true
+      request: true,
+      staff: {
+        omit: {
+          password: true
+        }
+      }
     }
   });
   if (!quotation) {
     throw new AppError(
-      import_http_status19.default.NOT_FOUND,
+      import_http_status21.default.NOT_FOUND,
       "Quotation not found"
     );
   }
   if (quotation.request.citizenId !== user.userId) {
     throw new AppError(
-      import_http_status19.default.FORBIDDEN,
+      import_http_status21.default.FORBIDDEN,
       "You are not allowed to select this quotation"
     );
   }
   if (quotation.status !== QuotationStatus.PENDING) {
     throw new AppError(
-      import_http_status19.default.BAD_REQUEST,
-      "This quotation is no longer available"
+      import_http_status21.default.BAD_REQUEST,
+      "This quotation is not available for selection"
     );
   }
   if (quotation.request.selectedQuotationId) {
     throw new AppError(
-      import_http_status19.default.BAD_REQUEST,
+      import_http_status21.default.CONFLICT,
       "A quotation has already been selected"
     );
   }
   if (quotation.request.status !== WorkStatus.REQUESTED) {
     throw new AppError(
-      import_http_status19.default.BAD_REQUEST,
-      "This work request is not available for quotation selection"
+      import_http_status21.default.BAD_REQUEST,
+      "This work request is not ready for quotation selection"
     );
   }
   const result = await prisma.$transaction(async (tx) => {
-    const selectedQuotation = await tx.quotation.update({
+    const requestUpdate = await tx.workRequest.updateMany({
+      where: {
+        id: quotation.requestId,
+        citizenId: user.userId,
+        selectedQuotationId: null,
+        status: WorkStatus.REQUESTED
+      },
+      data: {
+        selectedQuotationId: quotation.id,
+        status: WorkStatus.CITIZEN_ACCEPTED
+      }
+    });
+    if (requestUpdate.count === 0) {
+      throw new AppError(
+        import_http_status21.default.CONFLICT,
+        "A quotation has already been selected or the request has changed"
+      );
+    }
+    await tx.quotation.update({
       where: {
         id: quotation.id
       },
@@ -3322,32 +3589,25 @@ var selectQuotationService = async (payload, user) => {
         status: QuotationStatus.REJECTED
       }
     });
-    const updatedRequest = await tx.workRequest.update({
+    return tx.quotation.findUniqueOrThrow({
       where: {
-        id: quotation.requestId
-      },
-      data: {
-        selectedQuotationId: quotation.id,
-        status: WorkStatus.CITIZEN_ACCEPTED
+        id: quotation.id
       },
       include: {
-        selectedQuotation: {
-          include: {
-            staff: {
-              omit: {
-                password: true
-              }
-            }
+        staff: {
+          omit: {
+            password: true
+          }
+        },
+        request: {
+          omit: {
+            phone: true
           }
         }
       }
     });
-    return {
-      quotation: selectedQuotation,
-      workRequest: updatedRequest
-    };
   });
-  return result;
+  return projectSelectedQuotation(result);
 };
 var quotationServices = {
   createQuotationService,
@@ -3357,7 +3617,6 @@ var quotationServices = {
   updateQuotationStatusService,
   deleteQuotationService,
   selectQuotationService
-  // paySelectedQuotationCallbackService,       //bkash
 };
 
 // src/modules/quotation/quotation.controller.ts
@@ -3370,7 +3629,7 @@ var createQuotation = catchAsync(
       user
     );
     sendResponse(res, {
-      statusCode: import_http_status20.default.CREATED,
+      statusCode: import_http_status22.default.CREATED,
       success: true,
       message: "Quotation created successfully",
       data: result
@@ -3382,7 +3641,7 @@ var getAllQuotations = catchAsync(
     const query = req.query;
     const result = await quotationServices.getAllQuotationsService(query);
     sendResponse(res, {
-      statusCode: import_http_status20.default.OK,
+      statusCode: import_http_status22.default.OK,
       success: true,
       message: "Quotations retrieved successfully",
       data: result
@@ -3397,7 +3656,7 @@ var getQuotationById = catchAsync(
       req.user
     );
     sendResponse(res, {
-      statusCode: import_http_status20.default.OK,
+      statusCode: import_http_status22.default.OK,
       success: true,
       message: "Quotation retrieved successfully",
       data: result
@@ -3414,7 +3673,7 @@ var updateQuotation = catchAsync(
       req.user
     );
     sendResponse(res, {
-      statusCode: import_http_status20.default.OK,
+      statusCode: import_http_status22.default.OK,
       success: true,
       message: "Quotation updated successfully",
       data: result
@@ -3431,7 +3690,7 @@ var updateQuotationStatus = catchAsync(
       req.user
     );
     sendResponse(res, {
-      statusCode: import_http_status20.default.OK,
+      statusCode: import_http_status22.default.OK,
       success: true,
       message: "Quotation status updated successfully",
       data: result
@@ -3446,7 +3705,7 @@ var deleteQuotation = catchAsync(
       req.user
     );
     sendResponse(res, {
-      statusCode: import_http_status20.default.OK,
+      statusCode: import_http_status22.default.OK,
       success: true,
       message: "Quotation deleted successfully",
       data: result
@@ -3460,7 +3719,7 @@ var selectQuotation = catchAsync(
       req.user
     );
     sendResponse(res, {
-      statusCode: import_http_status20.default.OK,
+      statusCode: import_http_status22.default.OK,
       success: true,
       message: "Quotation selected successfully",
       data: result
@@ -3485,10 +3744,9 @@ var createQuotationSchema = import_zod8.z.object({
   requestId: import_zod8.z.string().uuid()
 }).strict();
 var updateQuotationSchema = import_zod8.z.object({
-  proposedFee: import_zod8.z.coerce.number().finite().positive().optional(),
-  status: import_zod8.z.enum(["PENDING", "APPROVED", "REJECTED"]).optional()
-}).strict().refine((value) => Object.keys(value).length > 0, {
-  message: "At least one field must be provided"
+  proposedFee: import_zod8.z.coerce.number().finite().positive().optional()
+}).strict().refine((data) => data.proposedFee !== void 0, {
+  message: "Proposed fee is required"
 });
 var selectQuotationSchema = import_zod8.z.object({
   quotationId: import_zod8.z.string().uuid()
@@ -3552,7 +3810,7 @@ var quotationRoutes = router8;
 var import_express9 = require("express");
 
 // src/modules/request/workRequest.service.ts
-var import_http_status21 = __toESM(require("http-status"));
+var import_http_status23 = __toESM(require("http-status"));
 var createWorkRequestService = async (payload, user) => {
   const citizen = await prisma.user.findUnique({
     where: {
@@ -3560,7 +3818,7 @@ var createWorkRequestService = async (payload, user) => {
     }
   });
   if (!citizen) {
-    throw new AppError(import_http_status21.default.NOT_FOUND, "Citizen not found");
+    throw new AppError(import_http_status23.default.NOT_FOUND, "Citizen not found");
   }
   const division = payload.division || citizen.division;
   const city = payload.city || citizen.district;
@@ -3569,7 +3827,7 @@ var createWorkRequestService = async (payload, user) => {
   const phone = payload.phone || citizen.phone;
   if (!division || !city || !postalCode || !address || !phone) {
     throw new AppError(
-      import_http_status21.default.BAD_REQUEST,
+      import_http_status23.default.BAD_REQUEST,
       "Please provide your complete address and contact information"
     );
   }
@@ -3589,7 +3847,7 @@ var createWorkRequestService = async (payload, user) => {
   });
   if (existingRequest) {
     throw new AppError(
-      import_http_status21.default.CONFLICT,
+      import_http_status23.default.CONFLICT,
       "You have already submitted this request"
     );
   }
@@ -3688,7 +3946,9 @@ var getAllWorkRequestsService = async (query, user) => {
       total,
       totalPages: Math.ceil(total / limit)
     },
-    data: result
+    data: result.map(
+      (request) => projectWorkRequestContact(request, user)
+    )
   };
 };
 var getWorkRequestByIdService = async (id, user) => {
@@ -3715,15 +3975,15 @@ var getWorkRequestByIdService = async (id, user) => {
     }
   });
   if (!workRequest) {
-    throw new AppError(import_http_status21.default.NOT_FOUND, "Work request not found");
+    throw new AppError(import_http_status23.default.NOT_FOUND, "Work request not found");
   }
   if (user.role === Role.CITIZEN && workRequest.citizen.id !== user.userId) {
     throw new AppError(
-      import_http_status21.default.FORBIDDEN,
+      import_http_status23.default.FORBIDDEN,
       "You are not allowed to view this work request"
     );
   }
-  return workRequest;
+  return projectWorkRequestContact(workRequest, user);
 };
 var updateWorkRequestService = async (id, payload, user) => {
   const workRequest = await prisma.workRequest.findFirst({
@@ -3733,11 +3993,11 @@ var updateWorkRequestService = async (id, payload, user) => {
     }
   });
   if (!workRequest) {
-    throw new AppError(import_http_status21.default.NOT_FOUND, "Work request not found");
+    throw new AppError(import_http_status23.default.NOT_FOUND, "Work request not found");
   }
   if (workRequest.status !== WorkStatus.PENDING) {
     throw new AppError(
-      import_http_status21.default.BAD_REQUEST,
+      import_http_status23.default.BAD_REQUEST,
       "You cannot update this request anymore"
     );
   }
@@ -3769,16 +4029,16 @@ var updateWorkRequestStatusService = async (id, payload, user) => {
     }
   });
   if (!workRequest) {
-    throw new AppError(import_http_status21.default.NOT_FOUND, "Work request not found");
+    throw new AppError(import_http_status23.default.NOT_FOUND, "Work request not found");
   }
   if (workRequest.status !== WorkStatus.PENDING) {
     throw new AppError(
-      import_http_status21.default.BAD_REQUEST,
+      import_http_status23.default.BAD_REQUEST,
       "Work request status cannot be changed"
     );
   }
   if (payload.status === WorkStatus.REJECTED && !payload.rejectionReason) {
-    throw new AppError(import_http_status21.default.BAD_REQUEST, "Rejection reason is required");
+    throw new AppError(import_http_status23.default.BAD_REQUEST, "Rejection reason is required");
   }
   const result = await prisma.workRequest.update({
     where: {
@@ -3802,7 +4062,7 @@ var updateWorkRequestStatusService = async (id, payload, user) => {
       department: true
     }
   });
-  return result;
+  return projectWorkRequestContact(result, user);
 };
 var deleteWorkRequestService = async (id, user) => {
   const workRequest = await prisma.workRequest.findFirst({
@@ -3812,11 +4072,11 @@ var deleteWorkRequestService = async (id, user) => {
     }
   });
   if (!workRequest) {
-    throw new AppError(import_http_status21.default.NOT_FOUND, "Work request not found");
+    throw new AppError(import_http_status23.default.NOT_FOUND, "Work request not found");
   }
   if (workRequest.status !== WorkStatus.PENDING) {
     throw new AppError(
-      import_http_status21.default.BAD_REQUEST,
+      import_http_status23.default.BAD_REQUEST,
       "You cannot delete this work request anymore"
     );
   }
@@ -3839,7 +4099,7 @@ var workRequestServices = {
 };
 
 // src/modules/request/workRequest.controller.ts
-var import_http_status22 = __toESM(require("http-status"));
+var import_http_status24 = __toESM(require("http-status"));
 var createWorkRequest = catchAsync(async (req, res) => {
   const user = req.user;
   const payload = req.body;
@@ -3848,7 +4108,7 @@ var createWorkRequest = catchAsync(async (req, res) => {
     user
   );
   sendResponse(res, {
-    statusCode: import_http_status22.default.CREATED,
+    statusCode: import_http_status24.default.CREATED,
     success: true,
     message: "Work request created successfully",
     data: result
@@ -3860,7 +4120,7 @@ var getAllWorkRequests = catchAsync(async (req, res) => {
     req.user
   );
   sendResponse(res, {
-    statusCode: import_http_status22.default.OK,
+    statusCode: import_http_status24.default.OK,
     success: true,
     message: "Work requests retrieved successfully",
     data,
@@ -3872,7 +4132,7 @@ var getWorkRequestById = catchAsync(async (req, res) => {
   const id = req.params.id;
   const result = await workRequestServices.getWorkRequestByIdService(id, user);
   sendResponse(res, {
-    statusCode: import_http_status22.default.OK,
+    statusCode: import_http_status24.default.OK,
     success: true,
     message: "Single Work request data retrieved successfully",
     data: result
@@ -3888,7 +4148,7 @@ var updateWorkRequest = catchAsync(async (req, res) => {
     user
   );
   sendResponse(res, {
-    statusCode: import_http_status22.default.OK,
+    statusCode: import_http_status24.default.OK,
     success: true,
     message: "Work request updated successfully",
     data: result
@@ -3905,7 +4165,7 @@ var updateWorkRequestStatus = catchAsync(
       user
     );
     sendResponse(res, {
-      statusCode: import_http_status22.default.OK,
+      statusCode: import_http_status24.default.OK,
       success: true,
       message: "Work request status updated successfully",
       data: result
@@ -3917,7 +4177,7 @@ var deleteWorkRequest = catchAsync(async (req, res) => {
   const user = req.user;
   const result = await workRequestServices.deleteWorkRequestService(id, user);
   sendResponse(res, {
-    statusCode: import_http_status22.default.OK,
+    statusCode: import_http_status24.default.OK,
     success: true,
     message: "Work request deleted successfully",
     data: result
@@ -4019,14 +4279,14 @@ var workRequestRoutes = router9;
 var import_express10 = require("express");
 
 // src/modules/staffInvitation/staffInvitation.controller.ts
-var import_http_status24 = __toESM(require("http-status"));
+var import_http_status26 = __toESM(require("http-status"));
 
 // src/modules/staffInvitation/staffInvitation.service.ts
-var import_http_status23 = __toESM(require("http-status"));
+var import_http_status25 = __toESM(require("http-status"));
 var createStaffInvitationService = async (payload, user) => {
   if (user.role !== Role.MANAGER && user.role !== Role.ADMIN) {
     throw new AppError(
-      import_http_status23.default.FORBIDDEN,
+      import_http_status25.default.FORBIDDEN,
       "You are not allowed to send invitations"
     );
   }
@@ -4034,11 +4294,11 @@ var createStaffInvitationService = async (payload, user) => {
     where: { id: payload.requestId }
   });
   if (!workRequest) {
-    throw new AppError(import_http_status23.default.NOT_FOUND, "Work request not found");
+    throw new AppError(import_http_status25.default.NOT_FOUND, "Work request not found");
   }
   if (workRequest.status !== WorkStatus.PENDING && workRequest.status !== WorkStatus.REQUESTED) {
     throw new AppError(
-      import_http_status23.default.BAD_REQUEST,
+      import_http_status25.default.BAD_REQUEST,
       "This work request cannot receive invitations"
     );
   }
@@ -4049,7 +4309,7 @@ var createStaffInvitationService = async (payload, user) => {
     }
   });
   if (!staff) {
-    throw new AppError(import_http_status23.default.NOT_FOUND, "Staff not found");
+    throw new AppError(import_http_status25.default.NOT_FOUND, "Staff not found");
   }
   const staffCategory = await prisma.staffCategory.findFirst({
     where: {
@@ -4061,7 +4321,7 @@ var createStaffInvitationService = async (payload, user) => {
   });
   if (!staffCategory) {
     throw new AppError(
-      import_http_status23.default.BAD_REQUEST,
+      import_http_status25.default.BAD_REQUEST,
       "Staff is not assigned to this department's categories"
     );
   }
@@ -4075,7 +4335,7 @@ var createStaffInvitationService = async (payload, user) => {
   });
   if (existingInvitation) {
     throw new AppError(
-      import_http_status23.default.CONFLICT,
+      import_http_status25.default.CONFLICT,
       "This staff member has already been invited"
     );
   }
@@ -4131,7 +4391,10 @@ var createStaffInvitationService = async (payload, user) => {
     }
   };
   delete formattedResult.staff.staffCategories;
-  return formattedResult;
+  return {
+    ...formattedResult,
+    request: projectWorkRequestContact(formattedResult.request, user)
+  };
 };
 var getAllStaffInvitationsService = async (query, user) => {
   const limit = query.limit ? Number(query.limit) : 10;
@@ -4316,11 +4579,11 @@ var getStaffInvitationByIdService = async (id, user) => {
     }
   });
   if (!invitation) {
-    throw new AppError(import_http_status23.default.NOT_FOUND, "Staff invitation not found");
+    throw new AppError(import_http_status25.default.NOT_FOUND, "Staff invitation not found");
   }
   if (user.role === Role.STAFF && invitation.staffId !== user.userId) {
     throw new AppError(
-      import_http_status23.default.FORBIDDEN,
+      import_http_status25.default.FORBIDDEN,
       "You are not allowed to view this invitation"
     );
   }
@@ -4334,25 +4597,25 @@ var respondToInvitationService = async (id, payload, user) => {
   });
   if (!invitation) {
     throw new AppError(
-      import_http_status23.default.NOT_FOUND,
+      import_http_status25.default.NOT_FOUND,
       "Staff invitation not found"
     );
   }
   if (invitation.staffId !== user.userId) {
     throw new AppError(
-      import_http_status23.default.FORBIDDEN,
+      import_http_status25.default.FORBIDDEN,
       "You are not allowed to respond to this invitation"
     );
   }
   if (invitation.status !== InvitationStatus.REQUESTED) {
     throw new AppError(
-      import_http_status23.default.BAD_REQUEST,
+      import_http_status25.default.BAD_REQUEST,
       "You have already responded to this invitation"
     );
   }
   if (payload.status !== InvitationStatus.ACCEPTED && payload.status !== InvitationStatus.REJECTED) {
     throw new AppError(
-      import_http_status23.default.BAD_REQUEST,
+      import_http_status25.default.BAD_REQUEST,
       "Invalid invitation response"
     );
   }
@@ -4384,13 +4647,13 @@ var deleteStaffInvitationService = async (id, user) => {
   });
   if (!invitation) {
     throw new AppError(
-      import_http_status23.default.NOT_FOUND,
+      import_http_status25.default.NOT_FOUND,
       "Staff invitation not found"
     );
   }
   if (user.role !== Role.ADMIN && user.role !== Role.MANAGER) {
     throw new AppError(
-      import_http_status23.default.FORBIDDEN,
+      import_http_status25.default.FORBIDDEN,
       "You are not allowed to delete this invitation"
     );
   }
@@ -4435,7 +4698,7 @@ var createStaffInvitation = catchAsync(
       user
     );
     sendResponse(res, {
-      statusCode: import_http_status24.default.CREATED,
+      statusCode: import_http_status26.default.CREATED,
       success: true,
       message: "Staff invitation sent successfully",
       data: result
@@ -4451,7 +4714,7 @@ var getAllStaffInvitations = catchAsync(
       user
     );
     sendResponse(res, {
-      statusCode: import_http_status24.default.OK,
+      statusCode: import_http_status26.default.OK,
       success: true,
       message: "Staff invitations retrieved successfully",
       data,
@@ -4467,7 +4730,7 @@ var getMyInvitations = catchAsync(async (req, res) => {
     user
   );
   sendResponse(res, {
-    statusCode: import_http_status24.default.OK,
+    statusCode: import_http_status26.default.OK,
     success: true,
     message: "Your invitations retrieved successfully",
     data,
@@ -4483,7 +4746,7 @@ var getStaffInvitationById = catchAsync(
       user
     );
     sendResponse(res, {
-      statusCode: import_http_status24.default.OK,
+      statusCode: import_http_status26.default.OK,
       success: true,
       message: "Staff invitation retrieved successfully",
       data: result
@@ -4500,7 +4763,7 @@ var respondToInvitation = catchAsync(async (req, res) => {
     user
   );
   sendResponse(res, {
-    statusCode: import_http_status24.default.OK,
+    statusCode: import_http_status26.default.OK,
     success: true,
     message: "Invitation response submitted successfully",
     data: result
@@ -4515,7 +4778,7 @@ var deleteStaffInvitation = catchAsync(
       user
     );
     sendResponse(res, {
-      statusCode: import_http_status24.default.OK,
+      statusCode: import_http_status26.default.OK,
       success: true,
       message: "Staff invitation deleted successfully",
       data: result
@@ -4588,10 +4851,10 @@ var staffInvitationRoutes = router10;
 var import_express11 = require("express");
 
 // src/modules/payment/payment.controller.ts
-var import_http_status26 = __toESM(require("http-status"));
+var import_http_status28 = __toESM(require("http-status"));
 
 // src/modules/payment/payment.service.ts
-var import_http_status25 = __toESM(require("http-status"));
+var import_http_status27 = __toESM(require("http-status"));
 var import_crypto2 = require("crypto");
 
 // src/lib/sslcommerz.ts
@@ -4645,19 +4908,35 @@ var validateSslCommerzPayment = async (valId) => {
 
 // src/modules/payment/payment.service.ts
 var PENDING_EXPIRY_MS = 30 * 60 * 1e3;
+var isPrismaUniqueError = (error) => {
+  return error instanceof prismaNamespace_exports.PrismaClientKnownRequestError && error.code === "P2002";
+};
 var createPaymentService = async (payload, user) => {
   const workRequest = await prisma.workRequest.findUnique({
-    where: { id: payload.requestId },
-    include: { selectedQuotation: true }
+    where: {
+      id: payload.requestId
+    },
+    include: {
+      selectedQuotation: true
+    }
   });
   if (!workRequest) {
-    throw new AppError(import_http_status25.default.NOT_FOUND, "Work request not found");
+    throw new AppError(
+      import_http_status27.default.NOT_FOUND,
+      "Work request not found"
+    );
   }
   if (workRequest.citizenId !== user.userId) {
-    throw new AppError(import_http_status25.default.FORBIDDEN, "You are not allowed to pay");
+    throw new AppError(
+      import_http_status27.default.FORBIDDEN,
+      "You are not allowed to pay"
+    );
   }
   if (!workRequest.selectedQuotation || workRequest.status !== WorkStatus.CITIZEN_ACCEPTED) {
-    throw new AppError(import_http_status25.default.BAD_REQUEST, "No accepted quotation found");
+    throw new AppError(
+      import_http_status27.default.BAD_REQUEST,
+      "No accepted quotation found"
+    );
   }
   const paidPayment = await prisma.payment.findFirst({
     where: {
@@ -4667,7 +4946,7 @@ var createPaymentService = async (payload, user) => {
   });
   if (paidPayment) {
     throw new AppError(
-      import_http_status25.default.BAD_REQUEST,
+      import_http_status27.default.BAD_REQUEST,
       "This work request has already been paid"
     );
   }
@@ -4679,39 +4958,63 @@ var createPaymentService = async (payload, user) => {
   });
   if (pendingPayment) {
     const gatewayResponse = pendingPayment.gatewayResponse;
-    if (gatewayResponse && gatewayResponse.reviewRequired === true) {
+    if (gatewayResponse?.reviewRequired === true) {
       throw new AppError(
-        import_http_status25.default.BAD_REQUEST,
+        import_http_status27.default.BAD_REQUEST,
         "Your previous payment is under review. Please wait for verification."
       );
     }
     const paymentAge = Date.now() - pendingPayment.createdAt.getTime();
     if (paymentAge < PENDING_EXPIRY_MS) {
       throw new AppError(
-        import_http_status25.default.BAD_REQUEST,
+        import_http_status27.default.CONFLICT,
         "A payment session is already active. Please try again later."
       );
     }
-    await prisma.payment.updateMany({
-      where: { id: pendingPayment.id, status: PaymentStatus.PENDING },
-      data: { status: PaymentStatus.FAILED }
+    const expired = await prisma.payment.updateMany({
+      where: {
+        id: pendingPayment.id,
+        status: PaymentStatus.PENDING
+      },
+      data: {
+        status: PaymentStatus.FAILED
+      }
     });
+    if (expired.count === 0) {
+      throw new AppError(
+        import_http_status27.default.CONFLICT,
+        "Payment status has changed. Please try again."
+      );
+    }
   }
-  const amount = new prismaNamespace_exports.Decimal(workRequest.selectedQuotation.proposedFee).mul(0.15).toDecimalPlaces(2);
+  const amount = new prismaNamespace_exports.Decimal(
+    workRequest.selectedQuotation.proposedFee
+  ).mul(0.15).toDecimalPlaces(2);
   if (amount.lessThan(10)) {
     throw new AppError(
-      import_http_status25.default.BAD_REQUEST,
+      import_http_status27.default.BAD_REQUEST,
       "Advance payment must be at least 10 BDT"
     );
   }
   const merchantInvoiceNumber = `NL-${(0, import_crypto2.randomUUID)()}`;
-  const payment = await prisma.payment.create({
-    data: {
-      requestId: payload.requestId,
-      amount,
-      merchantInvoiceNumber
+  let payment;
+  try {
+    payment = await prisma.payment.create({
+      data: {
+        requestId: payload.requestId,
+        amount,
+        merchantInvoiceNumber
+      }
+    });
+  } catch (error) {
+    if (isPrismaUniqueError(error)) {
+      throw new AppError(
+        import_http_status27.default.CONFLICT,
+        "A payment is already pending or completed for this work request"
+      );
     }
-  });
+    throw error;
+  }
   let session;
   try {
     session = await createSslCommerzSession({
@@ -4735,9 +5038,15 @@ var createPaymentService = async (payload, user) => {
       shipping_method: "NO"
     });
   } catch (error) {
-    console.error("[SSLCommerz] Session creation error:", error);
-    await prisma.payment.update({
-      where: { id: payment.id },
+    console.error(
+      "[SSLCommerz] Session creation error:",
+      error
+    );
+    await prisma.payment.updateMany({
+      where: {
+        id: payment.id,
+        status: PaymentStatus.PENDING
+      },
       data: {
         status: PaymentStatus.FAILED,
         gatewayResponse: {
@@ -4746,39 +5055,57 @@ var createPaymentService = async (payload, user) => {
       }
     });
     throw new AppError(
-      import_http_status25.default.BAD_GATEWAY,
+      import_http_status27.default.BAD_GATEWAY,
       "Unable to connect to SSLCommerz"
     );
   }
   const gatewayUrl = session.GatewayPageURL;
   if (session.status !== "SUCCESS" || !gatewayUrl) {
-    await prisma.payment.update({
-      where: { id: payment.id },
+    await prisma.payment.updateMany({
+      where: {
+        id: payment.id,
+        status: PaymentStatus.PENDING
+      },
       data: {
         status: PaymentStatus.FAILED,
         gatewayResponse: session
       }
     });
     throw new AppError(
-      import_http_status25.default.BAD_GATEWAY,
+      import_http_status27.default.BAD_GATEWAY,
       session.failedreason || "Unable to initiate SSLCommerz payment"
     );
   }
-  await prisma.$transaction(async (tx) => {
-    await tx.payment.update({
-      where: { id: payment.id },
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.update({
+        where: {
+          id: payment.id
+        },
+        data: {
+          gatewayResponse: session
+        }
+      });
+      await tx.sslCommerzPayment.create({
+        data: {
+          paymentId: payment.id,
+          tranId: merchantInvoiceNumber,
+          gatewayResponse: session
+        }
+      });
+    });
+  } catch (error) {
+    await prisma.payment.updateMany({
+      where: {
+        id: payment.id,
+        status: PaymentStatus.PENDING
+      },
       data: {
-        gatewayResponse: session
+        status: PaymentStatus.FAILED
       }
     });
-    await tx.sslCommerzPayment.create({
-      data: {
-        paymentId: payment.id,
-        tranId: merchantInvoiceNumber,
-        gatewayResponse: session
-      }
-    });
-  });
+    throw error;
+  }
   return {
     paymentId: payment.id,
     amount: amount.toFixed(2),
@@ -4789,10 +5116,15 @@ var verifyAndCompletePayment = async (data) => {
   const tranId = String(data.tran_id || "");
   const valId = String(data.val_id || "");
   if (!tranId || !valId) {
-    throw new AppError(import_http_status25.default.BAD_REQUEST, "Invalid payment callback");
+    throw new AppError(
+      import_http_status27.default.BAD_REQUEST,
+      "Invalid payment callback"
+    );
   }
   const payment = await prisma.payment.findUnique({
-    where: { merchantInvoiceNumber: tranId },
+    where: {
+      merchantInvoiceNumber: tranId
+    },
     include: {
       request: {
         include: {
@@ -4803,31 +5135,51 @@ var verifyAndCompletePayment = async (data) => {
     }
   });
   if (!payment) {
-    throw new AppError(import_http_status25.default.NOT_FOUND, "Payment not found");
+    throw new AppError(
+      import_http_status27.default.NOT_FOUND,
+      "Payment not found"
+    );
   }
   if (payment.status === PaymentStatus.PAID) {
-    return { success: true, status: "PAID" };
+    return {
+      success: true,
+      status: "PAID"
+    };
   }
   if (payment.status !== PaymentStatus.PENDING) {
-    throw new AppError(import_http_status25.default.BAD_REQUEST, "Payment is not pending");
+    throw new AppError(
+      import_http_status27.default.BAD_REQUEST,
+      "Payment is not pending"
+    );
   }
   if (payment.sslcommerzPayment && payment.sslcommerzPayment.tranId !== tranId) {
-    throw new AppError(import_http_status25.default.BAD_REQUEST, "Transaction ID mismatch");
+    throw new AppError(
+      import_http_status27.default.BAD_REQUEST,
+      "Transaction ID mismatch"
+    );
   }
   const validation = await validateSslCommerzPayment(valId);
   const validStatus = ["VALID", "VALIDATED"].includes(
     String(validation.status).toUpperCase()
   );
   const validTranId = validation.tran_id === tranId;
+  const validValId = !validation.val_id || validation.val_id === valId;
   const validCurrency = String(validation.currency).toUpperCase() === payment.currency.toUpperCase();
-  const validAmount = validation.amount !== void 0 && new prismaNamespace_exports.Decimal(String(validation.amount)).equals(payment.amount);
-  const receivedStoreId = String(validation.store_id || data.store_id || "");
-  const validStoreId = receivedStoreId === String(config_default.ssl_store_id);
+  let validAmount = false;
+  try {
+    validAmount = validation.amount !== void 0 && new prismaNamespace_exports.Decimal(
+      String(validation.amount)
+    ).equals(payment.amount);
+  } catch {
+    validAmount = false;
+  }
+  const validStoreId = String(validation.store_id || "") === String(config_default.ssl_store_id);
   if (!config_default.ssl_is_live) {
     console.log("[SSLCommerz] Validation checks:", {
       tranId,
       validStatus,
       validTranId,
+      validValId,
       validCurrency,
       validAmount,
       validStoreId,
@@ -4835,27 +5187,51 @@ var verifyAndCompletePayment = async (data) => {
       risk_title: validation.risk_title
     });
   }
-  if (!validStatus || !validTranId || !validCurrency || !validAmount || !validStoreId) {
+  if (!validStatus || !validTranId || !validValId || !validCurrency || !validAmount || !validStoreId) {
     throw new AppError(
-      import_http_status25.default.BAD_REQUEST,
+      import_http_status27.default.BAD_REQUEST,
       "SSLCommerz transaction validation failed"
     );
   }
   const isRisky = String(validation.risk_level) === "1";
   if (isRisky && config_default.ssl_is_live) {
-    await prisma.payment.updateMany({
-      where: { id: payment.id, status: PaymentStatus.PENDING },
+    const reviewResult = await prisma.payment.updateMany({
+      where: {
+        id: payment.id,
+        status: PaymentStatus.PENDING
+      },
       data: {
         gatewayResponse: {
+          ...payment.gatewayResponse,
           ...validation,
           reviewRequired: true
         }
       }
     });
+    if (reviewResult.count === 0) {
+      const latestPayment = await prisma.payment.findUnique({
+        where: {
+          id: payment.id
+        }
+      });
+      if (latestPayment?.status === PaymentStatus.PAID) {
+        return {
+          success: true,
+          status: "PAID"
+        };
+      }
+      throw new AppError(
+        import_http_status27.default.CONFLICT,
+        "Payment status changed during verification"
+      );
+    }
     console.warn(
       `[SSLCommerz] Payment ${tranId} flagged risky, held for manual review`
     );
-    return { success: false, status: "UNDER_REVIEW" };
+    return {
+      success: false,
+      status: "UNDER_REVIEW"
+    };
   }
   if (isRisky) {
     console.warn(
@@ -4863,131 +5239,188 @@ var verifyAndCompletePayment = async (data) => {
     );
   }
   if (!payment.request.selectedQuotation) {
-    throw new AppError(import_http_status25.default.BAD_REQUEST, "Selected quotation not found");
+    throw new AppError(
+      import_http_status27.default.BAD_REQUEST,
+      "Selected quotation not found"
+    );
   }
+  const selectedQuotation = payment.request.selectedQuotation;
   await prisma.$transaction(async (tx) => {
-    const currentPayment = await tx.payment.findUnique({
-      where: { id: payment.id }
-    });
-    if (!currentPayment || currentPayment.status === PaymentStatus.PAID) {
-      return;
-    }
-    if (currentPayment.status !== PaymentStatus.PENDING) {
-      throw new AppError(import_http_status25.default.BAD_REQUEST, "Payment is not pending");
-    }
-    const currentRequest = await tx.workRequest.findUnique({
-      where: { id: payment.requestId },
-      include: { selectedQuotation: true }
-    });
-    if (!currentRequest || currentRequest.status !== WorkStatus.CITIZEN_ACCEPTED || !currentRequest.selectedQuotation) {
-      throw new AppError(
-        import_http_status25.default.BAD_REQUEST,
-        "Work request is not ready for assignment"
-      );
-    }
-    const storeAmount = validation.store_amount ? new prismaNamespace_exports.Decimal(String(validation.store_amount)) : null;
-    await tx.payment.update({
-      where: { id: payment.id },
+    const paymentUpdate = await tx.payment.updateMany({
+      where: {
+        id: payment.id,
+        status: PaymentStatus.PENDING
+      },
       data: {
         status: PaymentStatus.PAID,
         paidAt: /* @__PURE__ */ new Date(),
         gatewayResponse: validation
       }
     });
+    if (paymentUpdate.count === 0) {
+      const latestPayment = await tx.payment.findUnique({
+        where: {
+          id: payment.id
+        }
+      });
+      if (latestPayment?.status === PaymentStatus.PAID) {
+        return;
+      }
+      throw new AppError(
+        import_http_status27.default.CONFLICT,
+        "Payment status changed during verification"
+      );
+    }
+    const requestUpdate = await tx.workRequest.updateMany({
+      where: {
+        id: payment.requestId,
+        status: WorkStatus.CITIZEN_ACCEPTED,
+        selectedQuotationId: selectedQuotation.id
+      },
+      data: {
+        status: WorkStatus.ADVANCE_PAID
+      }
+    });
+    if (requestUpdate.count === 0) {
+      throw new AppError(
+        import_http_status27.default.CONFLICT,
+        "Work request status changed during payment completion"
+      );
+    }
+    const storeAmount = validation.store_amount ? new prismaNamespace_exports.Decimal(
+      String(validation.store_amount)
+    ) : null;
     await tx.sslCommerzPayment.upsert({
-      where: { paymentId: payment.id },
+      where: {
+        paymentId: payment.id
+      },
       create: {
         paymentId: payment.id,
         tranId,
         valId,
-        bankTranId: String(validation.bank_tran_id || ""),
+        bankTranId: String(
+          validation.bank_tran_id || ""
+        ),
         cardType: String(validation.card_type || ""),
         cardIssuer: String(validation.card_issuer || ""),
         cardBrand: String(validation.card_brand || ""),
-        cardIssuerCountry: String(validation.card_issuer_country || ""),
+        cardIssuerCountry: String(
+          validation.card_issuer_country || ""
+        ),
         storeAmount,
         gatewayResponse: validation
       },
       update: {
         valId,
-        bankTranId: String(validation.bank_tran_id || ""),
+        bankTranId: String(
+          validation.bank_tran_id || ""
+        ),
         cardType: String(validation.card_type || ""),
         cardIssuer: String(validation.card_issuer || ""),
         cardBrand: String(validation.card_brand || ""),
-        cardIssuerCountry: String(validation.card_issuer_country || ""),
+        cardIssuerCountry: String(
+          validation.card_issuer_country || ""
+        ),
         storeAmount,
         gatewayResponse: validation
       }
     });
-    await tx.workRequest.update({
-      where: { id: payment.requestId },
-      data: {
-        status: WorkStatus.ADVANCE_PAID
-      }
-    });
     await tx.assignment.upsert({
-      where: { requestId: payment.requestId },
+      where: {
+        requestId: payment.requestId
+      },
       create: {
         requestId: payment.requestId,
-        staffId: currentRequest.selectedQuotation.staffId,
-        citizenId: currentRequest.citizenId,
-        amount: currentRequest.selectedQuotation.proposedFee,
+        staffId: selectedQuotation.staffId,
+        citizenId: payment.request.citizenId,
+        amount: selectedQuotation.proposedFee,
         advanceAmount: payment.amount,
         status: AssignmentStatus.ONGOING
       },
       update: {}
     });
   });
-  return { success: true, status: "PAID" };
+  return {
+    success: true,
+    status: "PAID"
+  };
 };
 var paymentSuccessService = async (data) => {
   try {
     const result = await verifyAndCompletePayment(data);
     if (result.status === "UNDER_REVIEW") {
-      return { redirectUrl: `${config_default.frontend_url}/payment/under-review` };
+      return {
+        redirectUrl: `${config_default.frontend_url}/payment/under-review`
+      };
     }
-    return { redirectUrl: `${config_default.frontend_url}/payment/success` };
+    return {
+      redirectUrl: `${config_default.frontend_url}/payment/success`
+    };
   } catch (error) {
-    console.error("[SSLCommerz] Success callback failed:", error);
-    return { redirectUrl: `${config_default.frontend_url}/payment/failed` };
+    console.error(
+      "[SSLCommerz] Success callback failed:",
+      error
+    );
+    return {
+      redirectUrl: `${config_default.frontend_url}/payment/failed`
+    };
   }
 };
 var markPaymentFailed = async (data) => {
   const tranId = String(data.tran_id || "");
   if (!tranId) {
-    throw new AppError(import_http_status25.default.BAD_REQUEST, "Transaction ID is missing");
+    throw new AppError(
+      import_http_status27.default.BAD_REQUEST,
+      "Transaction ID is missing"
+    );
   }
   const payment = await prisma.payment.findUnique({
-    where: { merchantInvoiceNumber: tranId }
+    where: {
+      merchantInvoiceNumber: tranId
+    }
   });
   if (!payment) {
-    throw new AppError(import_http_status25.default.NOT_FOUND, "Payment not found");
+    throw new AppError(
+      import_http_status27.default.NOT_FOUND,
+      "Payment not found"
+    );
   }
-  if (payment.status === PaymentStatus.PENDING) {
-    await prisma.payment.updateMany({
-      where: { id: payment.id, status: PaymentStatus.PENDING },
-      data: {
-        status: PaymentStatus.FAILED,
-        gatewayResponse: data
-      }
-    });
-  }
+  await prisma.payment.updateMany({
+    where: {
+      id: payment.id,
+      status: PaymentStatus.PENDING
+    },
+    data: {
+      status: PaymentStatus.FAILED,
+      gatewayResponse: data
+    }
+  });
 };
 var paymentFailureService = async (data) => {
   try {
     await markPaymentFailed(data);
   } catch (error) {
-    console.error("[SSLCommerz] Failure callback error:", error);
+    console.error(
+      "[SSLCommerz] Failure callback error:",
+      error
+    );
   }
-  return { redirectUrl: `${config_default.frontend_url}/payment/failed` };
+  return {
+    redirectUrl: `${config_default.frontend_url}/payment/failed`
+  };
 };
 var paymentCancelService = async (data) => {
   try {
     await markPaymentFailed(data);
   } catch (error) {
-    console.error("[SSLCommerz] Cancel callback error:", error);
+    console.error(
+      "[SSLCommerz] Cancel callback error:",
+      error
+    );
   }
-  return { redirectUrl: `${config_default.frontend_url}/payment/cancelled` };
+  return {
+    redirectUrl: `${config_default.frontend_url}/payment/cancelled`
+  };
 };
 var paymentIpnService = async (data) => {
   const status = String(data.status || "").toUpperCase();
@@ -4997,34 +5430,52 @@ var paymentIpnService = async (data) => {
   try {
     await verifyAndCompletePayment(data);
   } catch (error) {
-    console.error("[SSLCommerz] IPN processing failed:", error);
+    console.error(
+      "[SSLCommerz] IPN processing failed:",
+      error
+    );
   }
 };
 var approveReviewedPaymentService = async (paymentId) => {
   const payment = await prisma.payment.findUnique({
-    where: { id: paymentId },
+    where: {
+      id: paymentId
+    },
     include: {
-      request: { include: { selectedQuotation: true } },
+      request: {
+        include: {
+          selectedQuotation: true
+        }
+      },
       sslcommerzPayment: true
     }
   });
   if (!payment) {
-    throw new AppError(import_http_status25.default.NOT_FOUND, "Payment not found");
+    throw new AppError(
+      import_http_status27.default.NOT_FOUND,
+      "Payment not found"
+    );
   }
   const gatewayResponse = payment.gatewayResponse;
   if (payment.status !== PaymentStatus.PENDING || !gatewayResponse || gatewayResponse.reviewRequired !== true) {
     throw new AppError(
-      import_http_status25.default.BAD_REQUEST,
+      import_http_status27.default.BAD_REQUEST,
       "Payment is not waiting for review"
     );
   }
-  if (!payment.request.selectedQuotation) {
-    throw new AppError(import_http_status25.default.BAD_REQUEST, "Selected quotation not found");
-  }
   const quotation = payment.request.selectedQuotation;
+  if (!quotation) {
+    throw new AppError(
+      import_http_status27.default.BAD_REQUEST,
+      "Selected quotation not found"
+    );
+  }
   await prisma.$transaction(async (tx) => {
-    await tx.payment.update({
-      where: { id: payment.id },
+    const paymentUpdate = await tx.payment.updateMany({
+      where: {
+        id: payment.id,
+        status: PaymentStatus.PENDING
+      },
       data: {
         status: PaymentStatus.PAID,
         paidAt: /* @__PURE__ */ new Date(),
@@ -5035,12 +5486,32 @@ var approveReviewedPaymentService = async (paymentId) => {
         }
       }
     });
-    await tx.workRequest.update({
-      where: { id: payment.requestId },
-      data: { status: WorkStatus.ADVANCE_PAID }
+    if (paymentUpdate.count === 0) {
+      throw new AppError(
+        import_http_status27.default.CONFLICT,
+        "Payment has already been processed"
+      );
+    }
+    const requestUpdate = await tx.workRequest.updateMany({
+      where: {
+        id: payment.requestId,
+        status: WorkStatus.CITIZEN_ACCEPTED,
+        selectedQuotationId: quotation.id
+      },
+      data: {
+        status: WorkStatus.ADVANCE_PAID
+      }
     });
+    if (requestUpdate.count === 0) {
+      throw new AppError(
+        import_http_status27.default.CONFLICT,
+        "Work request status has changed"
+      );
+    }
     await tx.assignment.upsert({
-      where: { requestId: payment.requestId },
+      where: {
+        requestId: payment.requestId
+      },
       create: {
         requestId: payment.requestId,
         staffId: quotation.staffId,
@@ -5052,21 +5523,37 @@ var approveReviewedPaymentService = async (paymentId) => {
       update: {}
     });
   });
-  return { success: true };
+  return {
+    success: true
+  };
 };
 var getPaymentByIdService = async (id, user) => {
   const payment = await prisma.payment.findUnique({
-    where: { id },
+    where: {
+      id
+    },
     include: {
       sslcommerzPayment: true,
-      request: true
+      request: {
+        omit: {
+          phone: true
+        }
+      }
     }
   });
   if (!payment) {
-    throw new AppError(import_http_status25.default.NOT_FOUND, "Payment not found");
+    throw new AppError(
+      import_http_status27.default.NOT_FOUND,
+      "Payment not found"
+    );
   }
-  if (payment.request.citizenId !== user.userId && user.role !== "ADMIN" && user.role !== "MANAGER") {
-    throw new AppError(import_http_status25.default.FORBIDDEN, "You cannot view this payment");
+  const isOwner = payment.request.citizenId === user.userId && user.role === "CITIZEN";
+  const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
+  if (!isOwner && !isAdminOrManager) {
+    throw new AppError(
+      import_http_status27.default.FORBIDDEN,
+      "You cannot view this payment"
+    );
   }
   return payment;
 };
@@ -5087,7 +5574,7 @@ var createPayment = catchAsync(async (req, res) => {
     req.user
   );
   sendResponse(res, {
-    statusCode: import_http_status26.default.CREATED,
+    statusCode: import_http_status28.default.CREATED,
     success: true,
     message: "Payment initiated successfully",
     data: result
@@ -5113,7 +5600,7 @@ var paymentCancel = catchAsync(async (req, res) => {
 });
 var paymentIpn = catchAsync(async (req, res) => {
   await paymentServices.paymentIpnService(req.body);
-  res.status(import_http_status26.default.OK).send("IPN received");
+  res.status(import_http_status28.default.OK).send("IPN received");
 });
 var approveReviewedPayment = catchAsync(
   async (req, res) => {
@@ -5121,7 +5608,7 @@ var approveReviewedPayment = catchAsync(
       req.params["id"]
     );
     sendResponse(res, {
-      statusCode: import_http_status26.default.OK,
+      statusCode: import_http_status28.default.OK,
       success: true,
       message: "Payment approved successfully",
       data: result
@@ -5134,7 +5621,7 @@ var getPaymentById = catchAsync(async (req, res) => {
     req.user
   );
   sendResponse(res, {
-    statusCode: import_http_status26.default.OK,
+    statusCode: import_http_status28.default.OK,
     success: true,
     message: "Payment retrieved successfully",
     data: result
@@ -5187,156 +5674,165 @@ var paymentRoutes = router11;
 var import_express12 = require("express");
 
 // src/modules/assignment/assignment.controller.ts
-var import_http_status28 = __toESM(require("http-status"));
+var import_http_status30 = __toESM(require("http-status"));
 
 // src/modules/assignment/assignment.service.ts
-var import_http_status27 = __toESM(require("http-status"));
-var getMyAssignmentsService = async (user) => {
-  const where = user.role === Role.CITIZEN ? { citizenId: user.userId } : user.role === Role.STAFF ? { staffId: user.userId } : {};
-  const assignments = await prisma.assignment.findMany({
-    where,
+var import_http_status29 = __toESM(require("http-status"));
+var assignmentInclude = {
+  staff: {
+    omit: {
+      password: true
+    }
+  },
+  citizen: {
+    omit: {
+      password: true
+    }
+  },
+  request: {
     include: {
-      staff: {
-        omit: { password: true }
-      },
-      citizen: {
-        omit: { password: true }
-      },
-      request: true,
-      attachments: true
-    },
+      payments: {
+        where: {
+          status: PaymentStatus.PAID
+        },
+        select: {
+          id: true,
+          status: true
+        }
+      }
+    }
+  },
+  attachments: true
+};
+var getMyAssignmentsService = async (user) => {
+  let where = {};
+  if (user.role === Role.CITIZEN) {
+    where = {
+      citizenId: user.userId
+    };
+  } else if (user.role === Role.STAFF) {
+    where = {
+      staffId: user.userId
+    };
+  }
+  const result = await prisma.assignment.findMany({
+    where,
+    include: assignmentInclude,
     orderBy: {
       createdAt: "desc"
     }
   });
-  return assignments;
+  return result.map(
+    (assignment) => projectAssignmentContacts(assignment, user)
+  );
 };
 var getAssignmentByIdService = async (id, user) => {
   const assignment = await prisma.assignment.findUnique({
-    where: { id },
+    where: {
+      id
+    },
+    include: assignmentInclude
+  });
+  if (!assignment) {
+    throw new AppError(
+      import_http_status29.default.NOT_FOUND,
+      "Assignment not found"
+    );
+  }
+  const isParticipant = assignment.citizenId === user.userId || assignment.staffId === user.userId;
+  const isManagerOrAdmin = user.role === Role.MANAGER || user.role === Role.ADMIN;
+  if (!isParticipant && !isManagerOrAdmin) {
+    throw new AppError(
+      import_http_status29.default.FORBIDDEN,
+      "You are not allowed to access this assignment"
+    );
+  }
+  return projectAssignmentContacts(assignment, user);
+};
+var submitAssignmentCompletionService = async (id, user) => {
+  const assignment = await prisma.assignment.findUnique({
+    where: {
+      id
+    },
     include: {
-      staff: {
-        omit: { password: true }
-      },
-      citizen: {
-        omit: { password: true }
-      },
-      request: true,
       attachments: true
     }
   });
   if (!assignment) {
     throw new AppError(
-      import_http_status27.default.NOT_FOUND,
-      "Assignment not found"
-    );
-  }
-  const isOwner = assignment.citizenId === user.userId || assignment.staffId === user.userId;
-  const isAdminOrManager = user.role === Role.ADMIN || user.role === Role.MANAGER;
-  if (!isOwner && !isAdminOrManager) {
-    throw new AppError(
-      import_http_status27.default.FORBIDDEN,
-      "You are not allowed to view this assignment"
-    );
-  }
-  return assignment;
-};
-var submitAssignmentCompletionService = async (id, user) => {
-  const assignment = await prisma.assignment.findUnique({
-    where: { id }
-  });
-  if (!assignment) {
-    throw new AppError(
-      import_http_status27.default.NOT_FOUND,
+      import_http_status29.default.NOT_FOUND,
       "Assignment not found"
     );
   }
   if (assignment.staffId !== user.userId) {
     throw new AppError(
-      import_http_status27.default.FORBIDDEN,
+      import_http_status29.default.FORBIDDEN,
       "Only the assigned staff can submit completion"
     );
   }
   if (assignment.status !== AssignmentStatus.ONGOING) {
     throw new AppError(
-      import_http_status27.default.BAD_REQUEST,
-      "Only ongoing assignments can be submitted for completion"
+      import_http_status29.default.BAD_REQUEST,
+      "Only ongoing assignments can be submitted"
     );
   }
-  const attachmentCount = await prisma.workAttachment.count({
-    where: {
-      assignmentId: id
-    }
-  });
-  if (attachmentCount === 0) {
+  if (assignment.attachments.length === 0) {
     throw new AppError(
-      import_http_status27.default.BAD_REQUEST,
-      "Please upload at least one attachment before submitting completion"
+      import_http_status29.default.BAD_REQUEST,
+      "Please upload at least one attachment before submitting"
     );
   }
-  const updatedAssignment = await prisma.assignment.update({
-    where: { id },
+  const result = await prisma.assignment.update({
+    where: {
+      id
+    },
     data: {
       status: AssignmentStatus.COMPLETION_SUBMITTED
     },
-    include: {
-      staff: {
-        omit: { password: true }
-      },
-      citizen: {
-        omit: { password: true }
-      },
-      request: true,
-      attachments: true
-    }
+    include: assignmentInclude
   });
-  return updatedAssignment;
+  return projectAssignmentContacts(result, user);
 };
 var reviewAssignmentCompletionService = async (id, payload, user) => {
   if (user.role !== Role.MANAGER && user.role !== Role.ADMIN) {
     throw new AppError(
-      import_http_status27.default.FORBIDDEN,
-      "Only managers and admins can review completion"
-    );
-  }
-  if (payload.status !== "COMPLETED" && payload.status !== "ONGOING") {
-    throw new AppError(
-      import_http_status27.default.BAD_REQUEST,
-      "Invalid review status. Use COMPLETED or ONGOING"
+      import_http_status29.default.FORBIDDEN,
+      "Only managers and admins can review assignments"
     );
   }
   const assignment = await prisma.assignment.findUnique({
-    where: { id }
+    where: {
+      id
+    }
   });
   if (!assignment) {
     throw new AppError(
-      import_http_status27.default.NOT_FOUND,
+      import_http_status29.default.NOT_FOUND,
       "Assignment not found"
     );
   }
   if (assignment.status !== AssignmentStatus.COMPLETION_SUBMITTED) {
     throw new AppError(
-      import_http_status27.default.BAD_REQUEST,
-      "This assignment has not been submitted for completion"
+      import_http_status29.default.BAD_REQUEST,
+      "This assignment has not been submitted for review"
     );
   }
-  const updatedAssignment = await prisma.assignment.update({
-    where: { id },
-    data: {
-      status: payload.status === "COMPLETED" ? AssignmentStatus.COMPLETED : AssignmentStatus.ONGOING
+  if (payload.status !== AssignmentStatus.COMPLETED && payload.status !== AssignmentStatus.ONGOING) {
+    throw new AppError(
+      import_http_status29.default.BAD_REQUEST,
+      "Invalid assignment review status"
+    );
+  }
+  const result = await prisma.assignment.update({
+    where: {
+      id
     },
-    include: {
-      staff: {
-        omit: { password: true }
-      },
-      citizen: {
-        omit: { password: true }
-      },
-      request: true,
-      attachments: true
-    }
+    data: {
+      status: payload.status
+    },
+    include: assignmentInclude
   });
-  return updatedAssignment;
+  return projectAssignmentContacts(result, user);
 };
 var assignmentServices = {
   getMyAssignmentsService,
@@ -5349,7 +5845,7 @@ var assignmentServices = {
 var getMyAssignments = catchAsync(async (req, res) => {
   const result = await assignmentServices.getMyAssignmentsService(req.user);
   sendResponse(res, {
-    statusCode: import_http_status28.default.OK,
+    statusCode: import_http_status30.default.OK,
     success: true,
     message: "Assignments retrieved successfully",
     data: result
@@ -5361,7 +5857,7 @@ var getAssignmentById = catchAsync(async (req, res) => {
     req.user
   );
   sendResponse(res, {
-    statusCode: import_http_status28.default.OK,
+    statusCode: import_http_status30.default.OK,
     success: true,
     message: "Assignment retrieved successfully",
     data: result
@@ -5374,7 +5870,7 @@ var submitAssignmentCompletion = catchAsync(
       req.user
     );
     sendResponse(res, {
-      statusCode: import_http_status28.default.OK,
+      statusCode: import_http_status30.default.OK,
       success: true,
       message: "Work completion submitted successfully",
       data: result
@@ -5389,7 +5885,7 @@ var reviewAssignmentCompletion = catchAsync(
       req.user
     );
     sendResponse(res, {
-      statusCode: import_http_status28.default.OK,
+      statusCode: import_http_status30.default.OK,
       success: true,
       message: req.body.status === "COMPLETED" ? "Assignment completed successfully" : "Assignment sent back for correction",
       data: result
@@ -5444,10 +5940,10 @@ var assignmentRoutes = router12;
 var import_express13 = require("express");
 
 // src/modules/workAttachment/workAttachment.controller.ts
-var import_http_status30 = __toESM(require("http-status"));
+var import_http_status32 = __toESM(require("http-status"));
 
 // src/modules/workAttachment/workAttachment.service.ts
-var import_http_status29 = __toESM(require("http-status"));
+var import_http_status31 = __toESM(require("http-status"));
 
 // src/lib/cloudinary.ts
 var import_cloudinary = require("cloudinary");
@@ -5485,7 +5981,7 @@ var checkAssignmentAccess = (assignment, user) => {
   const isManagerOrAdmin = user.role === Role.MANAGER || user.role === Role.ADMIN;
   if (!isParticipant && !isManagerOrAdmin) {
     throw new AppError(
-      import_http_status29.default.FORBIDDEN,
+      import_http_status31.default.FORBIDDEN,
       "You are not allowed to access this attachment"
     );
   }
@@ -5493,7 +5989,7 @@ var checkAssignmentAccess = (assignment, user) => {
 var createWorkAttachmentService = async (payload) => {
   const { assignmentId, file, user } = payload;
   if (!file) {
-    throw new AppError(import_http_status29.default.BAD_REQUEST, "Please upload a file");
+    throw new AppError(import_http_status31.default.BAD_REQUEST, "Please upload a file");
   }
   const assignment = await prisma.assignment.findUnique({
     where: {
@@ -5501,17 +5997,17 @@ var createWorkAttachmentService = async (payload) => {
     }
   });
   if (!assignment) {
-    throw new AppError(import_http_status29.default.NOT_FOUND, "Assignment not found");
+    throw new AppError(import_http_status31.default.NOT_FOUND, "Assignment not found");
   }
   if (assignment.staffId !== user.userId) {
     throw new AppError(
-      import_http_status29.default.FORBIDDEN,
+      import_http_status31.default.FORBIDDEN,
       "Only the assigned staff can upload attachments"
     );
   }
   if (assignment.status !== AssignmentStatus.ONGOING) {
     throw new AppError(
-      import_http_status29.default.BAD_REQUEST,
+      import_http_status31.default.BAD_REQUEST,
       "Attachments can only be uploaded while the assignment is ongoing"
     );
   }
@@ -5543,7 +6039,7 @@ var getAllWorkAttachmentsService = async (payload) => {
     }
   });
   if (!assignment) {
-    throw new AppError(import_http_status29.default.NOT_FOUND, "Assignment not found");
+    throw new AppError(import_http_status31.default.NOT_FOUND, "Assignment not found");
   }
   checkAssignmentAccess(assignment, user);
   const result = await prisma.workAttachment.findMany({
@@ -5567,7 +6063,7 @@ var getWorkAttachmentByIdService = async (payload) => {
     }
   });
   if (!attachment) {
-    throw new AppError(import_http_status29.default.NOT_FOUND, "Attachment not found");
+    throw new AppError(import_http_status31.default.NOT_FOUND, "Attachment not found");
   }
   checkAssignmentAccess(attachment.assignment, user);
   return attachment;
@@ -5583,19 +6079,19 @@ var deleteWorkAttachmentService = async (payload) => {
     }
   });
   if (!attachment) {
-    throw new AppError(import_http_status29.default.NOT_FOUND, "Attachment not found");
+    throw new AppError(import_http_status31.default.NOT_FOUND, "Attachment not found");
   }
   const isStaffOwner = attachment.assignment.staffId === user.userId;
   const isManagerOrAdmin = user.role === Role.MANAGER || user.role === Role.ADMIN;
   if (!isStaffOwner && !isManagerOrAdmin) {
     throw new AppError(
-      import_http_status29.default.FORBIDDEN,
+      import_http_status31.default.FORBIDDEN,
       "You are not allowed to delete this attachment"
     );
   }
   if (isStaffOwner && attachment.assignment.status !== AssignmentStatus.ONGOING) {
     throw new AppError(
-      import_http_status29.default.BAD_REQUEST,
+      import_http_status31.default.BAD_REQUEST,
       "You cannot delete attachments after submitting completion"
     );
   }
@@ -5625,7 +6121,7 @@ var createWorkAttachment = catchAsync(
       user: req.user
     });
     sendResponse(res, {
-      statusCode: import_http_status30.default.CREATED,
+      statusCode: import_http_status32.default.CREATED,
       success: true,
       message: "Attachment uploaded successfully",
       data: result
@@ -5639,7 +6135,7 @@ var getAllWorkAttachments = catchAsync(
       user: req.user
     });
     sendResponse(res, {
-      statusCode: import_http_status30.default.OK,
+      statusCode: import_http_status32.default.OK,
       success: true,
       message: "Attachments retrieved successfully",
       data: result
@@ -5653,7 +6149,7 @@ var getWorkAttachmentById = catchAsync(
       user: req.user
     });
     sendResponse(res, {
-      statusCode: import_http_status30.default.OK,
+      statusCode: import_http_status32.default.OK,
       success: true,
       message: "Attachment retrieved successfully",
       data: result
@@ -5667,7 +6163,7 @@ var deleteWorkAttachment = catchAsync(
       user: req.user
     });
     sendResponse(res, {
-      statusCode: import_http_status30.default.OK,
+      statusCode: import_http_status32.default.OK,
       success: true,
       message: "Attachment deleted successfully",
       data: result
@@ -5720,16 +6216,256 @@ router13.delete(
 );
 var workAttachmentRoutes = router13;
 
-// src/app.ts
-var app = (0, import_express14.default)();
-app.use(
-  (0, import_cors.default)({
-    origin: config_default.app_url,
-    credentials: true
-  })
+// src/modules/feedback/feedback.route.ts
+var import_express14 = require("express");
+
+// src/modules/feedback/feedback.controller.ts
+var import_http_status34 = __toESM(require("http-status"));
+
+// src/modules/feedback/feedback.service.ts
+var import_http_status33 = __toESM(require("http-status"));
+var createFeedbackService = async (payload, user) => {
+  const { assignmentId, rating, comment } = payload;
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    throw new AppError(
+      import_http_status33.default.BAD_REQUEST,
+      "Rating must be between 1 and 5"
+    );
+  }
+  const assignment = await prisma.assignment.findUnique({
+    where: {
+      id: assignmentId
+    }
+  });
+  if (!assignment) {
+    throw new AppError(import_http_status33.default.NOT_FOUND, "Assignment not found");
+  }
+  if (assignment.citizenId !== user.userId) {
+    throw new AppError(
+      import_http_status33.default.FORBIDDEN,
+      "Only the citizen of this assignment can submit feedback"
+    );
+  }
+  if (assignment.status !== AssignmentStatus.COMPLETED) {
+    throw new AppError(
+      import_http_status33.default.BAD_REQUEST,
+      "Feedback can only be submitted after assignment completion"
+    );
+  }
+  const existingFeedback = await prisma.feedback.findUnique({
+    where: {
+      assignmentId
+    }
+  });
+  if (existingFeedback) {
+    throw new AppError(
+      import_http_status33.default.CONFLICT,
+      "Feedback has already been submitted for this assignment"
+    );
+  }
+  const result = await prisma.feedback.create({
+    data: {
+      assignmentId,
+      citizenId: user.userId,
+      rating,
+      comment: comment ?? null
+    },
+    include: {
+      citizen: {
+        omit: {
+          password: true
+        }
+      },
+      assignment: true
+    }
+  });
+  return result;
+};
+var getMyFeedbackService = async (user) => {
+  const result = await prisma.feedback.findMany({
+    where: {
+      citizenId: user.userId
+    },
+    include: {
+      assignment: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return result;
+};
+var getStaffFeedbackService = async (staffId, user) => {
+  if (user.role === Role.STAFF && user.userId !== staffId) {
+    throw new AppError(
+      import_http_status33.default.FORBIDDEN,
+      "You can only view your own feedback"
+    );
+  }
+  if (user.role !== Role.STAFF && user.role !== Role.MANAGER && user.role !== Role.ADMIN) {
+    throw new AppError(
+      import_http_status33.default.FORBIDDEN,
+      "You are not allowed to view staff feedback"
+    );
+  }
+  const result = await prisma.feedback.findMany({
+    where: {
+      assignment: {
+        staffId
+      }
+    },
+    include: {
+      citizen: {
+        select: {
+          id: true,
+          name: true
+        }
+      },
+      assignment: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return result;
+};
+var getAllFeedbackService = async (user) => {
+  if (user.role !== Role.MANAGER && user.role !== Role.ADMIN) {
+    throw new AppError(
+      import_http_status33.default.FORBIDDEN,
+      "Only managers and admins can view all feedback"
+    );
+  }
+  const result = await prisma.feedback.findMany({
+    include: {
+      citizen: {
+        select: {
+          id: true,
+          name: true
+        }
+      },
+      assignment: true
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+  return result;
+};
+var feedbackServices = {
+  createFeedbackService,
+  getMyFeedbackService,
+  getStaffFeedbackService,
+  getAllFeedbackService
+};
+
+// src/modules/feedback/feedback.controller.ts
+var createFeedback = catchAsync(
+  async (req, res) => {
+    const result = await feedbackServices.createFeedbackService(
+      req.body,
+      req.user
+    );
+    sendResponse(res, {
+      statusCode: import_http_status34.default.CREATED,
+      success: true,
+      message: "Feedback submitted successfully",
+      data: result
+    });
+  }
 );
-app.use(import_express14.default.json());
-app.use(import_express14.default.urlencoded({ extended: true }));
+var getMyFeedback = catchAsync(
+  async (req, res) => {
+    const result = await feedbackServices.getMyFeedbackService(
+      req.user
+    );
+    sendResponse(res, {
+      statusCode: import_http_status34.default.OK,
+      success: true,
+      message: "Your feedback retrieved successfully",
+      data: result
+    });
+  }
+);
+var getStaffFeedback = catchAsync(
+  async (req, res) => {
+    const result = await feedbackServices.getStaffFeedbackService(
+      req.params.staffId,
+      req.user
+    );
+    sendResponse(res, {
+      statusCode: import_http_status34.default.OK,
+      success: true,
+      message: "Staff feedback retrieved successfully",
+      data: result
+    });
+  }
+);
+var getAllFeedback = catchAsync(
+  async (req, res) => {
+    const result = await feedbackServices.getAllFeedbackService(
+      req.user
+    );
+    sendResponse(res, {
+      statusCode: import_http_status34.default.OK,
+      success: true,
+      message: "All feedback retrieved successfully",
+      data: result
+    });
+  }
+);
+var feedbackControllers = {
+  createFeedback,
+  getMyFeedback,
+  getStaffFeedback,
+  getAllFeedback
+};
+
+// src/modules/feedback/feedback.validation.ts
+var import_zod14 = require("zod");
+var staffIdParamsSchema3 = import_zod14.z.object({ staffId: import_zod14.z.string().uuid() }).strict();
+var createFeedbackSchema = import_zod14.z.object({
+  assignmentId: import_zod14.z.string().uuid(),
+  rating: import_zod14.z.number().int().min(1).max(5),
+  comment: import_zod14.z.string().trim().max(2e3).optional()
+}).strict();
+
+// src/modules/feedback/feedback.route.ts
+var router14 = (0, import_express14.Router)();
+router14.post(
+  "/",
+  auth(Role.CITIZEN),
+  validateRequest({ body: createFeedbackSchema }),
+  feedbackControllers.createFeedback
+);
+router14.get(
+  "/my-feedback",
+  auth(Role.CITIZEN),
+  feedbackControllers.getMyFeedback
+);
+router14.get(
+  "/staff/:staffId",
+  auth(Role.STAFF, Role.MANAGER, Role.ADMIN),
+  validateRequest({ params: staffIdParamsSchema3 }),
+  feedbackControllers.getStaffFeedback
+);
+router14.get(
+  "/",
+  auth(Role.MANAGER, Role.ADMIN),
+  feedbackControllers.getAllFeedback
+);
+var feedbackRoutes = router14;
+
+// src/app.ts
+var app = (0, import_express15.default)();
+var allowedFrontendOrigins = parseFrontendOrigins(
+  config_default.frontend_url,
+  config_default.frontend_origins
+);
+app.use(createCorsMiddleware(allowedFrontendOrigins));
+app.use(enforceAllowedOrigins(allowedFrontendOrigins));
+app.use(import_express15.default.json());
+app.use(import_express15.default.urlencoded({ extended: true }));
 app.use((0, import_cookie_parser.default)());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
@@ -5744,6 +6480,7 @@ app.use("/api/v1/staff-invitation", staffInvitationRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/assignments", assignmentRoutes);
 app.use("/api/v1/work-attachments", workAttachmentRoutes);
+app.use("/api/v1/feedback", feedbackRoutes);
 app.use("/", (req, res) => {
   res.json({
     success: true,

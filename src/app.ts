@@ -1,12 +1,15 @@
 import express, {
   Request,
   Response,
-  urlencoded,
   type Application,
 } from "express";
 import config from "./config";
-import cors from "cors";
 import cookieParser from "cookie-parser";
+import {
+  createCorsMiddleware,
+  enforceAllowedOrigins,
+  parseFrontendOrigins,
+} from "./config/cors";
 import { NotFound } from "./middlewares/notFound";
 import { authRoutes } from "./modules/auth/auth.route";
 import { globalHandleError } from "./middlewares/globalErrorHandler";
@@ -22,15 +25,16 @@ import { staffInvitationRoutes } from "./modules/staffInvitation/staffInvitation
 import { paymentRoutes } from "./modules/payment/payment.route";
 import { assignmentRoutes } from "./modules/assignment/assignment.route";
 import { workAttachmentRoutes } from "./modules/workAttachment/workAttachment.route";
+import { feedbackRoutes } from "./modules/feedback/feedback.route";
 
 const app: Application = express();
 
-app.use(
-  cors({
-    origin: config.app_url,
-    credentials: true,
-  }),
+const allowedFrontendOrigins = parseFrontendOrigins(
+  config.frontend_url,
+  config.frontend_origins,
 );
+app.use(createCorsMiddleware(allowedFrontendOrigins));
+app.use(enforceAllowedOrigins(allowedFrontendOrigins));
 
 // middlewares
 app.use(express.json());
@@ -63,6 +67,8 @@ app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/assignments", assignmentRoutes);
 
 app.use("/api/v1/work-attachments", workAttachmentRoutes);
+
+app.use("/api/v1/feedback", feedbackRoutes);
 
 app.use("/", (req: Request, res: Response) => {
   // res.send("NagarLink Server working perfectly")

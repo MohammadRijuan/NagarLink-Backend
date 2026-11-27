@@ -4,6 +4,7 @@ import { IQuery } from "../../interfaces";
 import { prisma } from "../../lib/prisma";
 import { RequestUser } from "../../middlewares/checkAuth";
 import { AppError } from "../../utils/AppError";
+import { projectWorkRequestContact } from "../../utils/contactPrivacy";
 import {
   ICreateWorkRequest,
   IUpdateWorkRequest,
@@ -168,7 +169,9 @@ const getAllWorkRequestsService = async (query: IQuery, user: RequestUser) => {
       total,
       totalPages: Math.ceil(total / limit),
     },
-    data: result,
+    data: result.map((request) =>
+      projectWorkRequestContact(request, user),
+    ),
   };
 };
 
@@ -208,7 +211,7 @@ const getWorkRequestByIdService = async (id: string, user: RequestUser) => {
     );
   }
 
-  return workRequest;
+  return projectWorkRequestContact(workRequest, user);
 };
 
 const updateWorkRequestService = async (
@@ -308,7 +311,7 @@ const updateWorkRequestStatusService = async (
     },
   });
 
-  return result;
+  return projectWorkRequestContact(result, user);
 };
 
 const deleteWorkRequestService = async (

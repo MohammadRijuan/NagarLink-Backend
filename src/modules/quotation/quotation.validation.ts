@@ -14,13 +14,13 @@ export const createQuotationSchema = z
 export const updateQuotationSchema = z
   .object({
     proposedFee: z.coerce.number().finite().positive().optional(),
-    status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
   })
   .strict()
-  .refine((value) => Object.keys(value).length > 0, {
-    message: "At least one field must be provided",
+  .refine((data) => data.proposedFee !== undefined, {
+    message: "Proposed fee is required",
   });
 
+  
 export const selectQuotationSchema = z
   .object({
     quotationId: z.string().uuid(),

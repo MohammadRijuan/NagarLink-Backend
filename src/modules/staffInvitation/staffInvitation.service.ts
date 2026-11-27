@@ -4,6 +4,7 @@ import { IQuery } from "../../interfaces";
 import { prisma } from "../../lib/prisma";
 import { RequestUser } from "../../middlewares/checkAuth";
 import { AppError } from "../../utils/AppError";
+import { projectWorkRequestContact } from "../../utils/contactPrivacy";
 import {
   ICreateStaffInvitation,
   IRespondToInvitation,
@@ -145,7 +146,10 @@ const createStaffInvitationService = async (
 
   delete (formattedResult.staff as any).staffCategories;
 
-  return formattedResult;
+  return {
+    ...formattedResult,
+    request: projectWorkRequestContact(formattedResult.request, user),
+  };
 };
 
 const getAllStaffInvitationsService = async (

@@ -168,6 +168,8 @@ REDIS_URL="redis://localhost:6379"
 
 APP_URL="http://localhost:5000"
 FRONTEND_URL="http://localhost:3000"
+# Optional comma-separated additional browser origins for credentialed CORS.
+FRONTEND_ORIGINS=""
 
 JWT_ACCESS_SECRET="replace-with-secret"
 JWT_REFRESH_SECRET="replace-with-secret"
